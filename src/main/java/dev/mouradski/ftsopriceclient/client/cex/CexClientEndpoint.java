@@ -31,7 +31,6 @@ public class CexClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-
         this.sendMessage("{\"e\":\"subscribe\", \"rooms\":[\"tickers\"]}");
     }
 
