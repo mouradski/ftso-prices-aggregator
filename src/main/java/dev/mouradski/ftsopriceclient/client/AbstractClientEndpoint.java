@@ -51,11 +51,14 @@ public abstract class AbstractClientEndpoint {
         this.lastMessageTime = System.currentTimeMillis();
         executor.scheduleAtFixedRate(() -> {
             if (System.currentTimeMillis() - lastMessageTime > getTimeout() * 1000) {
+
                 log.info("No message received for {} seconds. Reconnecting...", getTimeout());
+
                 onClose(userSession, new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "Timeout"));
+
                 connect();
             }
-        }, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT, TimeUnit.SECONDS);
+        }, getTimeout(), getTimeout(), TimeUnit.SECONDS);
 
         log.info("Connected to {}", getExchange());
 
@@ -65,12 +68,19 @@ public abstract class AbstractClientEndpoint {
     @OnClose
     public void onClose(Session userSession, CloseReason reason) {
         log.info("Closing websocket for {}, Reason : {}",  getExchange(), reason.getReasonPhrase());
-        this.userSession = null;
 
         try {
+            // when the method is called programmatically
+            // we make sure that the session is closed before creating a new one
+            if (this.userSession != null) {
+                this.userSession.close();
+            }
             Thread.sleep(1000);
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
         }
+
+        this.userSession = null;
+
 
         connect();
     }
