@@ -58,7 +58,7 @@ public class BitfinexClientEndpoint extends AbstractClientEndpoint {
         var tradeData = (List<Double>) messageArray[2];
 
 
-        Pair<String, String> symbol = SymbolHelper.getQuote(channelIds.get(channelId));
+        Pair<String, String> symbol = SymbolHelper.getSymbol(channelIds.get(channelId));
 
         return Arrays.asList(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight()).price(tradeData.get(3)).amount(Math.abs(tradeData.get(2))).build());
     }

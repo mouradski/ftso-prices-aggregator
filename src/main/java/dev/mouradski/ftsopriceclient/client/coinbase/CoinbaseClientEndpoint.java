@@ -46,11 +46,6 @@ public class CoinbaseClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected void pong(String message) {
-        super.pong(message);
-    }
-
-    @Override
     protected List<Trade> mapTrade(String message) throws JsonProcessingException {
 
         if (!message.contains("trade_id")) {
@@ -59,7 +54,7 @@ public class CoinbaseClientEndpoint extends AbstractClientEndpoint {
 
         var tradeMatch = this.objectMapper.readValue(message, TradeMatch.class);
 
-        var symbol = SymbolHelper.getQuote(tradeMatch.getProductId());
+        var symbol = SymbolHelper.getSymbol(tradeMatch.getProductId());
 
         return Arrays.asList(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight()).price(tradeMatch.getPrice()).amount(tradeMatch.getSize()).build());
     }

@@ -43,19 +43,33 @@ public abstract class AbstractClientEndpoint {
 
     protected final List<String> exchanges;
 
+    private int retries = 3;
+
     protected AbstractClientEndpoint(PriceService priceSender, List<String> exchanges, List<String> assets) {
         this.priceSender = priceSender;
         this.exchanges = exchanges;
         this.assets = assets;
 
         if (exchanges == null || exchanges.contains(getExchange())) {
-            this.connect();
+            try {
+                while (retries-- > 0) {
+                    if (this.connect()) {
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
         }
     }
 
     @OnOpen
     public void onOpen(Session userSession) {
-        userSession.setMaxTextMessageBufferSize(1024 * 1024);
+        userSession.setMaxTextMessageBufferSize(1024 * 1024 * 10);
         log.info("Opening websocket for {} ....", getExchange());
         this.userSession = userSession;
         this.executor = Executors.newSingleThreadScheduledExecutor();
@@ -98,16 +112,19 @@ public abstract class AbstractClientEndpoint {
 
     @OnMessage
     public void onMessage(String message) throws JsonProcessingException {
-        lastMessageTime = System.currentTimeMillis();
-
-        this.decodeMetadata(message);
-
-        this.pong(message);
-
         try {
-            this.mapTrade(message).forEach(this.priceSender::pushPrice);
+            lastMessageTime = System.currentTimeMillis();
+
+            this.decodeMetadata(message);
+
+            if (!this.pong(message)) {
+                this.mapTrade(message).forEach(this.priceSender::pushPrice);
+            }
+
         } catch (Exception e) {
+            log.error("Caught exception receiving msg from {}, msg : {}", getExchange(), message, e);
         }
+
     }
 
     private boolean isGzipCompressed(byte[] data) {
@@ -143,14 +160,13 @@ public abstract class AbstractClientEndpoint {
                 result = uncompressGzip(data);
                 onMessage(result);
             } catch (IOException e) {
-                return;
             }
         } else {
             var inflater = new Inflater();
             inflater.setInput(data);
 
             var outputStream = new ByteArrayOutputStream();
-            var buffer = new byte[1024];
+            var buffer = new byte[1024 * 10];
 
             try {
                 var count = inflater.inflate(buffer);
@@ -171,8 +187,8 @@ public abstract class AbstractClientEndpoint {
         log.error("Error from {} : {}", getExchange(), t.getMessage());
     }
 
-    protected void pong(String message) {
-
+    protected boolean pong(String message) {
+        return false;
     }
 
     protected void prepareConnection() {
@@ -207,15 +223,18 @@ public abstract class AbstractClientEndpoint {
 
     protected abstract String getExchange();
 
-    protected void connect() {
+    protected boolean connect() {
+
         prepareConnection();
 
         try {
             var container = ContainerProvider.getWebSocketContainer();
             container.connectToServer(this, new URI(getUri()));
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return false;
         }
+
+        return true;
     }
 
     protected long getTimeout() {

@@ -57,7 +57,7 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
 
         var tradeData = objectMapper.readValue(message, TradeData.class);
 
-        var symbol = SymbolHelper.getQuote(tradeData.getSymbol());
+        var symbol = SymbolHelper.getSymbol(tradeData.getSymbol());
 
         var trades = new ArrayList<Trade>();
 

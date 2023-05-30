@@ -48,7 +48,7 @@ public class FmfwClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected List<Trade> mapTrade(String message) throws JsonProcessingException {
-        if (!message.contains("trade") && !message.contains("update")) {
+        if (!message.contains("\"p\"") || !message.contains("trade") || !message.contains("update")) {
             return new ArrayList<>();
         }
 
@@ -57,7 +57,7 @@ public class FmfwClientEndpoint extends AbstractClientEndpoint {
         var trades = new ArrayList<Trade>();
 
         fmfwTradeResponse.getUpdate().getTrades().entrySet().forEach(e -> {
-            var symbol = SymbolHelper.getQuote(e.getKey());
+            var symbol = SymbolHelper.getSymbol(e.getKey());
 
             e.getValue().stream().sorted(Comparator.comparing(FmfwTradeResponse.Trade::getT)).forEach(trade -> {
                 trades.add(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight()).price(trade.getP()).amount(trade.getQ()).build());

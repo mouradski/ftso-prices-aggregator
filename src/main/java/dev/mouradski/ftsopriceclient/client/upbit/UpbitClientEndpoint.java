@@ -51,11 +51,6 @@ public class UpbitClientEndpoint extends AbstractClientEndpoint {
         return "upbit";
     }
 
-    @Override
-    protected void pong(String message) {
-        super.pong(message);
-    }
-
     @Scheduled(fixedDelay = 100 * 1000)
     public void ping() {
         this.sendMessage("PING");
@@ -69,7 +64,7 @@ public class UpbitClientEndpoint extends AbstractClientEndpoint {
 
         var trade = objectMapper.readValue(message, UpbitTrade.class);
 
-        var symbol = SymbolHelper.getQuote(trade.getCode());
+        var symbol = SymbolHelper.getSymbol(trade.getCode());
 
         return Arrays.asList(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight()).price(trade.getTradePrice()).amount(trade.getTradeVolume()).build());
     }

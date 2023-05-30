@@ -75,10 +75,14 @@ public class DigifinexClientEndpoint extends AbstractClientEndpoint {
         var gson = new Gson();
         var tradeResponse = gson.fromJson(message, TradeResponse.class);
 
+        if (tradeResponse.getParams() == null) {
+            return trades;
+        }
+
         var tradesArray = gson.toJsonTree(tradeResponse.getParams().get(1)).getAsJsonArray();
 
 
-        var symbol = SymbolHelper.getQuote(gson.toJsonTree(tradeResponse.getParams().get(2)).getAsString());
+        var symbol = SymbolHelper.getSymbol(gson.toJsonTree(tradeResponse.getParams().get(2)).getAsString());
 
 
         for (var tradeElement : tradesArray) {

@@ -1,13 +1,13 @@
 package dev.mouradski.ftsopriceclient.client.okex;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.mouradski.ftsopriceclient.client.AbstractClientEndpoint;
 import dev.mouradski.ftsopriceclient.model.Trade;
 import dev.mouradski.ftsopriceclient.service.PriceService;
 import dev.mouradski.ftsopriceclient.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -18,9 +18,6 @@ import java.util.stream.Collectors;
 @ClientEndpoint
 @Component
 public class OkexClientEndpoint extends AbstractClientEndpoint {
-
-    private ObjectMapper objectMapper = new ObjectMapper();
-
     protected OkexClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
@@ -57,9 +54,14 @@ public class OkexClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected List<Trade> mapTrade(String message) throws JsonProcessingException {
+
+        if (!message.contains("\"channel\":\"trades\"")) {
+            return new ArrayList<>();
+        }
+
         var tradeData = objectMapper.readValue(message, TradeData.class);
 
-        var symbol = SymbolHelper.getQuote(tradeData.getArg().getInstId());
+        var symbol = SymbolHelper.getSymbol(tradeData.getArg().getInstId());
 
         var trades = new ArrayList<Trade>();
 
@@ -68,5 +70,10 @@ public class OkexClientEndpoint extends AbstractClientEndpoint {
         });
 
         return trades;
+    }
+
+    @Scheduled(fixedDelay = 30 * 1000)
+    public void ping() {
+        this.sendMessage("ping");
     }
 }

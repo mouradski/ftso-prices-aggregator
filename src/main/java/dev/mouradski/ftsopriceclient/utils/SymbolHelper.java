@@ -5,7 +5,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public class SymbolHelper {
 
-    public static Pair<String, String> getQuote(String remotePair) {
+    public static Pair<String, String> getSymbol(String remotePair) {
 
         String pair = remotePair.replace("-", "").replace("_", "").replace("/", "").toUpperCase();
 
@@ -24,6 +24,5 @@ public class SymbolHelper {
         }
 
         return Pair.of(pair.replace(quote, ""), quote);
-
     }
 }

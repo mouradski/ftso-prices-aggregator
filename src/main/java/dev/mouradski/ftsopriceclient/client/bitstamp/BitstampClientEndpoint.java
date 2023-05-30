@@ -64,7 +64,7 @@ public class BitstampClientEndpoint extends AbstractClientEndpoint {
             trade.setAmount(tradeData.get("amount").getAsDouble());
             trade.setExchange(getExchange());
 
-            Pair<String, String> symbol = SymbolHelper.getQuote(pair);
+            Pair<String, String> symbol = SymbolHelper.getSymbol(pair);
 
 
             trade.setSymbol(symbol.getLeft());

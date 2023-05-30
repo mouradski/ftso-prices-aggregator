@@ -65,9 +65,12 @@ public class CryptoComClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected void pong(String message) {
+    protected boolean pong(String message) {
         if (message.contains("public/heartbeat")) {
             this.sendMessage(message.replace("public/heartbeat", "public/respond-heartbeat"));
+            return true;
         }
+
+        return false;
     }
 }

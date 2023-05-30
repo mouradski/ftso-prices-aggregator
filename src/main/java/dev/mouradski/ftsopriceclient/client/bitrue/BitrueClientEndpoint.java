@@ -32,6 +32,10 @@ public class BitrueClientEndpoint extends AbstractClientEndpoint {
         var gson = new Gson();
         var tradeMessage = gson.fromJson(message, TradeMessage.class);
 
+        if (tradeMessage.getChannel() == null || tradeMessage.getTick() == null || tradeMessage.getTick().getData() == null) {
+            return trades;
+        }
+
         var symbol = tradeMessage.getChannel().split("_")[1].replace("usdt", "").toUpperCase();
         var quote = "USDT";
 
@@ -58,5 +62,16 @@ public class BitrueClientEndpoint extends AbstractClientEndpoint {
     @Override
     protected long getTimeout() {
         return 300;
+    }
+
+    @Override
+    protected boolean pong(String message) {
+
+        if (message.contains("ping")) {
+            this.sendMessage(message.replaceAll("ping", "pong"));
+            return true;
+        }
+
+        return false;
     }
 }

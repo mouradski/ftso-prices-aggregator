@@ -30,7 +30,7 @@ public class BinanceClientEndpoint extends AbstractClientEndpoint {
     protected List<Trade> mapTrade(String message) throws JsonProcessingException {
         var binanceTrade = objectMapper.readValue(message, BinanceTrade.class);
 
-        Pair<String, String> symbol = SymbolHelper.getQuote(binanceTrade.getData().getS());
+        Pair<String, String> symbol = SymbolHelper.getSymbol(binanceTrade.getData().getS());
 
         return Arrays.asList(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight())
                 .price(binanceTrade.getData().getP()).amount(binanceTrade.getData().getQ()).build());

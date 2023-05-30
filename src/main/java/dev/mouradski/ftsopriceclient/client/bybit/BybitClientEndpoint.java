@@ -60,7 +60,7 @@ public class BybitClientEndpoint extends AbstractClientEndpoint {
 
         var tradeResponse = gson.fromJson(message, TradeResponse.class);
 
-        Pair<String, String> symbol = SymbolHelper.getQuote(tradeResponse.getParams().getSymbol());
+        Pair<String, String> symbol = SymbolHelper.getSymbol(tradeResponse.getParams().getSymbol());
 
         return Arrays.asList(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight()).price(Double.parseDouble(tradeResponse.getData().get("p"))).amount(Double.parseDouble(tradeResponse.getData().get("p"))).build());
     }

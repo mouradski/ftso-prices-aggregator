@@ -41,10 +41,13 @@ public class LbankClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected void pong(String message) {
+    protected boolean pong(String message) {
         if (message.contains("ping")) {
             this.sendMessage(message.replaceAll("ping", "pong"));
+            return true;
         }
+
+        return false;
     }
 
     @Override
@@ -56,7 +59,7 @@ public class LbankClientEndpoint extends AbstractClientEndpoint {
 
         var tradeWrapper = objectMapper.readValue(message, TradeWrapper.class);
 
-        var symbol = SymbolHelper.getQuote(tradeWrapper.getPair());
+        var symbol = SymbolHelper.getSymbol(tradeWrapper.getPair());
 
         return Arrays.asList(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight()).price(tradeWrapper.getTrade().getPrice()).amount(tradeWrapper.getTrade().getAmount()).build());
     }

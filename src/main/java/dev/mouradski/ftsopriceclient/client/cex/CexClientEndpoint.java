@@ -44,7 +44,7 @@ public class CexClientEndpoint extends AbstractClientEndpoint {
     protected List<Trade> mapTrade(String message) throws JsonProcessingException {
         var tick = objectMapper.readValue(message, Tick.class);
 
-        if (getAssets().contains(tick.getData().getSymbol1().toLowerCase()) && Constants.USD_USDT_USDC_BUSD.contains(tick.getData().getSymbol2().toLowerCase())) {
+        if (tick.getData() != null && getAssets().contains(tick.getData().getSymbol1().toLowerCase()) && Constants.USD_USDT_USDC_BUSD.contains(tick.getData().getSymbol2().toLowerCase())) {
             return Arrays.asList(Trade.builder().exchange(getExchange()).symbol(tick.getData().getSymbol1()).quote(tick.getData().getSymbol2()).price(tick.getData().getPrice()).amount(tick.getData().getVolume()).build());
         }
 
@@ -53,10 +53,13 @@ public class CexClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected void pong(String message) {
+    protected boolean pong(String message) {
         if (message.contains("ping")) {
            this.sendMessage("{\"e\":\"pong\"}");
+           return true;
         }
+
+        return false;
     }
 
     @Override

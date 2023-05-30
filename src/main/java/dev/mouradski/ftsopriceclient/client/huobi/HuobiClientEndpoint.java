@@ -54,10 +54,13 @@ public class HuobiClientEndpoint extends AbstractClientEndpoint {
         var gson = new Gson();
         var tradeMessage = gson.fromJson(message, Response.class);
 
+        if (tradeMessage.getCh() == null) {
+            return new ArrayList<>();
+        }
 
         var pair = tradeMessage.getCh().split("\\.")[1].toUpperCase();
 
-        var symbol = SymbolHelper.getQuote(pair);
+        var symbol = SymbolHelper.getSymbol(pair);
 
         tradeMessage.getTick().getData().stream().sorted(Comparator.comparing(TradeDetail::getTradeId)).forEach(huobiTrade -> {
             trades.add(Trade.builder().exchange(getExchange())
@@ -69,9 +72,12 @@ public class HuobiClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected void pong(String message) {
+    protected boolean pong(String message) {
         if (message.contains("ping")) {
             this.sendMessage(message.replace("ping", "pong"));
+            return true;
         }
+
+        return false;
     }
 }

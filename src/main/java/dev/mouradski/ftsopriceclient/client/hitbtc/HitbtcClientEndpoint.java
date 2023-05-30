@@ -61,7 +61,7 @@ public class HitbtcClientEndpoint extends AbstractClientEndpoint {
         }
 
         response.getSnapshot().entrySet().forEach(e -> {
-            var symbol = SymbolHelper.getQuote(e.getKey());
+            var symbol = SymbolHelper.getSymbol(e.getKey());
 
             for (HitbtcTrade hitbtcTrade : e.getValue()) {
                 trades.add(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight()).price(hitbtcTrade.getP()).amount(hitbtcTrade.getQ()).build());
@@ -69,7 +69,7 @@ public class HitbtcClientEndpoint extends AbstractClientEndpoint {
         });
 
         response.getUpdate().entrySet().forEach(e -> {
-            var symbol = SymbolHelper.getQuote(e.getKey());
+            var symbol = SymbolHelper.getSymbol(e.getKey());
 
 
             for (HitbtcTrade hitbtcTrade : e.getValue()) {
@@ -78,5 +78,14 @@ public class HitbtcClientEndpoint extends AbstractClientEndpoint {
         });
 
         return trades;
+    }
+
+    @Override
+    protected boolean pong(String message) {
+        if (message.contains("ping")) {
+
+            return true;
+        }
+        return false;
     }
 }
