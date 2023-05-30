@@ -21,6 +21,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class TradeServer {
 
     private Session session;
+    private ObjectMapper objectMapper = new ObjectMapper();
     public static Set<TradeServer> listeners = new CopyOnWriteArraySet<>();
 
     @OnOpen
@@ -39,8 +40,6 @@ public class TradeServer {
     }
 
     public void broadcastTrade(Trade trade) {
-
-        var objectMapper = new ObjectMapper();
         try {
             var messageAsString = objectMapper.writeValueAsString(trade);
             listeners.forEach(listener -> {
