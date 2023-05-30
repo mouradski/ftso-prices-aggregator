@@ -1,13 +1,13 @@
 package dev.mouradski.ftsopriceclient.client.binance;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import dev.mouradski.ftsopriceclient.utils.Constants;
 import dev.mouradski.ftsopriceclient.client.AbstractClientEndpoint;
 import dev.mouradski.ftsopriceclient.model.Trade;
 import dev.mouradski.ftsopriceclient.service.PriceService;
 import dev.mouradski.ftsopriceclient.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -17,8 +17,8 @@ import java.util.List;
 @ClientEndpoint
 public class BinanceClientEndpoint extends AbstractClientEndpoint {
 
-    public BinanceClientEndpoint(PriceService priceSender) {
-        super(priceSender);
+    public BinanceClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+        super(priceSender, exchanges, assets);
     }
 
     protected String getWebsocketApiBase() {
@@ -40,7 +40,7 @@ public class BinanceClientEndpoint extends AbstractClientEndpoint {
     protected String getUri() {
         var sb = new StringBuilder();
 
-        Constants.SYMBOLS.forEach(symbol -> {
+        getAssets().forEach(symbol -> {
             getAllQuotes(false).stream()
                     .filter(quote -> !quote.equals(symbol)).forEach(quote -> {
                         if (!sb.toString().isEmpty()) {

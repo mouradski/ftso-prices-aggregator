@@ -4,6 +4,7 @@ services:
     container_name: prices
     image: prices
     build: .
+    env_file: .env
     ports:
       - "8985:8985"
     deploy:

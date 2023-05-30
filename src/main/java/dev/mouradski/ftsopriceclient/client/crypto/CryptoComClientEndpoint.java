@@ -3,11 +3,11 @@ package dev.mouradski.ftsopriceclient.client.crypto;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.Gson;
-import dev.mouradski.ftsopriceclient.utils.Constants;
 import dev.mouradski.ftsopriceclient.client.AbstractClientEndpoint;
 import dev.mouradski.ftsopriceclient.model.Trade;
 import dev.mouradski.ftsopriceclient.service.PriceService;
 import jakarta.websocket.ClientEndpoint;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -18,10 +18,8 @@ import java.util.List;
 @Component
 public class CryptoComClientEndpoint extends AbstractClientEndpoint {
 
-    private int id = 1;
-
-    protected CryptoComClientEndpoint(PriceService priceSender) {
-        super(priceSender);
+    protected CryptoComClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+        super(priceSender, exchanges, assets);
     }
 
     @Override
@@ -31,7 +29,7 @@ public class CryptoComClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-        Constants.SYMBOLS.stream().filter(v -> !v.equals("usdt")).map(String::toUpperCase).forEach(symbol -> {
+        getAssets().stream().filter(v -> !v.equals("usdt")).map(String::toUpperCase).forEach(symbol -> {
             this.sendMessage("{\"id\": " + counter.getCount() + ",\"method\": \"subscribe\",\"params\": {\"channels\": [\"trade." + symbol   +  "_USDT\"]},\"nonce\": " + new Date().getTime() + "}");
             this.sendMessage("{\"id\": " + counter.getCount() + ",\"method\": \"subscribe\",\"params\": {\"channels\": [\"trade." + symbol   +  "_USD\"]},\"nonce\": " + new Date().getTime() + "}");
         });

@@ -2,9 +2,9 @@ package dev.mouradski.ftsopriceclient.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.mouradski.ftsopriceclient.utils.Constants;
 import dev.mouradski.ftsopriceclient.model.Trade;
 import dev.mouradski.ftsopriceclient.service.PriceService;
+import dev.mouradski.ftsopriceclient.utils.Constants;
 import dev.mouradski.ftsopriceclient.utils.Counter;
 import jakarta.websocket.*;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.Inflater;
 
+import static dev.mouradski.ftsopriceclient.utils.Constants.SYMBOLS;
+
 @Slf4j
 @EnableScheduling
 public abstract class AbstractClientEndpoint {
@@ -37,9 +39,18 @@ public abstract class AbstractClientEndpoint {
 
     protected final ObjectMapper objectMapper = new ObjectMapper();
 
-    protected AbstractClientEndpoint(PriceService priceSender) {
+    protected final List<String> assets;
+
+    protected final List<String> exchanges;
+
+    protected AbstractClientEndpoint(PriceService priceSender, List<String> exchanges, List<String> assets) {
         this.priceSender = priceSender;
-        this.connect();
+        this.exchanges = exchanges;
+        this.assets = assets;
+
+        if (exchanges == null || exchanges.contains(getExchange())) {
+            this.connect();
+        }
     }
 
     @OnOpen
@@ -211,6 +222,10 @@ public abstract class AbstractClientEndpoint {
         return DEFAULT_TIMEOUT;
     }
 
+    protected List<String> getAssets() {
+        return assets == null ? SYMBOLS : assets;
+    }
+
     protected List<String> getAllQuotes(boolean upperCase) {
         return upperCase ? Constants.USD_USDT_USDC_BUSD.stream().map(String::toUpperCase).collect(Collectors.toList())
                 : Constants.USD_USDT_USDC_BUSD;
@@ -220,5 +235,4 @@ public abstract class AbstractClientEndpoint {
         return upperCase ? Constants.USD_USDT_USDC.stream().map(String::toUpperCase).collect(Collectors.toList())
                 : Constants.USD_USDT_USDC;
     }
-
 }

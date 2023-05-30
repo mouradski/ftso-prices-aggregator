@@ -2,11 +2,11 @@ package dev.mouradski.ftsopriceclient.client.bitrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.Gson;
-import dev.mouradski.ftsopriceclient.utils.Constants;
 import dev.mouradski.ftsopriceclient.client.AbstractClientEndpoint;
 import dev.mouradski.ftsopriceclient.model.Trade;
 import dev.mouradski.ftsopriceclient.service.PriceService;
 import jakarta.websocket.ClientEndpoint;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -16,8 +16,8 @@ import java.util.List;
 @Component
 public class BitrueClientEndpoint extends AbstractClientEndpoint {
 
-    public BitrueClientEndpoint(PriceService priceSender) {
-        super(priceSender);
+    public BitrueClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+        super(priceSender, exchanges, assets);
     }
 
     @Override
@@ -44,7 +44,7 @@ public class BitrueClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-        Constants.SYMBOLS.stream().filter(v -> !v.contains("usd")).forEach(symbol -> {
+        getAssets().stream().filter(v -> !v.contains("usd")).forEach(symbol -> {
             this.sendMessage("{\"event\":\"sub\",\"params\":{\"cb_id\":\"CB_ID\",\"channel\":\"market_CB_ID_trade_ticker\"}}".replaceAll("CB_ID", symbol + "usdt"));
         });
     }

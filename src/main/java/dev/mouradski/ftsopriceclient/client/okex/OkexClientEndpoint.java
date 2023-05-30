@@ -2,13 +2,12 @@ package dev.mouradski.ftsopriceclient.client.okex;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.mouradski.ftsopriceclient.utils.Constants;
 import dev.mouradski.ftsopriceclient.client.AbstractClientEndpoint;
 import dev.mouradski.ftsopriceclient.model.Trade;
 import dev.mouradski.ftsopriceclient.service.PriceService;
 import dev.mouradski.ftsopriceclient.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
-import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -22,8 +21,8 @@ public class OkexClientEndpoint extends AbstractClientEndpoint {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    protected OkexClientEndpoint(PriceService priceSender) {
-        super(priceSender);
+    protected OkexClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+        super(priceSender, exchanges, assets);
     }
 
     @Override
@@ -38,7 +37,7 @@ public class OkexClientEndpoint extends AbstractClientEndpoint {
 
         var channels = new ArrayList<String>();
 
-        Constants.SYMBOLS.stream().map(String::toUpperCase).forEach(symbol -> {
+        getAssets().stream().map(String::toUpperCase).forEach(symbol -> {
             Arrays.asList("USD", "USDT", "USDC").forEach(quote -> {
                 channels.add("{\"channel\": \"trades\",\"instId\": \"SYMBOL-QUOTE\"}".replace("SYMBOL", symbol).replace("QUOTE", quote));
             });

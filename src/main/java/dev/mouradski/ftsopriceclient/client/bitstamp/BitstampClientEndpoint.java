@@ -2,13 +2,13 @@ package dev.mouradski.ftsopriceclient.client.bitstamp;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.JsonParser;
-import dev.mouradski.ftsopriceclient.utils.Constants;
 import dev.mouradski.ftsopriceclient.client.AbstractClientEndpoint;
 import dev.mouradski.ftsopriceclient.model.Trade;
 import dev.mouradski.ftsopriceclient.service.PriceService;
 import dev.mouradski.ftsopriceclient.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -19,8 +19,8 @@ import java.util.List;
 @Component
 public class BitstampClientEndpoint extends AbstractClientEndpoint {
 
-    public BitstampClientEndpoint(PriceService priceSender) {
-        super(priceSender);
+    public BitstampClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+        super(priceSender, exchanges, assets);
     }
 
 
@@ -32,7 +32,7 @@ public class BitstampClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-        Constants.SYMBOLS.forEach(symbol -> {
+        getAssets().forEach(symbol -> {
             getAllQuotesExceptBusd(false).forEach(quote -> {
                 this.sendMessage("{\"event\": \"bts:subscribe\", \"data\": {\"channel\": \"live_trades_" + symbol + quote + "\"}}");
             });

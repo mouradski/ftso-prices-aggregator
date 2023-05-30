@@ -3,11 +3,11 @@ package dev.mouradski.ftsopriceclient.client.kraken;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import dev.mouradski.ftsopriceclient.utils.Constants;
 import dev.mouradski.ftsopriceclient.client.AbstractClientEndpoint;
 import dev.mouradski.ftsopriceclient.model.Trade;
 import dev.mouradski.ftsopriceclient.service.PriceService;
 import jakarta.websocket.ClientEndpoint;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -18,8 +18,8 @@ import java.util.stream.Collectors;
 @Component
 public class KrakenClientEndpoint extends AbstractClientEndpoint {
 
-    public KrakenClientEndpoint(PriceService priceSender) {
-        super(priceSender);
+    public KrakenClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+        super(priceSender, exchanges, assets);
     }
 
     @Override
@@ -60,7 +60,7 @@ public class KrakenClientEndpoint extends AbstractClientEndpoint {
     protected void subscribe() {
         List<String> paris = new ArrayList<>();
 
-        Constants.SYMBOLS.forEach(symbol -> {
+        getAssets().forEach(symbol -> {
             paris.add("\"" + symbol.toUpperCase() + "/USD\"");
             paris.add("\"" + symbol.toUpperCase() + "/USDT\"");
             paris.add("\"" + symbol.toUpperCase() + "/USDC\"");

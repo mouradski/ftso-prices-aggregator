@@ -4,11 +4,11 @@ package dev.mouradski.ftsopriceclient.client.gateio;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.Gson;
 import com.google.gson.JsonParser;
-import dev.mouradski.ftsopriceclient.utils.Constants;
 import dev.mouradski.ftsopriceclient.client.AbstractClientEndpoint;
 import dev.mouradski.ftsopriceclient.model.Trade;
 import dev.mouradski.ftsopriceclient.service.PriceService;
 import jakarta.websocket.ClientEndpoint;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -20,8 +20,8 @@ import java.util.stream.Collectors;
 @Component
 public class GateIOClientEndpoint extends AbstractClientEndpoint {
 
-    public GateIOClientEndpoint(PriceService priceSender) {
-        super(priceSender);
+    public GateIOClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+        super(priceSender, exchanges, assets);
     }
 
     @Override
@@ -55,7 +55,7 @@ public class GateIOClientEndpoint extends AbstractClientEndpoint {
 
         var pairs = new ArrayList<String>();
 
-        Constants.SYMBOLS.stream().filter(v -> !v.startsWith("usd") && !v.equals("busd")).forEach(symbol -> {
+        getAssets().stream().filter(v -> !v.startsWith("usd") && !v.equals("busd")).forEach(symbol -> {
             pairs.add("\"" + symbol.toUpperCase() + "_" + "USDT\"");
         });
 

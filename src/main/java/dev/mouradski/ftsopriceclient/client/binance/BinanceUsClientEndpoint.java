@@ -2,14 +2,17 @@ package dev.mouradski.ftsopriceclient.client.binance;
 
 import dev.mouradski.ftsopriceclient.service.PriceService;
 import jakarta.websocket.ClientEndpoint;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @ClientEndpoint
 public class BinanceUsClientEndpoint extends BinanceClientEndpoint {
 
-    public BinanceUsClientEndpoint(PriceService priceSender) {
-        super(priceSender);
+    public BinanceUsClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+        super(priceSender, exchanges, assets);
     }
 
     protected String getWebsocketApiBase() {

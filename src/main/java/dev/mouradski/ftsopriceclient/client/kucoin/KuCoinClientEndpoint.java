@@ -2,11 +2,11 @@ package dev.mouradski.ftsopriceclient.client.kucoin;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.Gson;
-import dev.mouradski.ftsopriceclient.utils.Constants;
 import dev.mouradski.ftsopriceclient.client.AbstractClientEndpoint;
 import dev.mouradski.ftsopriceclient.model.Trade;
 import dev.mouradski.ftsopriceclient.service.PriceService;
 import jakarta.websocket.ClientEndpoint;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -27,8 +27,8 @@ public class KuCoinClientEndpoint extends AbstractClientEndpoint {
     private String token;
     private String instance;
 
-    public KuCoinClientEndpoint(PriceService priceSender) {
-        super(priceSender);
+    public KuCoinClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+        super(priceSender, exchanges, assets);
     }
 
     @Override
@@ -77,7 +77,7 @@ public class KuCoinClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-        Constants.SYMBOLS.forEach(symbol -> {
+        getAssets().forEach(symbol -> {
             try {
                 subscribeToTrades(symbol.toUpperCase() + "-USD");
                 subscribeToTrades(symbol.toUpperCase() + "-USDT");

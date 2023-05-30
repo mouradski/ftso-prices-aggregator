@@ -6,6 +6,8 @@ The list of supported exchanges will evolve over time.
 
 ## Run with Docker
 
+Edit .env file
+
 ```sh
 docker-compose up
 ```

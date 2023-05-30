@@ -2,12 +2,12 @@ package dev.mouradski.ftsopriceclient.client.hitbtc;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.Gson;
-import dev.mouradski.ftsopriceclient.utils.Constants;
 import dev.mouradski.ftsopriceclient.client.AbstractClientEndpoint;
 import dev.mouradski.ftsopriceclient.model.Trade;
 import dev.mouradski.ftsopriceclient.service.PriceService;
 import dev.mouradski.ftsopriceclient.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 @Component
 public class HitbtcClientEndpoint extends AbstractClientEndpoint {
 
-    protected HitbtcClientEndpoint(PriceService priceSender) {
-        super(priceSender);
+    protected HitbtcClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+        super(priceSender, exchanges, assets);
     }
 
     @Override
@@ -34,7 +34,7 @@ public class HitbtcClientEndpoint extends AbstractClientEndpoint {
     protected void subscribe() {
         var pairs = new ArrayList<String>();
 
-        Constants.SYMBOLS.stream().map(String::toUpperCase).forEach(symbol -> {
+        getAssets().stream().map(String::toUpperCase).forEach(symbol -> {
             getAllQuotesExceptBusd(true).forEach(quote -> {
                 pairs.add("\"" + symbol + quote + "\"");
             });

@@ -1,11 +1,11 @@
 package dev.mouradski.ftsopriceclient.client.liquid;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import dev.mouradski.ftsopriceclient.utils.Constants;
 import dev.mouradski.ftsopriceclient.client.AbstractClientEndpoint;
 import dev.mouradski.ftsopriceclient.model.Trade;
 import dev.mouradski.ftsopriceclient.service.PriceService;
 import jakarta.websocket.ClientEndpoint;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -23,8 +23,8 @@ public class LiquidClientEndpoint extends AbstractClientEndpoint {
 
     private Map<String, String> produitsMap;
 
-    protected LiquidClientEndpoint(PriceService priceSender) {
-        super(priceSender);
+    protected LiquidClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+        super(priceSender, exchanges, assets);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class LiquidClientEndpoint extends AbstractClientEndpoint {
             produitsMap = new HashMap<>();
 
             Stream.of(liquidProduits)
-                    .filter(v -> Constants.SYMBOLS.contains(v.getBaseCurrency().toLowerCase()))
+                    .filter(v -> getAssets().contains(v.getBaseCurrency().toLowerCase()))
                     .filter(v -> Arrays.asList("USD", "USDC", "USDT").contains(v.getQuotedCurrency()))
                     .forEach(produit -> {
 
