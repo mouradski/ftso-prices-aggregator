@@ -9,6 +9,7 @@ import dev.mouradski.ftsopriceclient.model.Trade;
 import dev.mouradski.ftsopriceclient.service.PriceService;
 import jakarta.websocket.ClientEndpoint;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -71,5 +72,10 @@ public class GateIOClientEndpoint extends AbstractClientEndpoint {
     @Override
     protected String getExchange() {
         return "gateio";
+    }
+
+    @Scheduled(fixedDelay = 30000)
+    public void ping() {
+        this.sendMessage("{\"method\":\"server.ping\"}");
     }
 }
