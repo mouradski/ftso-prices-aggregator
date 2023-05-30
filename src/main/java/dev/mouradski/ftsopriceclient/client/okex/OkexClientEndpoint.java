@@ -60,7 +60,7 @@ public class OkexClientEndpoint extends AbstractClientEndpoint {
     protected List<Trade> mapTrade(String message) throws JsonProcessingException {
         var tradeData = objectMapper.readValue(message, TradeData.class);
 
-        Pair<String, String> symbol = SymbolHelper.getQuote(tradeData.getArg().getInstId());
+        var symbol = SymbolHelper.getQuote(tradeData.getArg().getInstId());
 
         var trades = new ArrayList<Trade>();
 
