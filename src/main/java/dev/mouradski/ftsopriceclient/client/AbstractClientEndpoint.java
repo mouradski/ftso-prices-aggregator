@@ -95,18 +95,11 @@ public abstract class AbstractClientEndpoint {
         log.info("Closing websocket for {}, Reason : {}",  getExchange(), reason.getReasonPhrase());
 
         try {
-            // when the method is called programmatically
-            // we make sure that the session is closed before creating a new one
-            if (this.userSession != null) {
-                this.userSession.close();
-            }
+            this.userSession = null;
             Thread.sleep(1000);
         } catch (Exception e) {
         }
-
-        this.userSession = null;
-
-
+        
         connect();
     }
 
