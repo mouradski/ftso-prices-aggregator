@@ -46,7 +46,7 @@ public class TradeServer {
                 listener.sendMessage(messageAsString);
             });
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Caught exception while broadcasting trade : {}", trade, e);
         }
     }
 
