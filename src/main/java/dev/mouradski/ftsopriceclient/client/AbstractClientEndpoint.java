@@ -58,7 +58,7 @@ public abstract class AbstractClientEndpoint {
 
                 connect();
             }
-        }, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT, TimeUnit.SECONDS);
+        }, getTimeout(), getTimeout(), TimeUnit.SECONDS);
 
         log.info("Connected to {}", getExchange());
 
