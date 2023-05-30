@@ -1,0 +1,16 @@
+version: "3.3"
+services:
+  bot:
+    container_name: prices
+    image: prices
+    build: .
+    ports:
+      - "8985:8985"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: "2048M"
+        reservations:
+          cpus: "0.25"
+          memory: "128M"
