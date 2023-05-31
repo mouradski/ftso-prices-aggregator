@@ -21,3 +21,51 @@ docker-compose up
 
 ## Connect to WS
 ws://localhost:8985/trade
+
+## Use as library in a spring-boot app 
+
+Build dependency 
+
+```sh
+mvn clean install
+```
+
+Add in pom.xml 
+
+```xml
+    <dependency>
+        <groupId>dev.mouradski</groupId>
+        <artifactId>ftso-price-client</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+```
+
+Scan packages 
+
+```java
+@SpringBootApplication(scanBasePackages = {"dev.mouradski.ftsopriceclient", "other.base.package"})
+```
+
+implement TradeConsummer interface
+
+```java
+import dev.mouradski.ftsopriceclient.service.TradeConsummer;
+import dev.mouradski.ftsopriceclient.model.Trade;
+import org.springframework.stereotype.Component;
+
+@Component
+public class TradeConsummerImpl implements TradeConsummer {
+
+    public void processTrade(Trade trade) {
+        //TODO do what you want with this trade
+    }
+}
+```
+
+Add this property to your application.properties to disable serving websocket
+
+```properties
+serve.websocket=false
+```
+
+
