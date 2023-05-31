@@ -235,7 +235,13 @@ public abstract class AbstractClientEndpoint {
     }
 
     protected List<String> getAssets() {
-        return assets == null ? SYMBOLS : assets;
+        return getAssets(false);
+    }
+
+    protected List<String> getAssets(boolean upperCase) {
+        List<String> calculatedAssets = assets == null ? SYMBOLS : assets;
+
+        return upperCase ? calculatedAssets.stream().map(String::toUpperCase).collect(Collectors.toList()) : calculatedAssets;
     }
 
     protected List<String> getAllQuotes(boolean upperCase) {
