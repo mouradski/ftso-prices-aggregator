@@ -10,7 +10,7 @@ Edit the .env file and define the assets you want to collect prices in real time
 
 ```sh
 ASSETS=xrp,btc,eth,algo,xlm,ada,matic,sol,fil,flr,sgb,doge,xdc,arb,avax,bnb,usdc,busd,usdt
-EXCHANGES=binance,binanceus,bitfinex,bitrue,bitstamp,bybit,cex,coinbase,crypto,digifinex,fmfw,gateio,hitbtc,huobi,kraken,kucoin,lbank,mexc,okex,upbit,btcex
+EXCHANGES=binance,binanceus,bitfinex,bitrue,bitstamp,bybit,cex,coinbase,crypto,digifinex,fmfw,gateio,hitbtc,huobi,kraken,kucoin,lbank,mexc,okex,upbit,btcex,bitmart
 ```
 
 Run container 
