@@ -36,7 +36,7 @@ Add in pom.xml
     <dependency>
         <groupId>dev.mouradski</groupId>
         <artifactId>ftso-price-client</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>1.1.0</version>
     </dependency>
 ```
 
@@ -49,8 +49,8 @@ Scan packages
 implement TradeConsummer interface
 
 ```java
-import dev.mouradski.ftsopriceclient.service.TradeConsummer;
-import dev.mouradski.ftsopriceclient.model.Trade;
+import dev.mouradski.prices.service.TradeConsummer;
+import dev.mouradski.prices.model.Trade;
 import org.springframework.stereotype.Component;
 
 @Component
