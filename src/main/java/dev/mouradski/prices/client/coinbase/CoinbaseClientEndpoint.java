@@ -32,8 +32,8 @@ public class CoinbaseClientEndpoint extends AbstractClientEndpoint {
 
         var pairs = new ArrayList<String>();
 
-        getAssets().stream().map(String::toUpperCase).forEach(symbol -> {
-            Arrays.asList("USD", "USDT", "USDC").forEach(quote -> {
+        getAssets(true).forEach(symbol -> {
+            getAllQuotesExceptBusd(true).forEach(quote -> {
                 pairs.add("\"" + symbol + "-" + quote + "\"");
             });
         });

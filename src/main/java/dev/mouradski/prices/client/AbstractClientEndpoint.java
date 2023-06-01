@@ -30,19 +30,14 @@ import static dev.mouradski.prices.utils.Constants.SYMBOLS;
 public abstract class AbstractClientEndpoint {
 
     private static final long DEFAULT_TIMEOUT = 120; // timeout in seconds
+    protected final PriceService priceSender;
+    protected final ObjectMapper objectMapper = new ObjectMapper();
+    protected final List<String> assets;
+    protected final List<String> exchanges;
     protected Session userSession = null;
+    protected Counter counter = new Counter();
     private ScheduledExecutorService executor;
     private long lastMessageTime;
-    protected Counter counter = new Counter();
-
-    protected final PriceService priceSender;
-
-    protected final ObjectMapper objectMapper = new ObjectMapper();
-
-    protected final List<String> assets;
-
-    protected final List<String> exchanges;
-
     private int retries = 3;
 
     protected AbstractClientEndpoint(PriceService priceSender, List<String> exchanges, List<String> assets) {
@@ -89,17 +84,17 @@ public abstract class AbstractClientEndpoint {
 
         subscribe();
     }
-    
+
     @OnClose
     public void onClose(Session userSession, CloseReason reason) {
-        log.info("Closing websocket for {}, Reason : {}",  getExchange(), reason.getReasonPhrase());
+        log.info("Closing websocket for {}, Reason : {}", getExchange(), reason.getReasonPhrase());
 
         try {
             Thread.sleep(2000);
             this.userSession = null;
         } catch (Exception e) {
         }
-        
+
         connect();
     }
 

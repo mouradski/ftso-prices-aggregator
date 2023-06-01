@@ -35,8 +35,8 @@ public class UpbitClientEndpoint extends AbstractClientEndpoint {
 
         var pairs = new ArrayList<String>();
 
-        getAssets().stream().map(String::toUpperCase).forEach(symbol -> {
-            Arrays.asList("USD", "USDT", "USDC", "KRW").forEach(quote -> {
+        getAssets(true).forEach(symbol -> {
+            getAllQuotesExceptBusd(true).forEach(quote -> {
                 pairs.add("\"" + quote + "-" + symbol + "\"");
 
             });

@@ -11,7 +11,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -31,8 +30,8 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-        getAssets().stream().map(String::toUpperCase).forEach(symbol -> {
-            Arrays.asList("USD", "USDT", "USDC").forEach(quote -> {
+        getAssets(true).forEach(symbol -> {
+            getAllQuotesExceptBusd(true).forEach(quote -> {
                 this.sendMessage("{\"op\":\"sub.deal\", \"symbol\":\"SYMBOL_QUOTE\"}".replace("SYMBOL", symbol).replace("QUOTE", quote));
             });
         });

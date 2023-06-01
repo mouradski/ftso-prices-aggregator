@@ -28,8 +28,8 @@ public class LbankClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-        getAssets().stream().map(String::toUpperCase).forEach(symbol -> {
-            Arrays.asList("USD", "USDT", "USDC").forEach(quote -> {
+        getAssets(true).forEach(symbol -> {
+            getAllQuotesExceptBusd(true).forEach(quote -> {
                 this.sendMessage("{\"action\":\"subscribe\", \"subscribe\":\"trade\", \"pair\":\"SYMBOL_QUOTE\"}".replaceAll("SYMBOL", symbol).replace("QUOTE", quote));
             });
         });

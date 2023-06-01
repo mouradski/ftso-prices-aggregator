@@ -8,7 +8,7 @@ import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty("serve.websocket")
 public class ServerConfig {
-    
+
     @Bean
     public ServerEndpointExporter serverEndpointExporter() {
         return new ServerEndpointExporter();

@@ -29,7 +29,6 @@ public class HitbtcClientEndpoint extends AbstractClientEndpoint {
     }
 
 
-
     @Override
     protected void subscribe() {
         var pairs = new ArrayList<String>();

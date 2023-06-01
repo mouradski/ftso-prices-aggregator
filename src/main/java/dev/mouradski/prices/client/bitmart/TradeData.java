@@ -9,16 +9,16 @@ import lombok.Setter;
 public class TradeData {
     @JsonProperty("price")
     private Double price;
-    
+
     @JsonProperty("s_t")
     private long time;
-    
+
     @JsonProperty("side")
     private String side;
-    
+
     @JsonProperty("size")
     private Double size;
-    
+
     @JsonProperty("symbol")
     private String symbol;
 }

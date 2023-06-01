@@ -10,6 +10,9 @@ import java.util.List;
 @Setter
 public class TradeData {
 
+    private Arg arg;
+    private List<Data> data;
+
     @Getter
     @Setter
     public static class Arg {
@@ -31,7 +34,4 @@ public class TradeData {
         private String side;
         private String ts;
     }
-
-    private Arg arg;
-    private List<Data> data;
 }

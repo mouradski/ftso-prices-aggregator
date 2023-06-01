@@ -11,7 +11,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,8 +33,8 @@ public class OkexClientEndpoint extends AbstractClientEndpoint {
 
         var channels = new ArrayList<String>();
 
-        getAssets().stream().map(String::toUpperCase).forEach(symbol -> {
-            Arrays.asList("USD", "USDT", "USDC").forEach(quote -> {
+        getAssets(true).forEach(symbol -> {
+            getAllQuotesExceptBusd(true).forEach(quote -> {
                 channels.add("{\"channel\": \"trades\",\"instId\": \"SYMBOL-QUOTE\"}".replace("SYMBOL", symbol).replace("QUOTE", quote));
             });
         });

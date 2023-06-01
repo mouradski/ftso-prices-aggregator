@@ -53,7 +53,7 @@ public class BtcexClientEndpoint extends AbstractClientEndpoint {
 
         return Arrays.asList(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight()).price(root.getParams().getData().getPrice()).amount(0d).build());
     }
-    
+
     @Scheduled(fixedDelay = 15000)
     public void ping() {
         this.sendMessage("{ \"jsonrpc\":\"2.0\",\"id\": ID,\"method\": \"/public/ping\",\"params\":{}}".replace("ID", counter.getCount().toString()));

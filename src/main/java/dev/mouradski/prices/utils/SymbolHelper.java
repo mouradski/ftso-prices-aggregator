@@ -10,7 +10,7 @@ public class SymbolHelper {
         String pair = remotePair.replace("-", "").replace("_", "").replace("/", "").toUpperCase();
 
         if (pair.startsWith("USDT")) {
-             return Pair.of("USDT", pair.replace("USDT", ""));
+            return Pair.of("USDT", pair.replace("USDT", ""));
         } else if (pair.startsWith("USDC")) {
             return Pair.of("USDC", pair.replace("USDC", ""));
         } else if (pair.startsWith("BUSD")) {

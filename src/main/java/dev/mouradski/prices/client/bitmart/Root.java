@@ -11,7 +11,7 @@ import java.util.List;
 public class Root {
     @JsonProperty("data")
     private List<TradeData> data;
-    
+
     @JsonProperty("table")
     private String table;
 }
