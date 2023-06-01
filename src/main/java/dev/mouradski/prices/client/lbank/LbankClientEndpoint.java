@@ -7,6 +7,7 @@ import dev.mouradski.prices.service.PriceService;
 import dev.mouradski.prices.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -62,6 +63,11 @@ public class LbankClientEndpoint extends AbstractClientEndpoint {
         var symbol = SymbolHelper.getSymbol(tradeWrapper.getPair());
 
         return Arrays.asList(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight()).price(tradeWrapper.getTrade().getPrice()).amount(tradeWrapper.getTrade().getAmount()).build());
+    }
+
+    @Scheduled(fixedDelay = 30000)
+    public void ping() {
+        this.sendMessage("{\"ping\":\"ID\",\"action\":\"ping\"}".replace("ID", counter.getCount().toString()));
     }
 
 }
