@@ -79,7 +79,7 @@ public abstract class AbstractClientEndpoint {
 
                 log.info("No message received for {} seconds. Reconnecting...", getTimeout());
 
-                close(new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "Timeout"));
+                onClose(new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "Timeout"));
 
                 connect();
             }
@@ -90,22 +90,13 @@ public abstract class AbstractClientEndpoint {
         subscribe();
     }
     
-    private boolean close(CloseReason reason) {
-        try {
-            this.userSession.close(reason);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
     @OnClose
     public void onClose(Session userSession, CloseReason reason) {
         log.info("Closing websocket for {}, Reason : {}",  getExchange(), reason.getReasonPhrase());
 
         try {
+            Thread.sleep(2000);
             this.userSession = null;
-            Thread.sleep(1000);
         } catch (Exception e) {
         }
         
