@@ -75,11 +75,11 @@ public abstract class AbstractClientEndpoint {
         this.executor = Executors.newSingleThreadScheduledExecutor();
         this.lastMessageTime = System.currentTimeMillis();
         executor.scheduleAtFixedRate(() -> {
-            if (System.currentTimeMillis() - lastMessageTime > getTimeout() * 1000) {
+            if (this.userSession != null && this.userSession.isOpen() && System.currentTimeMillis() - lastMessageTime > getTimeout() * 1000) {
 
                 log.info("No message received for {} seconds. Reconnecting...", getTimeout());
 
-                onClose(userSession, new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "Timeout"));
+                close(new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "Timeout"));
 
                 connect();
             }
@@ -88,6 +88,15 @@ public abstract class AbstractClientEndpoint {
         log.info("Connected to {}", getExchange());
 
         subscribe();
+    }
+    
+    private void close(CloseReason reason) {
+        try {
+            this.userSession.close(reason);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @OnClose
