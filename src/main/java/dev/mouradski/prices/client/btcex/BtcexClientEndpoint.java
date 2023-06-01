@@ -8,6 +8,7 @@ import dev.mouradski.prices.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -51,5 +52,10 @@ public class BtcexClientEndpoint extends AbstractClientEndpoint {
         Pair<String, String> symbol = SymbolHelper.getSymbol(root.getParams().getData().getIndex_name());
 
         return Arrays.asList(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight()).price(root.getParams().getData().getPrice()).amount(0d).build());
+    }
+    
+    @Scheduled(fixedDelay = 15000)
+    public void ping() {
+        this.sendMessage("{ \"jsonrpc\":\"2.0\",\"id\": ID,\"method\": \"/public/ping\",\"params\":{}}".replace("ID", counter.getCount().toString()));
     }
 }
