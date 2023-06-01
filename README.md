@@ -46,7 +46,7 @@ Add in pom.xml
 Scan packages
 
 ```java
-@SpringBootApplication(scanBasePackages = {"dev.mouradski.ftsopriceclient", "other.base.package"})
+@SpringBootApplication(scanBasePackages = {"dev.mouradski.prices", "other.base.package"})
 ```
 
 implement TradeConsummer interface
