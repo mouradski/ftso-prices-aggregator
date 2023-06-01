@@ -39,7 +39,7 @@ public class KrakenClientEndpoint extends AbstractClientEndpoint {
 
             var pair = array.get(array.size() - 1).getAsString();
 
-            var symbol = pair.split("/")[0].replace("XBT", "BTC");
+            var symbol = pair.split("/")[0].replace("XBT", "BTC").replace("XDG", "DOGE");
             var quote = pair.split("/")[1];
 
             for (var tradeData : tradesData) {
