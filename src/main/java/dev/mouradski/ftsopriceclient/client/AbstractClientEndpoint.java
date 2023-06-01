@@ -90,7 +90,7 @@ public abstract class AbstractClientEndpoint {
         subscribe();
     }
     
-    private void close(CloseReason reason) {
+    private boolean close(CloseReason reason) {
         try {
             this.userSession.close(reason);
             return true;
