@@ -79,7 +79,7 @@ public abstract class AbstractClientEndpoint {
 
                 log.info("No message received for {} seconds. Reconnecting...", getTimeout());
 
-                onClose(new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "Timeout"));
+                onClose(userSession, new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "Timeout"));
 
                 connect();
             }
