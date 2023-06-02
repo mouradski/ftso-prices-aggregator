@@ -39,6 +39,7 @@ public abstract class AbstractClientEndpoint {
     private ScheduledExecutorService executor;
     private long lastMessageTime;
     private int retries = 3;
+    private static final Object sendMutex = new Object();
 
     protected AbstractClientEndpoint(PriceService priceSender, List<String> exchanges, List<String> assets) {
         this.priceSender = priceSender;
@@ -183,14 +184,16 @@ public abstract class AbstractClientEndpoint {
     }
 
     protected void sendMessage(String message) {
-
-        if (userSession == null) {
-            return;
+        synchronized (sendMutex) {
+            if (userSession != null && this.userSession.isOpen()) {
+                try {
+                    log.debug("Sending message to {}, payload : {}", getExchange(), message);
+                    this.userSession.getBasicRemote().sendText(message);
+                } catch (IOException e) {
+                    log.error("Caught exception sending msg to {}, msg : {}", getExchange());
+                }
+            }
         }
-
-        log.debug("Sending message to {}, payload : {}", getExchange(), message);
-
-        this.userSession.getAsyncRemote().sendText(message);
     }
 
     protected List<Trade> mapTrade(String message) throws JsonProcessingException {
