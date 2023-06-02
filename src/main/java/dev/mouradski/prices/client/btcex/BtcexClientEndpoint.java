@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -47,6 +48,10 @@ public class BtcexClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected List<Trade> mapTrade(String message) throws JsonProcessingException {
+        if (!message.contains("index_name")) {
+            return new ArrayList<>();
+        }
+
         Root root = objectMapper.readValue(message, Root.class);
 
         Pair<String, String> symbol = SymbolHelper.getSymbol(root.getParams().getData().getIndex_name());
