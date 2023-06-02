@@ -1,7 +1,6 @@
 package dev.mouradski.prices.client.kucoin;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.gson.Gson;
 import dev.mouradski.prices.client.AbstractClientEndpoint;
 import dev.mouradski.prices.model.Trade;
 import dev.mouradski.prices.service.PriceService;
@@ -65,7 +64,6 @@ public class KuCoinClientEndpoint extends AbstractClientEndpoint {
         try {
             var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-            var gson = new Gson();
             var kuCoinTokenResponse = gson.fromJson(response.body(), KuCoinTokenResponse.class);
 
             this.token = kuCoinTokenResponse.getData().getToken();

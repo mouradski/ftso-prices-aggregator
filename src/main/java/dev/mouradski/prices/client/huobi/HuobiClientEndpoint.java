@@ -1,7 +1,6 @@
 package dev.mouradski.prices.client.huobi;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.gson.Gson;
 import dev.mouradski.prices.client.AbstractClientEndpoint;
 import dev.mouradski.prices.model.Trade;
 import dev.mouradski.prices.service.PriceService;
@@ -51,7 +50,6 @@ public class HuobiClientEndpoint extends AbstractClientEndpoint {
 
         var trades = new ArrayList<Trade>();
 
-        var gson = new Gson();
         var tradeMessage = gson.fromJson(message, Response.class);
 
         if (tradeMessage.getCh() == null) {

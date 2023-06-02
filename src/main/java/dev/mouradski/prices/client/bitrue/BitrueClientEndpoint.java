@@ -1,7 +1,6 @@
 package dev.mouradski.prices.client.bitrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.gson.Gson;
 import dev.mouradski.prices.client.AbstractClientEndpoint;
 import dev.mouradski.prices.model.Trade;
 import dev.mouradski.prices.service.PriceService;
@@ -11,6 +10,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static dev.mouradski.prices.utils.Constants.USDT;
 
 @ClientEndpoint
 @Component
@@ -29,14 +30,13 @@ public class BitrueClientEndpoint extends AbstractClientEndpoint {
     protected List<Trade> mapTrade(String message) throws JsonProcessingException {
         var trades = new ArrayList<Trade>();
 
-        var gson = new Gson();
         var tradeMessage = gson.fromJson(message, TradeMessage.class);
 
         if (tradeMessage.getChannel() == null || tradeMessage.getTick() == null || tradeMessage.getTick().getData() == null) {
             return trades;
         }
 
-        var symbol = tradeMessage.getChannel().split("_")[1].replace("usdt", "").toUpperCase();
+        var symbol = parseSymbol(tradeMessage.getChannel());
         var quote = "USDT";
 
         for (var trade : tradeMessage.getTick().getData()) {
@@ -46,10 +46,20 @@ public class BitrueClientEndpoint extends AbstractClientEndpoint {
         return trades;
     }
 
+    private String parseSymbol(String channel) {
+        var parts = channel.split("_");
+
+        if (parts.length < 2) {
+            throw new IllegalArgumentException("Invalid channel format");
+        }
+
+        return parts[1].replace("usdt", "").toUpperCase();
+    }
+
     @Override
     protected void subscribe() {
         getAssets().stream().filter(v -> !v.contains("usd")).forEach(symbol -> {
-            this.sendMessage("{\"event\":\"sub\",\"params\":{\"cb_id\":\"CB_ID\",\"channel\":\"market_CB_ID_trade_ticker\"}}".replaceAll("CB_ID", symbol + "usdt"));
+            this.sendMessage("{\"event\":\"sub\",\"params\":{\"cb_id\":\"CB_ID\",\"channel\":\"market_CB_ID_trade_ticker\"}}".replaceAll("CB_ID", symbol + USDT));
         });
     }
 

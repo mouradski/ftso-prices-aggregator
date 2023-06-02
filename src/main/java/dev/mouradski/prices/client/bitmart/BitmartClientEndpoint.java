@@ -10,6 +10,7 @@ import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.Unpooled;
 import jakarta.websocket.ClientEndpoint;
 import jakarta.websocket.OnMessage;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -28,6 +30,7 @@ import java.util.zip.Inflater;
 
 @Component
 @ClientEndpoint
+@Slf4j
 public class BitmartClientEndpoint extends AbstractClientEndpoint {
 
     private List<String> supportedSymbols = new ArrayList<>();
@@ -65,30 +68,27 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     @OnMessage
-    public void onMessage(ByteBuffer message) throws JsonProcessingException {
-        try {
+    public void onMessage(ByteBuffer message) {
+        ByteBuf byteBuf = Unpooled.wrappedBuffer(message);
+        byte[] data = new byte[message.remaining()];
+        message.get(data);
 
-            ByteBuf byteBuf = Unpooled.wrappedBuffer(message);
-
-            byte[] data = message.array();
+        try (ByteBufInputStream bis = new ByteBufInputStream(byteBuf)) {
             byte[] temp = new byte[data.length];
-
-            ByteBufInputStream bis = new ByteBufInputStream(byteBuf);
             bis.read(temp);
-            bis.close();
             Inflater decompresser = new Inflater(true);
             decompresser.setInput(temp, 0, temp.length);
             StringBuilder sb = new StringBuilder();
-
             byte[] result = new byte[1024];
 
             while (!decompresser.finished()) {
                 int resultLength = decompresser.inflate(result);
-                sb.append(new String(result, 0, resultLength, "UTF-8"));
+                sb.append(new String(result, 0, resultLength, StandardCharsets.UTF_8));
             }
             decompresser.end();
             onMessage(sb.toString());
         } catch (Exception e) {
+            log.error("Caught exception receiving msg from {}, msg : {}", getExchange(), message, e);
         }
     }
 

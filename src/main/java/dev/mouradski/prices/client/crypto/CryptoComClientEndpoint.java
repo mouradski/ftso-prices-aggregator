@@ -2,7 +2,6 @@ package dev.mouradski.prices.client.crypto;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.gson.Gson;
 import dev.mouradski.prices.client.AbstractClientEndpoint;
 import dev.mouradski.prices.model.Trade;
 import dev.mouradski.prices.service.PriceService;
@@ -48,7 +47,6 @@ public class CryptoComClientEndpoint extends AbstractClientEndpoint {
             return new ArrayList();
         }
 
-        var gson = new Gson();
         var response = gson.fromJson(message, Response.class);
 
         var trades = new ArrayList<Trade>();

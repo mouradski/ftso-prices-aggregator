@@ -12,19 +12,17 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @ClientEndpoint
 public class BinanceClientEndpoint extends AbstractClientEndpoint {
 
+    private final String websocketApiBase = "wss://stream.binance.com:9443/stream?streams=";
+
     public BinanceClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
-
-    protected String getWebsocketApiBase() {
-        return "wss://stream.binance.com:9443/stream?streams=";
-    }
-
 
     @Override
     protected List<Trade> mapTrade(String message) throws JsonProcessingException {
@@ -38,26 +36,19 @@ public class BinanceClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected String getUri() {
-        var sb = new StringBuilder();
-
-        getAssets().forEach(symbol -> {
-            getAllQuotes(false).stream()
-                    .filter(quote -> !quote.equals(symbol)).forEach(quote -> {
-                        if (!sb.toString().isEmpty()) {
-                            sb.append("/");
-                        }
-                        sb.append(symbol).append(quote).append("@trade");
-                    });
-        });
-
-
-        return getWebsocketApiBase() + sb;
+        return websocketApiBase + getSymbols();
     }
 
+    private String getSymbols() {
+        return getAssets().stream()
+                .flatMap(asset -> getAllQuotes(false).stream()
+                        .filter(quote -> !quote.equals(asset))
+                        .map(quote -> asset + quote + "@trade"))
+                .collect(Collectors.joining("/"));
+    }
 
     @Override
     protected void subscribe() {
-
     }
 
     @Override

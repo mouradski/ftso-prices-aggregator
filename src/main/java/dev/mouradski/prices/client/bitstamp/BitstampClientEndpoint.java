@@ -48,17 +48,13 @@ public class BitstampClientEndpoint extends AbstractClientEndpoint {
     @Override
     protected List<Trade> mapTrade(String message) throws JsonProcessingException {
         if (message.contains("\"event\":\"trade\"")) {
-            // parse message as JSON
             var jsonObject = JsonParser.parseString(message).getAsJsonObject();
 
-            // extract pair from channel name
             var channelName = jsonObject.get("channel").getAsString();
             var pair = channelName.substring(12).toUpperCase();  // remove "live_trades_" and convert to upper case
 
-            // extract trade data
             var tradeData = jsonObject.get("data").getAsJsonObject();
 
-            // create Trade object
             var trade = new Trade();
             trade.setPrice(tradeData.get("price").getAsDouble());
             trade.setAmount(tradeData.get("amount").getAsDouble());

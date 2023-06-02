@@ -2,7 +2,6 @@ package dev.mouradski.prices.client.digifinex;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.gson.Gson;
 import dev.mouradski.prices.client.AbstractClientEndpoint;
 import dev.mouradski.prices.model.Trade;
 import dev.mouradski.prices.service.PriceService;
@@ -72,7 +71,6 @@ public class DigifinexClientEndpoint extends AbstractClientEndpoint {
 
         var trades = new ArrayList<Trade>();
 
-        var gson = new Gson();
         var tradeResponse = gson.fromJson(message, TradeResponse.class);
 
         if (tradeResponse.getParams() == null) {
@@ -105,7 +103,6 @@ public class DigifinexClientEndpoint extends AbstractClientEndpoint {
         try {
             var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-            var gson = new Gson();
             var marketData = gson.fromJson(response.body(), MarketData.class);
 
             return marketData.getData().stream().map(MarketInfo::getMarket).map(String::toUpperCase).collect(Collectors.toSet());

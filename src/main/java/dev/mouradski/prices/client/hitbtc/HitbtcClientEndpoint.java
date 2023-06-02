@@ -1,7 +1,6 @@
 package dev.mouradski.prices.client.hitbtc;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.gson.Gson;
 import dev.mouradski.prices.client.AbstractClientEndpoint;
 import dev.mouradski.prices.model.Trade;
 import dev.mouradski.prices.service.PriceService;
@@ -52,7 +51,6 @@ public class HitbtcClientEndpoint extends AbstractClientEndpoint {
     protected List<Trade> mapTrade(String message) throws JsonProcessingException {
         var trades = new ArrayList<Trade>();
 
-        var gson = new Gson();
         var response = gson.fromJson(message, Response.class);
 
         if (response.getSnapshot() == null) {

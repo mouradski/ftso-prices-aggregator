@@ -1,7 +1,6 @@
 package dev.mouradski.prices.client.bybit;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.gson.Gson;
 import dev.mouradski.prices.client.AbstractClientEndpoint;
 import dev.mouradski.prices.model.Trade;
 import dev.mouradski.prices.service.PriceService;
@@ -55,8 +54,6 @@ public class BybitClientEndpoint extends AbstractClientEndpoint {
         if (!message.contains("trade") || !message.contains("data")) {
             return new ArrayList<>();
         }
-
-        var gson = new Gson();
 
         var tradeResponse = gson.fromJson(message, TradeResponse.class);
 

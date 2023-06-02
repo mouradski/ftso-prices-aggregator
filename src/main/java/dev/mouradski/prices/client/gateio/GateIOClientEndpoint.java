@@ -2,7 +2,6 @@ package dev.mouradski.prices.client.gateio;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.gson.Gson;
 import com.google.gson.JsonParser;
 import dev.mouradski.prices.client.AbstractClientEndpoint;
 import dev.mouradski.prices.model.Trade;
@@ -35,9 +34,6 @@ public class GateIOClientEndpoint extends AbstractClientEndpoint {
         var jelement = new JsonParser().parse(message);
         var jobject = jelement.getAsJsonObject();
         var result = jobject.getAsJsonObject("result");
-
-        var gson = new Gson();
-
 
         var gateIOTrade = gson.fromJson(result, GateIOTrade.class);
 

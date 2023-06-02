@@ -2,6 +2,7 @@ package dev.mouradski.prices.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import dev.mouradski.prices.model.Trade;
 import dev.mouradski.prices.service.PriceService;
 import dev.mouradski.prices.utils.Constants;
@@ -40,6 +41,7 @@ public abstract class AbstractClientEndpoint {
     private long lastMessageTime;
     private int retries = 3;
     private static final Object sendMutex = new Object();
+    public static final Gson gson = new Gson();
 
     protected AbstractClientEndpoint(PriceService priceSender, List<String> exchanges, List<String> assets) {
         this.priceSender = priceSender;

@@ -1,7 +1,6 @@
 package dev.mouradski.prices.client.kraken;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import dev.mouradski.prices.client.AbstractClientEndpoint;
 import dev.mouradski.prices.model.Trade;
@@ -30,7 +29,7 @@ public class KrakenClientEndpoint extends AbstractClientEndpoint {
 
         var trades = new ArrayList<Trade>();
 
-        var array = new Gson().fromJson(message, JsonArray.class);
+        var array = gson.fromJson(message, JsonArray.class);
 
         // check if it's a trade message
         if (array.get(array.size() - 2).getAsString().equals("trade")) {
