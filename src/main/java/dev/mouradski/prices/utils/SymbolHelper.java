@@ -1,20 +1,28 @@
 package dev.mouradski.prices.utils;
 
-
 import org.apache.commons.lang3.tuple.Pair;
 
 public class SymbolHelper {
 
     public static Pair<String, String> getSymbol(String remotePair) {
+        String pair = cleanRemotePair(remotePair);
+        String baseCurrency = getBaseCurrency(pair);
+        String quoteCurrency = pair.replace(baseCurrency, "");
 
-        String pair = remotePair.replace("-", "").replace("_", "").replace("/", "").toUpperCase();
+        return Pair.of(baseCurrency, quoteCurrency);
+    }
 
-        if (pair.startsWith("USDT")) {
-            return Pair.of("USDT", pair.replace("USDT", ""));
-        } else if (pair.startsWith("USDC")) {
-            return Pair.of("USDC", pair.replace("USDC", ""));
-        } else if (pair.startsWith("BUSD")) {
-            return Pair.of("BUSD", pair.replace("BUSD", ""));
+    private static String cleanRemotePair(String remotePair) {
+        return remotePair.replace("-", "").replace("_", "").replace("/", "").toUpperCase();
+    }
+
+    private static String getBaseCurrency(String pair) {
+        String[] baseCurrencies = {"USDT", "USDC", "BUSD"};
+
+        for (String baseCurrency : baseCurrencies) {
+            if (pair.startsWith(baseCurrency)) {
+                return baseCurrency;
+            }
         }
 
         String quote = pair.substring(pair.length() - 4);
@@ -23,6 +31,6 @@ public class SymbolHelper {
             quote = "USD";
         }
 
-        return Pair.of(pair.replace(quote, ""), quote);
+        return pair.replace(quote, "");
     }
 }
