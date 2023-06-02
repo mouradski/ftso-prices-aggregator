@@ -9,6 +9,7 @@ import dev.mouradski.prices.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,7 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @ClientEndpoint
-//X@Component desactive car pas de pairs USD/USDT/USDC
+@Component
 public class UpbitClientEndpoint extends AbstractClientEndpoint {
 
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -64,8 +65,9 @@ public class UpbitClientEndpoint extends AbstractClientEndpoint {
 
         var trade = objectMapper.readValue(message, UpbitTrade.class);
 
-        var symbol = SymbolHelper.getSymbol(trade.getCode());
+        var symbol = trade.getCode().split("-")[1];
+        var quote = trade.getCode().split("-")[0];
 
-        return Arrays.asList(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight()).price(trade.getTradePrice()).amount(trade.getTradeVolume()).build());
+        return Arrays.asList(Trade.builder().exchange(getExchange()).symbol(symbol).quote(quote).price(trade.getTradePrice()).amount(trade.getTradeVolume()).build());
     }
 }
