@@ -31,14 +31,19 @@ public class GateIOClientEndpoint extends AbstractClientEndpoint {
             return new ArrayList<>();
         }
 
-        var jelement = new JsonParser().parse(message);
-        var jobject = jelement.getAsJsonObject();
-        var result = jobject.getAsJsonObject("result");
+        try {
+            var jelement = new JsonParser().parse(message);
+            var jobject = jelement.getAsJsonObject();
+            var result = jobject.getAsJsonObject("result");
 
-        var gateIOTrade = gson.fromJson(result, GateIOTrade.class);
+            var gateIOTrade = gson.fromJson(result, GateIOTrade.class);
 
-        return Arrays.asList(Trade.builder().exchange(getExchange()).symbol(gateIOTrade.getCurrencyPair().split("_")[0])
-                .quote(gateIOTrade.getCurrencyPair().split("_")[1]).price(gateIOTrade.getPrice()).amount(gateIOTrade.getAmount()).build());
+            return Arrays.asList(Trade.builder().exchange(getExchange()).symbol(gateIOTrade.getCurrencyPair().split("_")[0])
+                    .quote(gateIOTrade.getCurrencyPair().split("_")[1]).price(gateIOTrade.getPrice()).amount(gateIOTrade.getAmount()).build());
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+
 
     }
 
@@ -52,7 +57,7 @@ public class GateIOClientEndpoint extends AbstractClientEndpoint {
 
         var pairs = new ArrayList<String>();
 
-        getAssets().stream().filter(v -> !v.startsWith("usd") && !v.equals("busd")).forEach(symbol -> {
+        getAssets().stream().filter(v -> !"dgb".equals(v)).filter(v -> !v.startsWith("usd") && !v.equals("busd")).forEach(symbol -> {
             pairs.add("\"" + symbol.toUpperCase() + "_" + "USDT\"");
         });
 
