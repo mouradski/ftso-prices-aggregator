@@ -4,4 +4,4 @@ COPY . .
 
 RUN mvn clean package -Pserver
 
-CMD ["java", "-jar", "target/prices.jar"]
+CMD ["java", "-jar", "target/ws-client.jar"]

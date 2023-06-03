@@ -36,24 +36,25 @@ mvn clean install
 Add in pom.xml
 
 ```xml
-    <dependency>
-        <groupId>dev.mouradski</groupId>
-        <artifactId>ftso-price-client</artifactId>
-        <version>1.1.0</version>
-    </dependency>
+
+<dependency>
+    <groupId>dev.mouradski.ftso</groupId>
+    <artifactId>exchanges-client</artifactId>
+    <version>1.1.0</version>
+</dependency>
 ```
 
 Scan packages
 
 ```java
-@SpringBootApplication(scanBasePackages = {"dev.mouradski.prices", "other.base.package"})
+@SpringBootApplication(scanBasePackages = {"dev.mouradski.ftso.trades", "other.base.package"})
 ```
 
 implement TradeConsummer interface
 
 ```java
-import dev.mouradski.prices.service.TradeConsummer;
-import dev.mouradski.prices.model.Trade;
+import dev.mouradski.ftso.trades.service.TradeConsummer;
+import dev.mouradski.ftso.trades.model.Trade;
 import org.springframework.stereotype.Component;
 
 @Component
