@@ -51,10 +51,7 @@ public class XtClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected List<Trade> mapTrade(String message) throws JsonProcessingException {
-
-        if (message.toLowerCase().contains("pong")) {
-            System.out.println(message);
-        }
+        
         if (!message.contains("\"topic\":\"trade\"")) {
             return new ArrayList<>();
         }
