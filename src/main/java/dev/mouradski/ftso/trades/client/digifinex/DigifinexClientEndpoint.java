@@ -110,8 +110,6 @@ public class DigifinexClientEndpoint extends AbstractClientEndpoint {
             e.printStackTrace();
         }
 
-        //TODO log
-
         return new HashSet<>();
     }
 
