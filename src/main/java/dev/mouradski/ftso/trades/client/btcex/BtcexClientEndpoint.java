@@ -12,7 +12,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -30,13 +29,10 @@ public class BtcexClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-        getAssets().forEach(symbol -> {
-            getAllQuotesExceptBusd(false).forEach(quote -> {
-                var msg = "{\"jsonrpc\" : \"2.0\",\"id\" : ID,\"method\" : \"/public/subscribe\",\"params\" : {\"channels\":[\"price_index.SYMBOL_QUOTE\"]}}"
-                        .replace("ID", counter.getCount().toString())
-                        .replace("SYMBOL", symbol).replace("QUOTE", quote);
+        getAssets(true).stream().filter(symbol -> !getAllQuotes(true).contains(symbol)).forEach(symbol -> {
+                var msg = "{\"jsonrpc\" : \"2.0\",\"id\" : ID,\"method\" : \"/public/subscribe\",\"params\" : {\"channels\":[\"trades.SYMBOL-USDT-SPOT.raw\"]}}"
+                        .replace("ID", counter.getCount().toString()).replace("SYMBOL", symbol);
                 this.sendMessage(msg);
-            });
         });
     }
 
@@ -48,15 +44,21 @@ public class BtcexClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected List<Trade> mapTrade(String message) throws JsonProcessingException {
-        if (!message.contains("index_name")) {
+        if (!message.contains("trade_id")) {
             return new ArrayList<>();
         }
 
-        dev.mouradski.ftso.trades.client.btcex.Root root = objectMapper.readValue(message, Root.class);
+        var tradeResponse = objectMapper.readValue(message, TradeResponse.class);
 
-        Pair<String, String> symbol = SymbolHelper.getSymbol(root.getParams().getData().getIndex_name());
+        var trades = new ArrayList<Trade>();
 
-        return Arrays.asList(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight()).price(root.getParams().getData().getPrice()).amount(0d).build());
+        tradeResponse.getParams().getData().forEach(tradeData -> {
+            Pair<String, String> symbol = SymbolHelper.getSymbol(tradeData.getInstrumentName().replace("-SPOT", ""));
+
+            trades.add(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight()).price(tradeData.getPrice()).amount(tradeData.getAmount()).build());
+        });
+
+        return trades;
     }
 
     @Scheduled(fixedDelay = 15000)
