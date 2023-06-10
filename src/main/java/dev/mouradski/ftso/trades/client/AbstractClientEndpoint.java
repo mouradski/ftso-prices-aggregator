@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.PriceService;
+import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.Constants;
 import dev.mouradski.ftso.trades.utils.Counter;
 import jakarta.websocket.*;
@@ -30,8 +30,10 @@ import static dev.mouradski.ftso.trades.utils.Constants.SYMBOLS;
 @EnableScheduling
 public abstract class AbstractClientEndpoint {
 
+    public static final Gson gson = new Gson();
     private static final long DEFAULT_TIMEOUT = 120; // timeout in seconds
-    protected final PriceService priceSender;
+    private static final Object sendMutex = new Object();
+    protected final TradeService priceSender;
     protected final ObjectMapper objectMapper = new ObjectMapper();
     protected final List<String> assets;
     protected final List<String> exchanges;
@@ -40,10 +42,8 @@ public abstract class AbstractClientEndpoint {
     private ScheduledExecutorService executor;
     private long lastMessageTime;
     private int retries = 3;
-    private static final Object sendMutex = new Object();
-    public static final Gson gson = new Gson();
 
-    protected AbstractClientEndpoint(PriceService priceSender, List<String> exchanges, List<String> assets) {
+    protected AbstractClientEndpoint(TradeService priceSender, List<String> exchanges, List<String> assets) {
         this.priceSender = priceSender;
         this.exchanges = exchanges;
         this.assets = assets;
@@ -109,7 +109,7 @@ public abstract class AbstractClientEndpoint {
             this.decodeMetadata(message);
 
             if (!this.pong(message)) {
-                this.mapTrade(message).forEach(this.priceSender::pushPrice);
+                this.mapTrade(message).forEach(this.priceSender::pushTrade);
             }
 
         } catch (Exception e) {

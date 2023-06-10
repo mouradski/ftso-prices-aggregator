@@ -10,17 +10,17 @@ import java.util.Optional;
 
 @Slf4j
 @Component
-public class PriceService {
+public class TradeService {
 
     private final Optional<TradeServer> tradeServer;
     private final Optional<TradeConsummer> tradeConsummer;
 
-    public PriceService(@Autowired(required = false) TradeServer tradeServer, @Autowired(required = false) TradeConsummer tradeConsummer) {
+    public TradeService(@Autowired(required = false) TradeServer tradeServer, @Autowired(required = false) TradeConsummer tradeConsummer) {
         this.tradeServer = Optional.ofNullable(tradeServer);
         this.tradeConsummer = Optional.ofNullable(tradeConsummer);
     }
 
-    public void pushPrice(Trade trade) {
+    public void pushTrade(Trade trade) {
         tradeServer.ifPresent(server -> server.broadcastTrade(trade));
         tradeConsummer.ifPresent(consummer -> consummer.processTrade(trade));
     }

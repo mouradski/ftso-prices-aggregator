@@ -10,7 +10,7 @@ import lombok.*;
 @ToString
 public class Trade {
     private Double price;
-    private String symbol;
+    private String base;
     private String quote;
     private Double amount;
     private String exchange;

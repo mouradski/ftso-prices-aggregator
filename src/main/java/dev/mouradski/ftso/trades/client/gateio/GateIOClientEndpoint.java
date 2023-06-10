@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.JsonParser;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.PriceService;
+import dev.mouradski.ftso.trades.service.TradeService;
 import jakarta.websocket.ClientEndpoint;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @Component
 public class GateIOClientEndpoint extends AbstractClientEndpoint {
 
-    public GateIOClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    public GateIOClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -31,16 +31,15 @@ public class GateIOClientEndpoint extends AbstractClientEndpoint {
             return new ArrayList<>();
         }
 
-       
+
         var jelement = new JsonParser().parse(message);
         var jobject = jelement.getAsJsonObject();
         var result = jobject.getAsJsonObject("result");
 
         var gateIOTrade = gson.fromJson(result, GateIOTrade.class);
 
-        return Arrays.asList(Trade.builder().exchange(getExchange()).symbol(gateIOTrade.getCurrencyPair().split("_")[0])
+        return Arrays.asList(Trade.builder().exchange(getExchange()).base(gateIOTrade.getCurrencyPair().split("_")[0])
                 .quote(gateIOTrade.getCurrencyPair().split("_")[1]).price(gateIOTrade.getPrice()).amount(gateIOTrade.getAmount()).build());
-        
 
 
     }
@@ -55,9 +54,10 @@ public class GateIOClientEndpoint extends AbstractClientEndpoint {
 
         var pairs = new ArrayList<String>();
 
-        getAssets().stream().filter(v -> !"dgb".equals(v) && !v.startsWith("usd") && !v.equals("busd")).forEach(symbol -> {
-            pairs.add("\"" + symbol.toUpperCase() + "_" + "USDT\"");
-        });
+        getAssets().stream().filter(v -> !"dgb".equals(v) && !v.startsWith("usd") && !v.equals("busd"))
+                .forEach(base -> {
+                    pairs.add("\"" + base.toUpperCase() + "_" + "USDT\"");
+                });
 
 
         var timestamp = System.currentTimeMillis();

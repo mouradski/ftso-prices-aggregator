@@ -3,7 +3,7 @@ package dev.mouradski.ftso.trades.client.lbank;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.PriceService;
+import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,7 +18,7 @@ import java.util.List;
 @Component
 public class LbankClientEndpoint extends AbstractClientEndpoint {
 
-    protected LbankClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    protected LbankClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -29,9 +29,9 @@ public class LbankClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-        getAssets(true).forEach(symbol -> {
+        getAssets(true).forEach(base -> {
             getAllQuotesExceptBusd(true).forEach(quote -> {
-                this.sendMessage("{\"action\":\"subscribe\", \"subscribe\":\"trade\", \"pair\":\"SYMBOL_QUOTE\"}".replaceAll("SYMBOL", symbol).replace("QUOTE", quote));
+                this.sendMessage("{\"action\":\"subscribe\", \"subscribe\":\"trade\", \"pair\":\"SYMBOL_QUOTE\"}".replaceAll("SYMBOL", base).replace("QUOTE", quote));
             });
         });
     }
@@ -60,9 +60,9 @@ public class LbankClientEndpoint extends AbstractClientEndpoint {
 
         var tradeWrapper = objectMapper.readValue(message, TradeWrapper.class);
 
-        var symbol = SymbolHelper.getSymbol(tradeWrapper.getPair());
+        var pair = SymbolHelper.getPair(tradeWrapper.getPair());
 
-        return Arrays.asList(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight()).price(tradeWrapper.getTrade().getPrice()).amount(tradeWrapper.getTrade().getAmount()).build());
+        return Arrays.asList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(tradeWrapper.getTrade().getPrice()).amount(tradeWrapper.getTrade().getAmount()).build());
     }
 
     @Scheduled(fixedDelay = 30000)

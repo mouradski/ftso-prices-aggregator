@@ -3,7 +3,7 @@ package dev.mouradski.ftso.trades.client.hitbtc;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.PriceService;
+import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @Component
 public class HitbtcClientEndpoint extends AbstractClientEndpoint {
 
-    protected HitbtcClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    protected HitbtcClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -32,9 +32,9 @@ public class HitbtcClientEndpoint extends AbstractClientEndpoint {
     protected void subscribe() {
         var pairs = new ArrayList<String>();
 
-        getAssets().stream().map(String::toUpperCase).forEach(symbol -> {
+        getAssets().stream().map(String::toUpperCase).forEach(base -> {
             getAllQuotesExceptBusd(true).forEach(quote -> {
-                pairs.add("\"" + symbol + quote + "\"");
+                pairs.add("\"" + base + quote + "\"");
             });
 
         });
@@ -58,19 +58,19 @@ public class HitbtcClientEndpoint extends AbstractClientEndpoint {
         }
 
         response.getSnapshot().entrySet().forEach(e -> {
-            var symbol = SymbolHelper.getSymbol(e.getKey());
+            var pair = SymbolHelper.getPair(e.getKey());
 
             for (HitbtcTrade hitbtcTrade : e.getValue()) {
-                trades.add(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight()).price(hitbtcTrade.getP()).amount(hitbtcTrade.getQ()).build());
+                trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(hitbtcTrade.getP()).amount(hitbtcTrade.getQ()).build());
             }
         });
 
         response.getUpdate().entrySet().forEach(e -> {
-            var symbol = SymbolHelper.getSymbol(e.getKey());
+            var pair = SymbolHelper.getPair(e.getKey());
 
 
             for (HitbtcTrade hitbtcTrade : e.getValue()) {
-                trades.add(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight()).price(hitbtcTrade.getP()).amount(hitbtcTrade.getQ()).build());
+                trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(hitbtcTrade.getP()).amount(hitbtcTrade.getQ()).build());
             }
         });
 

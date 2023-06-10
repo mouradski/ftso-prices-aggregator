@@ -3,7 +3,7 @@ package dev.mouradski.ftso.trades.client.whitebit;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.PriceService;
+import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +27,7 @@ public class WhitebitClientEndpoint extends AbstractClientEndpoint {
 
     private Set<String> supportedSymbols;
 
-    protected WhitebitClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    protected WhitebitClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -40,9 +40,9 @@ public class WhitebitClientEndpoint extends AbstractClientEndpoint {
     protected void subscribe() {
         var pairs = new ArrayList<String>();
 
-        getAssets(true).forEach(symbol -> {
+        getAssets(true).forEach(base -> {
             getAllQuotesExceptBusd(true).forEach(quote -> {
-                var pair = symbol + "_" + quote;
+                var pair = base + "_" + quote;
 
                 if (supportedSymbols.contains(pair)) {
                     pairs.add("\"" + pair + "\"");
@@ -74,11 +74,11 @@ public class WhitebitClientEndpoint extends AbstractClientEndpoint {
 
         var tradeUpdateMessage = this.objectMapper.readValue(message, TradeUpdateMessage.class);
 
-        var symbol = SymbolHelper.getSymbol(tradeUpdateMessage.getParams().get(0).toString());
+        var pair = SymbolHelper.getPair(tradeUpdateMessage.getParams().get(0).toString());
 
         ((List<Map>) tradeUpdateMessage.getParams().get(1)).stream()
                 .sorted(Comparator.comparing(v -> v.get("time").toString())).forEach(tradeUpdate -> {
-                    trades.add(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight())
+                    trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
                             .price(Double.valueOf(tradeUpdate.get("price").toString())).amount(Double.valueOf(tradeUpdate.get("amount").toString())).build());
                 });
 
@@ -110,6 +110,6 @@ public class WhitebitClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(fixedDelay = 30000)
     public void ping() {
-         this.sendMessage("{\"id\": ID,\"method\": \"ping\",\"params\": []}".replace("ID", counter.getCount().toString()));
+        this.sendMessage("{\"id\": ID,\"method\": \"ping\",\"params\": []}".replace("ID", counter.getCount().toString()));
     }
 }

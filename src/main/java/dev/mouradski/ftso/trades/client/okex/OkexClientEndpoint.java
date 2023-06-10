@@ -3,7 +3,7 @@ package dev.mouradski.ftso.trades.client.okex;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.PriceService;
+import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @ClientEndpoint
 @Component
 public class OkexClientEndpoint extends AbstractClientEndpoint {
-    protected OkexClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    protected OkexClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -33,9 +33,9 @@ public class OkexClientEndpoint extends AbstractClientEndpoint {
 
         var channels = new ArrayList<String>();
 
-        getAssets(true).forEach(symbol -> {
+        getAssets(true).forEach(base -> {
             getAllQuotesExceptBusd(true).forEach(quote -> {
-                channels.add("{\"channel\": \"trades\",\"instId\": \"SYMBOL-QUOTE\"}".replace("SYMBOL", symbol).replace("QUOTE", quote));
+                channels.add("{\"channel\": \"trades\",\"instId\": \"SYMBOL-QUOTE\"}".replace("SYMBOL", base).replace("QUOTE", quote));
             });
         });
 
@@ -60,12 +60,12 @@ public class OkexClientEndpoint extends AbstractClientEndpoint {
 
         var tradeData = objectMapper.readValue(message, TradeData.class);
 
-        var symbol = SymbolHelper.getSymbol(tradeData.getArg().getInstId());
+        var pair = SymbolHelper.getPair(tradeData.getArg().getInstId());
 
         var trades = new ArrayList<Trade>();
 
         tradeData.getData().forEach(data -> {
-            trades.add(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight()).price(data.getPx()).amount(data.getSz()).build());
+            trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(data.getPx()).amount(data.getSz()).build());
         });
 
         return trades;

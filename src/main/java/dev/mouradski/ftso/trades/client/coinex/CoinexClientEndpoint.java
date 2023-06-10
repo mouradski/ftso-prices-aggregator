@@ -3,7 +3,7 @@ package dev.mouradski.ftso.trades.client.coinex;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.PriceService;
+import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @Component
 public class CoinexClientEndpoint extends AbstractClientEndpoint {
 
-    protected CoinexClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    protected CoinexClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -33,9 +33,9 @@ public class CoinexClientEndpoint extends AbstractClientEndpoint {
     protected void subscribe() {
         var pairs = new ArrayList<String>();
 
-        getAssets(true).forEach(symbol -> {
+        getAssets(true).forEach(base -> {
             getAllQuotesExceptBusd(true).forEach(quote -> {
-                pairs.add("\"" + symbol + quote + "\"");
+                pairs.add("\"" + base + quote + "\"");
             });
         });
 
@@ -57,14 +57,14 @@ public class CoinexClientEndpoint extends AbstractClientEndpoint {
 
         var dealUpdate = this.objectMapper.readValue(message, DealUpdate.class);
 
-        var symbol = SymbolHelper.getSymbol(dealUpdate.getParams().get(0).toString());
+        var pair = SymbolHelper.getPair(dealUpdate.getParams().get(0).toString());
 
         var trades = new ArrayList<Trade>();
 
         ((List<Map<String, String>>) dealUpdate.getParams().get(1)).stream()
                 .sorted(Comparator.comparing(e -> e.get("time")))
                 .forEach(deal -> {
-                    trades.add(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight())
+                    trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
                             .price(Double.valueOf(deal.get("price").toString()))
                             .amount(Double.valueOf(deal.get("amount").toString())).build());
                 });

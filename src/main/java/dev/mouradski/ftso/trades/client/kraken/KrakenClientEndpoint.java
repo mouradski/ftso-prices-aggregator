@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.JsonArray;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.PriceService;
+import dev.mouradski.ftso.trades.service.TradeService;
 import jakarta.websocket.ClientEndpoint;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @Component
 public class KrakenClientEndpoint extends AbstractClientEndpoint {
 
-    public KrakenClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    public KrakenClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -38,12 +38,12 @@ public class KrakenClientEndpoint extends AbstractClientEndpoint {
 
             var pair = array.get(array.size() - 1).getAsString();
 
-            var symbol = pair.split("/")[0].replace("XBT", "BTC").replace("XDG", "DOGE");
+            var base = pair.split("/")[0].replace("XBT", "BTC").replace("XDG", "DOGE");
             var quote = pair.split("/")[1];
 
             for (var tradeData : tradesData) {
                 var tradeArray = tradeData.getAsJsonArray();
-                trades.add(Trade.builder().exchange(getExchange()).symbol(symbol).quote(quote).price(tradeArray.get(0).getAsDouble()).amount(tradeArray.get(1).getAsDouble()).build());
+                trades.add(Trade.builder().exchange(getExchange()).base(base).quote(quote).price(tradeArray.get(0).getAsDouble()).amount(tradeArray.get(1).getAsDouble()).build());
             }
         }
 
@@ -59,10 +59,11 @@ public class KrakenClientEndpoint extends AbstractClientEndpoint {
     protected void subscribe() {
         List<String> paris = new ArrayList<>();
 
-        getAssets().forEach(symbol -> {
-            paris.add("\"" + symbol.toUpperCase() + "/USD\"");
-            paris.add("\"" + symbol.toUpperCase() + "/USDT\"");
-            paris.add("\"" + symbol.toUpperCase() + "/USDC\"");
+        getAssets(true).forEach(base -> {
+            getAllQuotesExceptBusd(true).forEach(quote -> {
+                paris.add("\"" + base + "/" + quote + "\"");
+
+            });
         });
 
         this.sendMessage("{\"event\":\"subscribe\", \"pair\":[" + paris.stream().collect(Collectors.joining(",")) + "], \"subscription\":{\"name\":\"trade\"}}");

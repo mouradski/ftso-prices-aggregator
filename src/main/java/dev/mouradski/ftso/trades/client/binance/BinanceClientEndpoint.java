@@ -3,7 +3,7 @@ package dev.mouradski.ftso.trades.client.binance;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.PriceService;
+import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
 import org.apache.commons.lang3.tuple.Pair;
@@ -20,7 +20,7 @@ public class BinanceClientEndpoint extends AbstractClientEndpoint {
 
     private final String websocketApiBase = "wss://stream.binance.com:9443/stream?streams=";
 
-    public BinanceClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    public BinanceClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -28,18 +28,18 @@ public class BinanceClientEndpoint extends AbstractClientEndpoint {
     protected List<Trade> mapTrade(String message) throws JsonProcessingException {
         var binanceTrade = objectMapper.readValue(message, BinanceTrade.class);
 
-        Pair<String, String> symbol = SymbolHelper.getSymbol(binanceTrade.getData().getS());
+        Pair<String, String> pair = SymbolHelper.getPair(binanceTrade.getData().getS());
 
-        return Arrays.asList(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight())
+        return Arrays.asList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
                 .price(binanceTrade.getData().getP()).amount(binanceTrade.getData().getQ()).build());
     }
 
     @Override
     protected String getUri() {
-        return websocketApiBase + getSymbols();
+        return getWebsocketApiBase() + getPairs();
     }
 
-    private String getSymbols() {
+    private String getPairs() {
         return getAssets().stream()
                 .flatMap(asset -> getAllQuotes(false).stream()
                         .filter(quote -> !quote.equals(asset))
@@ -54,5 +54,9 @@ public class BinanceClientEndpoint extends AbstractClientEndpoint {
     @Override
     protected String getExchange() {
         return "binance";
+    }
+
+    protected String getWebsocketApiBase() {
+        return websocketApiBase;
     }
 }

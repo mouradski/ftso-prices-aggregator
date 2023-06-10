@@ -4,7 +4,7 @@ package dev.mouradski.ftso.trades.client.digifinex;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.PriceService;
+import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @Component
 public class DigifinexClientEndpoint extends AbstractClientEndpoint {
 
-    protected DigifinexClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    protected DigifinexClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -38,20 +38,20 @@ public class DigifinexClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-        Set<String> markets = getAvailableMarkets();
+        var markets = getAvailableMarkets();
 
-        getAssets().stream().map(String::toUpperCase).forEach(symbol -> {
+        getAssets().stream().map(String::toUpperCase).forEach(base -> {
 
-            if (markets.contains(symbol + "_USD")) {
-                this.sendMessage("{\"method\":\"trades.subscribe\", \"params\":[PAIRS], \"id\":ID}".replace("ID", counter.getCount() + "").replace("PAIRS", "\"" + symbol + "_USD\""));
+            if (markets.contains(base + "_USD")) {
+                this.sendMessage("{\"method\":\"trades.subscribe\", \"params\":[PAIRS], \"id\":ID}".replace("ID", counter.getCount() + "").replace("PAIRS", "\"" + base + "_USD\""));
             }
 
-            if (!symbol.equals("USDT") && markets.contains(symbol + "_USDT")) {
-                this.sendMessage("{\"method\":\"trades.subscribe\", \"params\":[PAIRS], \"id\":ID}".replace("ID", counter.getCount() + "").replace("PAIRS", "\"" + symbol + "_USDT\""));
+            if (!base.equals("USDT") && markets.contains(base + "_USDT")) {
+                this.sendMessage("{\"method\":\"trades.subscribe\", \"params\":[PAIRS], \"id\":ID}".replace("ID", counter.getCount() + "").replace("PAIRS", "\"" + base + "_USDT\""));
             }
 
-            if (!symbol.equals("USDC") && markets.contains(symbol + "_USDC")) {
-                this.sendMessage("{\"method\":\"trades.subscribe\", \"params\":[PAIRS], \"id\":ID}".replace("ID", counter.getCount() + "").replace("PAIRS", "\"" + symbol + "_USDC\""));
+            if (!base.equals("USDC") && markets.contains(base + "_USDC")) {
+                this.sendMessage("{\"method\":\"trades.subscribe\", \"params\":[PAIRS], \"id\":ID}".replace("ID", counter.getCount() + "").replace("PAIRS", "\"" + base + "_USDC\""));
             }
         });
     }
@@ -80,12 +80,12 @@ public class DigifinexClientEndpoint extends AbstractClientEndpoint {
         var tradesArray = gson.toJsonTree(tradeResponse.getParams().get(1)).getAsJsonArray();
 
 
-        var symbol = SymbolHelper.getSymbol(gson.toJsonTree(tradeResponse.getParams().get(2)).getAsString());
+        var pair = SymbolHelper.getPair(gson.toJsonTree(tradeResponse.getParams().get(2)).getAsString());
 
 
         for (var tradeElement : tradesArray) {
             var trade = gson.fromJson(tradeElement, Trade.class);
-            trades.add(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight()).price(trade.getPrice()).amount(trade.getAmount()).build());
+            trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(trade.getPrice()).amount(trade.getAmount()).build());
         }
 
         return trades;

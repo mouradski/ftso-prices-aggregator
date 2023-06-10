@@ -3,7 +3,7 @@ package dev.mouradski.ftso.trades.client.bitmart;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.PriceService;
+import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
@@ -35,7 +35,7 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
 
     private List<String> supportedSymbols = new ArrayList<>();
 
-    protected BitmartClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    protected BitmartClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -48,10 +48,10 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
     protected void subscribe() {
         var pairs = new ArrayList<String>();
 
-        getAssets(true).forEach(symbol -> {
+        getAssets(true).forEach(base -> {
             Arrays.asList("USDT").forEach(quote -> {
-                if (supportedSymbols.contains(symbol + "_" + quote)) {
-                    pairs.add("\"spot/trade:" + symbol + "_" + quote + "\"");
+                if (supportedSymbols.contains(base + "_" + quote)) {
+                    pairs.add("\"spot/trade:" + base + "_" + quote + "\"");
                 }
             });
         });
@@ -105,8 +105,8 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
         root.getData().stream()
                 .sorted(Comparator.comparing(TradeData::getTime))
                 .forEach(tradeData -> {
-                    var symbol = SymbolHelper.getSymbol(tradeData.getSymbol());
-                    trades.add(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight())
+                    var pair = SymbolHelper.getPair(tradeData.getSymbol());
+                    trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
                             .price(tradeData.getPrice()).amount(tradeData.getSize()).build());
 
                 });

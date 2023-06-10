@@ -3,7 +3,7 @@ package dev.mouradski.ftso.trades.client.huobi;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.PriceService;
+import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,7 +17,7 @@ import java.util.List;
 @ClientEndpoint
 @Component
 public class HuobiClientEndpoint extends AbstractClientEndpoint {
-    protected HuobiClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    protected HuobiClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -32,8 +32,8 @@ public class HuobiClientEndpoint extends AbstractClientEndpoint {
 
 
         getAssets().forEach(symbol -> {
-            getAllQuotesExceptBusd(false).forEach(quote -> {
-                this.sendMessage("{   \"sub\": \"market." + symbol + quote + ".trade.detail\",   \"id\": \"ID\" }".replace("ID", new Date().getTime() + ""));
+            getAllQuotesExceptBusd(false).forEach(base -> {
+                this.sendMessage("{   \"sub\": \"market." + symbol + base + ".trade.detail\",   \"id\": \"ID\" }".replace("ID", new Date().getTime() + ""));
 
             });
         });
@@ -56,13 +56,13 @@ public class HuobiClientEndpoint extends AbstractClientEndpoint {
             return new ArrayList<>();
         }
 
-        var pair = tradeMessage.getCh().split("\\.")[1].toUpperCase();
+        var symbolId = tradeMessage.getCh().split("\\.")[1].toUpperCase();
 
-        var symbol = SymbolHelper.getSymbol(pair);
+        var pair = SymbolHelper.getPair(symbolId);
 
         tradeMessage.getTick().getData().stream().sorted(Comparator.comparing(TradeDetail::getTradeId)).forEach(huobiTrade -> {
             trades.add(Trade.builder().exchange(getExchange())
-                    .symbol(symbol.getLeft()).quote(symbol.getRight()).price(huobiTrade.getPrice())
+                    .base(pair.getLeft()).quote(pair.getRight()).price(huobiTrade.getPrice())
                     .amount(huobiTrade.getAmount()).build());
         });
 

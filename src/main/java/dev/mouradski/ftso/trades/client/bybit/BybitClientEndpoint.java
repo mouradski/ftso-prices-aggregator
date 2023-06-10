@@ -3,10 +3,9 @@ package dev.mouradski.ftso.trades.client.bybit;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.PriceService;
+import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -19,7 +18,7 @@ import java.util.List;
 @Component
 @ClientEndpoint
 public class BybitClientEndpoint extends AbstractClientEndpoint {
-    protected BybitClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    protected BybitClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -30,9 +29,9 @@ public class BybitClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-        getAssets().stream().map(String::toUpperCase).forEach(symbol -> {
+        getAssets().stream().map(String::toUpperCase).forEach(base -> {
             getAllQuotesExceptBusd(true).forEach(quote -> {
-                this.sendMessage("{\"topic\":\"trade\", \"params\":{\"symbol\":\"SYMBOLQUOTE\", \"binary\":false}, \"event\":\"sub\"}".replace("SYMBOL", symbol).replace("QUOTE", quote));
+                this.sendMessage("{\"topic\":\"trade\", \"params\":{\"symbol\":\"SYMBOLQUOTE\", \"binary\":false}, \"event\":\"sub\"}".replace("SYMBOL", base).replace("QUOTE", quote));
 
             });
         });
@@ -57,8 +56,8 @@ public class BybitClientEndpoint extends AbstractClientEndpoint {
 
         var tradeResponse = gson.fromJson(message, TradeResponse.class);
 
-        Pair<String, String> symbol = SymbolHelper.getSymbol(tradeResponse.getParams().getSymbol());
+        var pair = SymbolHelper.getPair(tradeResponse.getParams().getSymbol());
 
-        return Arrays.asList(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight()).price(Double.parseDouble(tradeResponse.getData().get("p"))).amount(Double.parseDouble(tradeResponse.getData().get("p"))).build());
+        return Arrays.asList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(Double.parseDouble(tradeResponse.getData().get("p"))).amount(Double.parseDouble(tradeResponse.getData().get("p"))).build());
     }
 }

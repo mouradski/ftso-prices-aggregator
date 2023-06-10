@@ -14,7 +14,7 @@ class SymbolHelperTest {
     @ParameterizedTest
     @MethodSource("provideSymbolsForTesting")
     void getSymbol_withValidInput(String symbol, Pair<String, String> expected) {
-        Pair<String, String> result = SymbolHelper.getSymbol(symbol);
+        Pair<String, String> result = SymbolHelper.getPair(symbol);
         assertEquals(expected.getLeft(), result.getLeft());
         assertEquals(expected.getRight(), result.getRight());
     }

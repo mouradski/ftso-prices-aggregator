@@ -3,7 +3,7 @@ package dev.mouradski.ftso.trades.client.pionex;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.PriceService;
+import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +30,7 @@ public class PionexClientEndpoint extends AbstractClientEndpoint {
 
     protected Set<String> supportedSymbols;
 
-    protected PionexClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    protected PionexClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -43,12 +43,12 @@ public class PionexClientEndpoint extends AbstractClientEndpoint {
     protected void subscribe() {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         getAssets(true).stream()
-                .filter(symbol -> !getAllQuotes(true).contains(symbol))
-                .forEach(symbol -> {
+                .filter(base -> !getAllQuotes(true).contains(base))
+                .forEach(base -> {
                     getAllQuotesExceptBusd(true).forEach(quote -> {
                         executorService.submit(() -> {
                             try {
-                                var symbolId = symbol + "_" + quote;
+                                var symbolId = base + "_" + quote;
                                 if (supportedSymbols.contains(symbolId)) {
                                     Thread.sleep(counter.getCount() * 500);
                                     this.sendMessage("{\"op\": \"SUBSCRIBE\",\"topic\":  \"TRADE\", \"symbol\": \"SYMBOL\"}".replace("SYMBOL", symbolId));
@@ -77,8 +77,8 @@ public class PionexClientEndpoint extends AbstractClientEndpoint {
         var trades = new ArrayList<Trade>();
 
         tradeResponse.getData().forEach(tradeData -> {
-            var symbol = SymbolHelper.getSymbol(tradeData.getSymbol());
-            trades.add(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight()).price(tradeData.getPrice()).amount(tradeData.getSize()).build());
+            var pair = SymbolHelper.getPair(tradeData.getSymbol());
+            trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(tradeData.getPrice()).amount(tradeData.getSize()).build());
         });
 
         return trades;

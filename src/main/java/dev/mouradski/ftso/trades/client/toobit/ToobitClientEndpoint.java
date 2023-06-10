@@ -3,7 +3,7 @@ package dev.mouradski.ftso.trades.client.toobit;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.PriceService;
+import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @Component
 public class ToobitClientEndpoint extends AbstractClientEndpoint {
 
-    protected ToobitClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    protected ToobitClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -50,12 +50,12 @@ public class ToobitClientEndpoint extends AbstractClientEndpoint {
 
         var tradeMessage = this.objectMapper.readValue(message, TradeMessage.class);
 
-        var symbol = SymbolHelper.getSymbol(tradeMessage.getSymbolName());
+        var pair = SymbolHelper.getPair(tradeMessage.getSymbolName());
 
         var trades = new ArrayList<Trade>();
 
         tradeMessage.getTrades().stream().sorted(Comparator.comparing(ToobitTrade::getTime)).forEach(toobitTrade -> {
-            trades.add(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight())
+            trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
                     .price(toobitTrade.getPrice()).amount(toobitTrade.getQuantity()).build());
         });
 

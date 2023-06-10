@@ -10,19 +10,19 @@ public class TradeData {
 
     @JsonProperty("s")
     private String symbol;
-    
+
     @JsonProperty("i")
     private String id;
-    
+
     @JsonProperty("t")
     private Long time;
-    
+
     @JsonProperty("p")
     private Double price;
-    
+
     @JsonProperty("q")
     private Double quantity;
-    
+
     @JsonProperty("b")
     private Boolean isBuyer;
 }

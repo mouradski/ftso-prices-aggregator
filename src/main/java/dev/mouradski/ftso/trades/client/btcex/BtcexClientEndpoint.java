@@ -3,10 +3,9 @@ package dev.mouradski.ftso.trades.client.btcex;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.PriceService;
+import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -18,7 +17,7 @@ import java.util.List;
 @ClientEndpoint
 public class BtcexClientEndpoint extends AbstractClientEndpoint {
 
-    protected BtcexClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    protected BtcexClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -29,10 +28,10 @@ public class BtcexClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-        getAssets(true).stream().filter(symbol -> !getAllQuotes(true).contains(symbol)).forEach(symbol -> {
-                var msg = "{\"jsonrpc\" : \"2.0\",\"id\" : ID,\"method\" : \"/public/subscribe\",\"params\" : {\"channels\":[\"trades.SYMBOL-USDT-SPOT.raw\"]}}"
-                        .replace("ID", counter.getCount().toString()).replace("SYMBOL", symbol);
-                this.sendMessage(msg);
+        getAssets(true).stream().filter(base -> !getAllQuotes(true).contains(base)).forEach(symbol -> {
+            var msg = "{\"jsonrpc\" : \"2.0\",\"id\" : ID,\"method\" : \"/public/subscribe\",\"params\" : {\"channels\":[\"trades.SYMBOL-USDT-SPOT.raw\"]}}"
+                    .replace("ID", counter.getCount().toString()).replace("SYMBOL", symbol);
+            this.sendMessage(msg);
         });
     }
 
@@ -53,9 +52,9 @@ public class BtcexClientEndpoint extends AbstractClientEndpoint {
         var trades = new ArrayList<Trade>();
 
         tradeResponse.getParams().getData().forEach(tradeData -> {
-            Pair<String, String> symbol = SymbolHelper.getSymbol(tradeData.getInstrumentName().replace("-SPOT", ""));
+            var pair = SymbolHelper.getPair(tradeData.getInstrumentName().replace("-SPOT", ""));
 
-            trades.add(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight()).price(tradeData.getPrice()).amount(tradeData.getAmount()).build());
+            trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(tradeData.getPrice()).amount(tradeData.getAmount()).build());
         });
 
         return trades;

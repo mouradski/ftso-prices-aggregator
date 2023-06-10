@@ -3,7 +3,7 @@ package dev.mouradski.ftso.trades.client.bitrue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.PriceService;
+import dev.mouradski.ftso.trades.service.TradeService;
 import jakarta.websocket.ClientEndpoint;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -17,7 +17,7 @@ import static dev.mouradski.ftso.trades.utils.Constants.USDT;
 @Component
 public class BitrueClientEndpoint extends AbstractClientEndpoint {
 
-    public BitrueClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    public BitrueClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -36,11 +36,11 @@ public class BitrueClientEndpoint extends AbstractClientEndpoint {
             return trades;
         }
 
-        var symbol = parseSymbol(tradeMessage.getChannel());
+        var pair = parseSymbol(tradeMessage.getChannel());
         var quote = "USDT";
 
         for (var trade : tradeMessage.getTick().getData()) {
-            trades.add(Trade.builder().exchange(getExchange()).price(trade.getPrice()).amount(trade.getAmount()).quote(quote).symbol(symbol).build());
+            trades.add(Trade.builder().exchange(getExchange()).price(trade.getPrice()).amount(trade.getAmount()).quote(quote).base(pair).build());
         }
 
         return trades;
@@ -58,8 +58,8 @@ public class BitrueClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-        getAssets().stream().filter(v -> !v.contains("usd")).forEach(symbol -> {
-            this.sendMessage("{\"event\":\"sub\",\"params\":{\"cb_id\":\"CB_ID\",\"channel\":\"market_CB_ID_trade_ticker\"}}".replaceAll("CB_ID", symbol + USDT));
+        getAssets().stream().filter(v -> !v.contains("usd")).forEach(base -> {
+            this.sendMessage("{\"event\":\"sub\",\"params\":{\"cb_id\":\"CB_ID\",\"channel\":\"market_CB_ID_trade_ticker\"}}".replaceAll("CB_ID", base + USDT));
         });
     }
 

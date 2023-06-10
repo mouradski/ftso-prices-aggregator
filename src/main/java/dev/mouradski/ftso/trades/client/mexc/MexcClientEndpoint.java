@@ -3,7 +3,7 @@ package dev.mouradski.ftso.trades.client.mexc;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.PriceService;
+import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +19,7 @@ import java.util.List;
 @Component
 public class MexcClientEndpoint extends AbstractClientEndpoint {
 
-    protected MexcClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    protected MexcClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -30,9 +30,9 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-        getAssets(true).forEach(symbol -> {
+        getAssets(true).forEach(base -> {
             getAllQuotesExceptBusd(true).forEach(quote -> {
-                this.sendMessage("{\"op\":\"sub.deal\", \"symbol\":\"SYMBOL_QUOTE\"}".replace("SYMBOL", symbol).replace("QUOTE", quote));
+                this.sendMessage("{\"op\":\"sub.deal\", \"symbol\":\"SYMBOL_QUOTE\"}".replace("SYMBOL", base).replace("QUOTE", quote));
             });
         });
 
@@ -56,13 +56,13 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
 
         var tradeData = objectMapper.readValue(message, TradeData.class);
 
-        var symbol = SymbolHelper.getSymbol(tradeData.getSymbol());
+        var pair = SymbolHelper.getPair(tradeData.getSymbol());
 
         var trades = new ArrayList<Trade>();
 
 
         tradeData.getData().getDeals().stream().sorted(Comparator.comparing(Deal::getT)).forEach(deal -> {
-            trades.add(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight()).price(deal.getP()).amount(deal.getQ()).build());
+            trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(deal.getP()).amount(deal.getQ()).build());
         });
 
         return trades;

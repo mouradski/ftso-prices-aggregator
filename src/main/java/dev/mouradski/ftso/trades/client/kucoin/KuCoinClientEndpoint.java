@@ -3,7 +3,7 @@ package dev.mouradski.ftso.trades.client.kucoin;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.PriceService;
+import dev.mouradski.ftso.trades.service.TradeService;
 import jakarta.websocket.ClientEndpoint;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,7 +26,7 @@ public class KuCoinClientEndpoint extends AbstractClientEndpoint {
     private String token;
     private String instance;
 
-    public KuCoinClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    public KuCoinClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -41,7 +41,7 @@ public class KuCoinClientEndpoint extends AbstractClientEndpoint {
                 .exchange(getExchange())
                 .price(kucoinTrade.getData().getPrice())
                 .amount(kucoinTrade.getData().getSize())
-                .symbol(kucoinTrade.getData().getSymbol().split("-")[0])
+                .base(kucoinTrade.getData().getSymbol().split("-")[0])
                 .quote(kucoinTrade.getData().getSymbol().split("-")[1])
                 .build());
     }
@@ -75,14 +75,13 @@ public class KuCoinClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-        getAssets().forEach(symbol -> {
-            try {
-                subscribeToTrades(symbol.toUpperCase() + "-USD");
-                subscribeToTrades(symbol.toUpperCase() + "-USDT");
-                subscribeToTrades(symbol.toUpperCase() + "-USDC");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        getAssets(true).forEach(base -> {
+            getAllQuotesExceptBusd(true).forEach(quote -> {
+                try {
+                    subscribeToTrades(base.toUpperCase() + "-" + quote);
+                } catch (IOException e) {
+                }
+            });
         });
     }
 

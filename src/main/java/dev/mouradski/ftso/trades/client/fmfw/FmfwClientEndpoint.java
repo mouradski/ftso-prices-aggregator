@@ -3,7 +3,7 @@ package dev.mouradski.ftso.trades.client.fmfw;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.PriceService;
+import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @Component
 public class FmfwClientEndpoint extends AbstractClientEndpoint {
 
-    protected FmfwClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    protected FmfwClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -32,9 +32,9 @@ public class FmfwClientEndpoint extends AbstractClientEndpoint {
 
         var pairs = new ArrayList<String>();
 
-        getAssets().stream().map(String::toUpperCase).forEach(symbol -> {
+        getAssets().stream().map(String::toUpperCase).forEach(base -> {
             getAllQuotesExceptBusd(true).forEach(quote -> {
-                pairs.add("\"" + symbol + quote + "\"");
+                pairs.add("\"" + base + quote + "\"");
             });
         });
 
@@ -57,10 +57,10 @@ public class FmfwClientEndpoint extends AbstractClientEndpoint {
         var trades = new ArrayList<Trade>();
 
         fmfwTradeResponse.getUpdate().getTrades().entrySet().forEach(e -> {
-            var symbol = SymbolHelper.getSymbol(e.getKey());
+            var pair = SymbolHelper.getPair(e.getKey());
 
             e.getValue().stream().sorted(Comparator.comparing(FmfwTradeResponse.Trade::getT)).forEach(trade -> {
-                trades.add(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight()).price(trade.getP()).amount(trade.getQ()).build());
+                trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(trade.getP()).amount(trade.getQ()).build());
             });
         });
 

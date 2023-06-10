@@ -3,7 +3,7 @@ package dev.mouradski.ftso.trades.client.xt;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.PriceService;
+import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 @Component
 public class XtClientEndpoint extends AbstractClientEndpoint {
 
-    protected XtClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    protected XtClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -32,9 +32,9 @@ public class XtClientEndpoint extends AbstractClientEndpoint {
     protected void subscribe() {
         var pairs = new ArrayList<String>();
 
-        getAssets(false).forEach(symbol -> {
+        getAssets(false).forEach(base -> {
             getAllQuotesExceptBusd(false).forEach(quote -> {
-                pairs.add("\"trade@" + symbol + "_" + quote + "\"");
+                pairs.add("\"trade@" + base + "_" + quote + "\"");
             });
         });
 
@@ -51,16 +51,16 @@ public class XtClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected List<Trade> mapTrade(String message) throws JsonProcessingException {
-        
+
         if (!message.contains("\"topic\":\"trade\"")) {
             return new ArrayList<>();
         }
 
         var eventData = this.objectMapper.readValue(message, EventData.class);
 
-        var symbol = SymbolHelper.getSymbol(eventData.getEvent().replace("trade@", ""));
+        var pair = SymbolHelper.getPair(eventData.getEvent().replace("trade@", ""));
 
-        return Arrays.asList(Trade.builder().exchange(getExchange()).symbol(symbol.getLeft()).quote(symbol.getRight()).price(eventData.getData().getPrice()).amount(eventData.getData().getQuantity()).build());
+        return Arrays.asList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(eventData.getData().getPrice()).amount(eventData.getData().getQuantity()).build());
     }
 
     @Scheduled(fixedDelay = 20000)

@@ -4,7 +4,7 @@ package dev.mouradski.ftso.trades.client.crypto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.PriceService;
+import dev.mouradski.ftso.trades.service.TradeService;
 import jakarta.websocket.ClientEndpoint;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -17,7 +17,7 @@ import java.util.List;
 @Component
 public class CryptoComClientEndpoint extends AbstractClientEndpoint {
 
-    protected CryptoComClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    protected CryptoComClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -28,9 +28,9 @@ public class CryptoComClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-        getAssets().stream().filter(v -> !v.equals("usdt")).map(String::toUpperCase).forEach(symbol -> {
-            this.sendMessage("{\"id\": " + counter.getCount() + ",\"method\": \"subscribe\",\"params\": {\"channels\": [\"trade." + symbol + "_USDT\"]},\"nonce\": " + new Date().getTime() + "}");
-            this.sendMessage("{\"id\": " + counter.getCount() + ",\"method\": \"subscribe\",\"params\": {\"channels\": [\"trade." + symbol + "_USD\"]},\"nonce\": " + new Date().getTime() + "}");
+        getAssets().stream().filter(v -> !v.equals("usdt")).map(String::toUpperCase).forEach(base -> {
+            this.sendMessage("{\"id\": " + counter.getCount() + ",\"method\": \"subscribe\",\"params\": {\"channels\": [\"trade." + base + "_USDT\"]},\"nonce\": " + new Date().getTime() + "}");
+            this.sendMessage("{\"id\": " + counter.getCount() + ",\"method\": \"subscribe\",\"params\": {\"channels\": [\"trade." + base + "_USD\"]},\"nonce\": " + new Date().getTime() + "}");
         });
 
     }
@@ -51,11 +51,11 @@ public class CryptoComClientEndpoint extends AbstractClientEndpoint {
 
         var trades = new ArrayList<Trade>();
 
-        var symbol = response.getResult().getSubscription().replace("trade.", "").split("_")[0];
+        var base = response.getResult().getSubscription().replace("trade.", "").split("_")[0];
         var quote = response.getResult().getSubscription().replace("trade.", "").split("_")[1];
 
         response.getResult().getData().forEach(cryptoTrade -> {
-            trades.add(Trade.builder().exchange(getExchange()).symbol(symbol).quote(quote).price(cryptoTrade.getP()).amount(cryptoTrade.getQ()).build());
+            trades.add(Trade.builder().exchange(getExchange()).base(base).quote(quote).price(cryptoTrade.getP()).amount(cryptoTrade.getQ()).build());
         });
 
 

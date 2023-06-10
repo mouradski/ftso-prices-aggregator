@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.PriceService;
+import dev.mouradski.ftso.trades.service.TradeService;
 import jakarta.websocket.ClientEndpoint;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,7 +21,7 @@ public class UpbitClientEndpoint extends AbstractClientEndpoint {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    protected UpbitClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    protected UpbitClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -35,9 +35,9 @@ public class UpbitClientEndpoint extends AbstractClientEndpoint {
 
         var pairs = new ArrayList<String>();
 
-        getAssets(true).forEach(symbol -> {
+        getAssets(true).forEach(base -> {
             getAllQuotesExceptBusd(true).forEach(quote -> {
-                pairs.add("\"" + quote + "-" + symbol + "\"");
+                pairs.add("\"" + quote + "-" + base + "\"");
 
             });
         });
@@ -64,9 +64,9 @@ public class UpbitClientEndpoint extends AbstractClientEndpoint {
 
         var trade = objectMapper.readValue(message, UpbitTrade.class);
 
-        var symbol = trade.getCode().split("-")[1];
+        var base = trade.getCode().split("-")[1];
         var quote = trade.getCode().split("-")[0];
 
-        return Arrays.asList(Trade.builder().exchange(getExchange()).symbol(symbol).quote(quote).price(trade.getTradePrice()).amount(trade.getTradeVolume()).build());
+        return Arrays.asList(Trade.builder().exchange(getExchange()).base(base).quote(quote).price(trade.getTradePrice()).amount(trade.getTradeVolume()).build());
     }
 }

@@ -4,10 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.JsonParser;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.PriceService;
+import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +18,7 @@ import java.util.List;
 @Component
 public class BitstampClientEndpoint extends AbstractClientEndpoint {
 
-    public BitstampClientEndpoint(PriceService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    public BitstampClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -32,9 +31,9 @@ public class BitstampClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-        getAssets().forEach(symbol -> {
+        getAssets().forEach(base -> {
             getAllQuotesExceptBusd(false).forEach(quote -> {
-                this.sendMessage("{\"event\": \"bts:subscribe\", \"data\": {\"channel\": \"live_trades_" + symbol + quote + "\"}}");
+                this.sendMessage("{\"event\": \"bts:subscribe\", \"data\": {\"channel\": \"live_trades_" + base + quote + "\"}}");
             });
         });
     }
@@ -51,7 +50,7 @@ public class BitstampClientEndpoint extends AbstractClientEndpoint {
             var jsonObject = JsonParser.parseString(message).getAsJsonObject();
 
             var channelName = jsonObject.get("channel").getAsString();
-            var pair = channelName.substring(12).toUpperCase();  // remove "live_trades_" and convert to upper case
+            var symbolId = channelName.substring(12).toUpperCase();  // remove "live_trades_" and convert to upper case
 
             var tradeData = jsonObject.get("data").getAsJsonObject();
 
@@ -60,11 +59,11 @@ public class BitstampClientEndpoint extends AbstractClientEndpoint {
             trade.setAmount(tradeData.get("amount").getAsDouble());
             trade.setExchange(getExchange());
 
-            Pair<String, String> symbol = SymbolHelper.getSymbol(pair);
+            var pair = SymbolHelper.getPair(symbolId);
 
 
-            trade.setSymbol(symbol.getLeft());
-            trade.setQuote(symbol.getRight());
+            trade.setBase(pair.getLeft());
+            trade.setQuote(pair.getRight());
 
             return Arrays.asList(trade);
         } else {
