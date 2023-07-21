@@ -44,21 +44,17 @@ public class PionexClientEndpoint extends AbstractClientEndpoint {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         getAssets(true).stream()
                 .filter(base -> !getAllQuotes(true).contains(base))
-                .forEach(base -> {
-                    getAllQuotesExceptBusd(true).forEach(quote -> {
-                        executorService.submit(() -> {
-                            try {
-                                var symbolId = base + "_" + quote;
-                                if (supportedSymbols.contains(symbolId)) {
-                                    Thread.sleep(incAndGetId() * 500);
-                                    this.sendMessage("{\"op\": \"SUBSCRIBE\",\"topic\":  \"TRADE\", \"symbol\": \"SYMBOL\"}".replace("SYMBOL", symbolId));
-                                }
+                .forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> executorService.submit(() -> {
+                    try {
+                        var symbolId = base + "_" + quote;
+                        if (supportedSymbols.contains(symbolId)) {
+                            Thread.sleep(incAndGetId() * 500);
+                            this.sendMessage("{\"op\": \"SUBSCRIBE\",\"topic\":  \"TRADE\", \"symbol\": \"SYMBOL\"}".replace("SYMBOL", symbolId));
+                        }
 
-                            } catch (InterruptedException e) {
-                            }
-                        });
-                    });
-                });
+                    } catch (InterruptedException ignored) {
+                    }
+                })));
     }
 
     @Override

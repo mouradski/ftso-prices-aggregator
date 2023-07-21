@@ -17,8 +17,8 @@ public class Deal {
     private Double q;
 
     @JsonProperty("T")
-    private Long T2;
+    private Long t2;
 
     @JsonProperty("M")
-    private Long M;
+    private Long m;
 }

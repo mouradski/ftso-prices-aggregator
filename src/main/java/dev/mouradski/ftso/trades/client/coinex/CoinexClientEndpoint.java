@@ -33,11 +33,7 @@ public class CoinexClientEndpoint extends AbstractClientEndpoint {
     protected void subscribe() {
         var pairs = new ArrayList<String>();
 
-        getAssets(true).forEach(base -> {
-            getAllQuotesExceptBusd(true).forEach(quote -> {
-                pairs.add("\"" + base + quote + "\"");
-            });
-        });
+        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> pairs.add("\"" + base + quote + "\"")));
 
         this.sendMessage("{   \"method\": \"deals.subscribe\",   \"params\": [PAIRS],   \"id\": ID }"
                 .replace("PAIRS", pairs.stream().collect(Collectors.joining(",")))
@@ -63,11 +59,9 @@ public class CoinexClientEndpoint extends AbstractClientEndpoint {
 
         ((List<Map<String, String>>) dealUpdate.getParams().get(1)).stream()
                 .sorted(Comparator.comparing(e -> e.get("time")))
-                .forEach(deal -> {
-                    trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
-                            .price(Double.valueOf(deal.get("price").toString()))
-                            .amount(Double.valueOf(deal.get("amount").toString())).build());
-                });
+                .forEach(deal -> trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
+                        .price(Double.valueOf(deal.get("price").toString()))
+                        .amount(Double.valueOf(deal.get("amount").toString())).build()));
 
         return trades;
     }

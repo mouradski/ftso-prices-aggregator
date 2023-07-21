@@ -55,9 +55,7 @@ public class GateIOClientEndpoint extends AbstractClientEndpoint {
         var pairs = new ArrayList<String>();
 
         getAssets().stream().filter(v -> !"dgb".equals(v) && !v.startsWith("usd") && !v.equals("busd"))
-                .forEach(base -> {
-                    pairs.add("\"" + base.toUpperCase() + "_" + "USDT\"");
-                });
+                .forEach(base -> pairs.add("\"" + base.toUpperCase() + "_" + "USDT\""));
 
 
         var timestamp = System.currentTimeMillis();

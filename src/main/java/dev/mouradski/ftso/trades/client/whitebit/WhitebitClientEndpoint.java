@@ -40,16 +40,13 @@ public class WhitebitClientEndpoint extends AbstractClientEndpoint {
     protected void subscribe() {
         var pairs = new ArrayList<String>();
 
-        getAssets(true).forEach(base -> {
-            getAllQuotesExceptBusd(true).forEach(quote -> {
-                var pair = base + "_" + quote;
+        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> {
+            var pair = base + "_" + quote;
 
-                if (supportedSymbols.contains(pair)) {
-                    pairs.add("\"" + pair + "\"");
-                }
-            });
-
-        });
+            if (supportedSymbols.contains(pair)) {
+                pairs.add("\"" + pair + "\"");
+            }
+        }));
 
         this.sendMessage("{\"id\": ID,\"method\": \"trades_subscribe\",\"params\": [PAIRS]}"
                 .replace("ID", incAndGetIdAsString())
@@ -77,10 +74,8 @@ public class WhitebitClientEndpoint extends AbstractClientEndpoint {
         var pair = SymbolHelper.getPair(tradeUpdateMessage.getParams().get(0).toString());
 
         ((List<Map>) tradeUpdateMessage.getParams().get(1)).stream()
-                .sorted(Comparator.comparing(v -> v.get("time").toString())).forEach(tradeUpdate -> {
-                    trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
-                            .price(Double.valueOf(tradeUpdate.get("price").toString())).amount(Double.valueOf(tradeUpdate.get("amount").toString())).build());
-                });
+                .sorted(Comparator.comparing(v -> v.get("time").toString())).forEach(tradeUpdate -> trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
+                        .price(Double.valueOf(tradeUpdate.get("price").toString())).amount(Double.valueOf(tradeUpdate.get("amount").toString())).build()));
 
         return trades;
 

@@ -11,8 +11,8 @@ import java.util.Map;
 @Setter
 @Getter
 public class FmfwTradeResponse {
-    public String ch;
-    public Update update;
+    private String ch;
+    private Update update;
 
     @Getter
     @Setter
@@ -32,10 +32,10 @@ public class FmfwTradeResponse {
     @Getter
     @Setter
     public static class Trade {
-        public Long t;
-        public Long i;
-        public Double p;
-        public Double q;
-        public String s;
+        private Long t;
+        private Long i;
+        private Double p;
+        private Double q;
+        private String s;
     }
 }

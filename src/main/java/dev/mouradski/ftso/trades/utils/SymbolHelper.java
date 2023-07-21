@@ -4,6 +4,9 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public class SymbolHelper {
 
+    private SymbolHelper() {
+    }
+
     public static Pair<String, String> getPair(String remotePair) {
         String pair = cleanRemotePair(remotePair);
         String baseCurrency = getBaseCurrency(pair);

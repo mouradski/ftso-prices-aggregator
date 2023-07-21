@@ -3,6 +3,9 @@ package dev.mouradski.ftso.trades.utils;
 import java.util.List;
 
 public class Constants {
+
+    private Constants() {
+    }
     public static final String USD = "usd";
     public static final String USDT = "usdt";
     public static final String USDC = "usdc";

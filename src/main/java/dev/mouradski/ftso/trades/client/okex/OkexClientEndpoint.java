@@ -33,11 +33,7 @@ public class OkexClientEndpoint extends AbstractClientEndpoint {
 
         var channels = new ArrayList<String>();
 
-        getAssets(true).forEach(base -> {
-            getAllQuotesExceptBusd(true).forEach(quote -> {
-                channels.add("{\"channel\": \"trades\",\"instId\": \"SYMBOL-QUOTE\"}".replace("SYMBOL", base).replace("QUOTE", quote));
-            });
-        });
+        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> channels.add("{\"channel\": \"trades\",\"instId\": \"SYMBOL-QUOTE\"}".replace("SYMBOL", base).replace("QUOTE", quote))));
 
         subscriptionMsg.append(channels.stream().collect(Collectors.joining(",")));
         subscriptionMsg.append("]}");

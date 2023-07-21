@@ -13,7 +13,7 @@ import java.util.List;
 import static org.mockito.Mockito.timeout;
 
 @SpringBootTest
-public class FtsoExchangesClientApplicationTest {
+class FtsoExchangesClientApplicationTest {
 
     @MockBean
     private TradeService priceService;
@@ -22,7 +22,7 @@ public class FtsoExchangesClientApplicationTest {
     private List<String> exchanges;
 
     @Test
-    public void test() {
+    void test() {
         exchanges.forEach(exchange -> {
             Mockito.verify(priceService, timeout(60000).atLeastOnce().description(exchange + " will push a trade event")).pushTrade(Mockito.argThat((Trade trade) -> trade.getExchange().equals(exchange)));
         });

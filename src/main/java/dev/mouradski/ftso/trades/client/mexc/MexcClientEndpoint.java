@@ -30,12 +30,7 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-        getAssets(true).forEach(base -> {
-            getAllQuotesExceptBusd(true).forEach(quote -> {
-                this.sendMessage("{\"op\":\"sub.deal\", \"symbol\":\"SYMBOL_QUOTE\"}".replace("SYMBOL", base).replace("QUOTE", quote));
-            });
-        });
-
+        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> this.sendMessage("{\"op\":\"sub.deal\", \"symbol\":\"SYMBOL_QUOTE\"}".replace("SYMBOL", base).replace("QUOTE", quote))));
     }
 
     @Override

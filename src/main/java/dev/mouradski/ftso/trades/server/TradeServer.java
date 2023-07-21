@@ -22,7 +22,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 @ConditionalOnProperty("serve.websocket")
 public class TradeServer {
 
-    public static Set<TradeServer> listeners = new CopyOnWriteArraySet<>();
+    protected static final Set<TradeServer> listeners = new CopyOnWriteArraySet<>();
     private Session session;
     private ObjectMapper objectMapper = new ObjectMapper();
 

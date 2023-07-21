@@ -29,15 +29,7 @@ public class HuobiClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-
-
-        getAssets().forEach(symbol -> {
-            getAllQuotesExceptBusd(false).forEach(base -> {
-                this.sendMessage("{   \"sub\": \"market." + symbol + base + ".trade.detail\",   \"id\": \"ID\" }".replace("ID", new Date().getTime() + ""));
-
-            });
-        });
-
+        getAssets().forEach(symbol -> getAllQuotesExceptBusd(false).forEach(base -> this.sendMessage("{   \"sub\": \"market." + symbol + base + ".trade.detail\",   \"id\": \"ID\" }".replace("ID", new Date().getTime() + ""))));
     }
 
     @Override
@@ -60,11 +52,9 @@ public class HuobiClientEndpoint extends AbstractClientEndpoint {
 
         var pair = SymbolHelper.getPair(symbolId);
 
-        tradeMessage.getTick().getData().stream().sorted(Comparator.comparing(TradeDetail::getTradeId)).forEach(huobiTrade -> {
-            trades.add(Trade.builder().exchange(getExchange())
-                    .base(pair.getLeft()).quote(pair.getRight()).price(huobiTrade.getPrice())
-                    .amount(huobiTrade.getAmount()).build());
-        });
+        tradeMessage.getTick().getData().stream().sorted(Comparator.comparing(TradeDetail::getTradeId)).forEach(huobiTrade -> trades.add(Trade.builder().exchange(getExchange())
+                .base(pair.getLeft()).quote(pair.getRight()).price(huobiTrade.getPrice())
+                .amount(huobiTrade.getAmount()).build()));
 
         return trades;
     }

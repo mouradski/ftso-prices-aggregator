@@ -32,12 +32,7 @@ public class HitbtcClientEndpoint extends AbstractClientEndpoint {
     protected void subscribe() {
         var pairs = new ArrayList<String>();
 
-        getAssets().stream().map(String::toUpperCase).forEach(base -> {
-            getAllQuotesExceptBusd(true).forEach(quote -> {
-                pairs.add("\"" + base + quote + "\"");
-            });
-
-        });
+        getAssets().stream().map(String::toUpperCase).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> pairs.add("\"" + base + quote + "\"")));
 
         this.sendMessage("{\"method\": \"subscribe\",\"ch\": \"trades\",\"params\": {\"symbols\": [PAIRS],\"limit\": 1},\"id\": ID}".replace("PAIRS", pairs.stream().collect(Collectors.joining(","))).replace("ID", new Date().getTime() + ""));
     }
@@ -79,10 +74,6 @@ public class HitbtcClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected boolean pong(String message) {
-        if (message.contains("ping")) {
-
-            return true;
-        }
-        return false;
+        return message.contains("ping");
     }
 }

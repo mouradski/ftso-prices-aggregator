@@ -31,11 +31,7 @@ public class BitstampClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-        getAssets().forEach(base -> {
-            getAllQuotesExceptBusd(false).forEach(quote -> {
-                this.sendMessage("{\"event\": \"bts:subscribe\", \"data\": {\"channel\": \"live_trades_" + base + quote + "\"}}");
-            });
-        });
+        getAssets().forEach(base -> getAllQuotesExceptBusd(false).forEach(quote -> this.sendMessage("{\"event\": \"bts:subscribe\", \"data\": {\"channel\": \"live_trades_" + base + quote + "\"}}")));
     }
 
     @Override

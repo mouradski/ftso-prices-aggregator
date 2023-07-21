@@ -48,13 +48,11 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
     protected void subscribe() {
         var pairs = new ArrayList<String>();
 
-        getAssets(true).forEach(base -> {
-            Arrays.asList("USDT").forEach(quote -> {
-                if (supportedSymbols.contains(base + "_" + quote)) {
-                    pairs.add("\"spot/trade:" + base + "_" + quote + "\"");
-                }
-            });
-        });
+        getAssets(true).forEach(base -> Arrays.asList("USDT").forEach(quote -> {
+            if (supportedSymbols.contains(base + "_" + quote)) {
+                pairs.add("\"spot/trade:" + base + "_" + quote + "\"");
+            }
+        }));
 
 
         this.sendMessage("{\"op\":\"subscribe\",\"args\":[PAIRS]}".replace("PAIRS", pairs.stream().collect(Collectors.joining(","))));
@@ -133,7 +131,7 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
 
             this.supportedSymbols = symbolResponse.getData().getSymbols();
 
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
     }
 }

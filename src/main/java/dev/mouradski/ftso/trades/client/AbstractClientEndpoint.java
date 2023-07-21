@@ -39,7 +39,6 @@ public abstract class AbstractClientEndpoint {
     protected final List<String> exchanges;
     protected Session userSession = null;
     protected AtomicInteger counter = new AtomicInteger();
-    private ScheduledExecutorService executor;
     private long lastMessageTime;
     private int retries = 3;
 
@@ -70,7 +69,7 @@ public abstract class AbstractClientEndpoint {
         userSession.setMaxTextMessageBufferSize(1024 * 1024 * 10);
         log.info("Opening websocket for {} ....", getExchange());
         this.userSession = userSession;
-        this.executor = Executors.newSingleThreadScheduledExecutor();
+        var executor = Executors.newSingleThreadScheduledExecutor();
         this.lastMessageTime = System.currentTimeMillis();
         executor.scheduleAtFixedRate(() -> {
             if (this.userSession != null && this.userSession.isOpen() && System.currentTimeMillis() - lastMessageTime > getTimeout() * 1000) {
@@ -241,16 +240,16 @@ public abstract class AbstractClientEndpoint {
     protected List<String> getAssets(boolean upperCase) {
         List<String> calculatedAssets = assets == null ? SYMBOLS : assets;
 
-        return upperCase ? calculatedAssets.stream().map(String::toUpperCase).collect(Collectors.toList()) : calculatedAssets;
+        return upperCase ? calculatedAssets.stream().map(String::toUpperCase).toList() : calculatedAssets;
     }
 
     protected List<String> getAllQuotes(boolean upperCase) {
-        return upperCase ? Constants.USD_USDT_USDC_BUSD.stream().map(String::toUpperCase).collect(Collectors.toList())
+        return upperCase ? Constants.USD_USDT_USDC_BUSD.stream().map(String::toUpperCase).toList()
                 : Constants.USD_USDT_USDC_BUSD;
     }
 
     protected List<String> getAllQuotesExceptBusd(boolean upperCase) {
-        return upperCase ? Constants.USD_USDT_USDC.stream().map(String::toUpperCase).collect(Collectors.toList())
+        return upperCase ? Constants.USD_USDT_USDC.stream().map(String::toUpperCase).toList()
                 : Constants.USD_USDT_USDC;
     }
 

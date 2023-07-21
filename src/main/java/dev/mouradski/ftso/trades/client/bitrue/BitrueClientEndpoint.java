@@ -58,9 +58,7 @@ public class BitrueClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-        getAssets().stream().filter(v -> !v.contains("usd")).forEach(base -> {
-            this.sendMessage("{\"event\":\"sub\",\"params\":{\"cb_id\":\"CB_ID\",\"channel\":\"market_CB_ID_trade_ticker\"}}".replaceAll("CB_ID", base + USDT));
-        });
+        getAssets().stream().filter(v -> !v.contains("usd")).forEach(base -> this.sendMessage("{\"event\":\"sub\",\"params\":{\"cb_id\":\"CB_ID\",\"channel\":\"market_CB_ID_trade_ticker\"}}".replaceAll("CB_ID", base + USDT)));
     }
 
     @Override

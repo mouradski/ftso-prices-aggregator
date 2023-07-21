@@ -32,11 +32,9 @@ public class XtClientEndpoint extends AbstractClientEndpoint {
     protected void subscribe() {
         var pairs = new ArrayList<String>();
 
-        getAssets(false).forEach(base -> {
-            getAllQuotesExceptBusd(false).forEach(quote -> {
-                pairs.add("\"trade@" + base + "_" + quote + "\"");
-            });
-        });
+        getAssets(false).forEach(base -> getAllQuotesExceptBusd(false).forEach(quote -> {
+            pairs.add("\"trade@" + base + "_" + quote + "\"");
+        }));
 
         this.sendMessage("{     \"method\": \"subscribe\",      \"params\": [PAIRS],      \"id\": \"ID\" }"
                 .replace("ID", incAndGetIdAsString())

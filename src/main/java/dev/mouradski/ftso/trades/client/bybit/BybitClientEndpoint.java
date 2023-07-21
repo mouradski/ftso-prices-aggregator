@@ -29,12 +29,7 @@ public class BybitClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-        getAssets().stream().map(String::toUpperCase).forEach(base -> {
-            getAllQuotesExceptBusd(true).forEach(quote -> {
-                this.sendMessage("{\"topic\":\"trade\", \"params\":{\"symbol\":\"SYMBOLQUOTE\", \"binary\":false}, \"event\":\"sub\"}".replace("SYMBOL", base).replace("QUOTE", quote));
-
-            });
-        });
+        getAssets().stream().map(String::toUpperCase).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> this.sendMessage("{\"topic\":\"trade\", \"params\":{\"symbol\":\"SYMBOLQUOTE\", \"binary\":false}, \"event\":\"sub\"}".replace("SYMBOL", base).replace("QUOTE", quote))));
     }
 
     @Override

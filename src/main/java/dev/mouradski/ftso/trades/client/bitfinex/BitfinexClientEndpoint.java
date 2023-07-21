@@ -29,11 +29,7 @@ public class BitfinexClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-        getAssets().stream().map(String::toUpperCase).forEach(base -> {
-            getAllQuotesExceptBusd(true).forEach(quote -> {
-                this.sendMessage("{\"event\":\"subscribe\", \"channel\":\"trades\",\"symbol\":\"tSYMBOLQUOTE\"}".replace("SYMBOL", base).replace("QUOTE", quote));
-            });
-        });
+        getAssets().stream().map(String::toUpperCase).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> this.sendMessage("{\"event\":\"subscribe\", \"channel\":\"trades\",\"symbol\":\"tSYMBOLQUOTE\"}".replace("SYMBOL", base).replace("QUOTE", quote))));
     }
 
     @Override

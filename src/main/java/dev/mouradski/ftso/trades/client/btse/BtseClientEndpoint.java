@@ -31,13 +31,11 @@ public class BtseClientEndpoint extends AbstractClientEndpoint {
         var pairs = new ArrayList<String>();
         getAssets(true).stream()
                 .filter(base -> !getAllQuotes(true).contains(base))
-                .forEach(symbol -> {
-                    getAllQuotesExceptBusd(true).forEach(quote -> {
-                        var symbolId = symbol + "-" + quote;
-                        pairs.add("\"tradeHistoryApi:SYMBOL\"".replace("SYMBOL", symbolId));
-                        this.sendMessage("{\"op\": \"subscribe\",\"args\": [\"tradeHistoryApi:SYMBOL\"]}".replace("SYMBOL", symbolId));
-                    });
-                });
+                .forEach(symbol -> getAllQuotesExceptBusd(true).forEach(quote -> {
+                    var symbolId = symbol + "-" + quote;
+                    pairs.add("\"tradeHistoryApi:SYMBOL\"".replace("SYMBOL", symbolId));
+                    this.sendMessage("{\"op\": \"subscribe\",\"args\": [\"tradeHistoryApi:SYMBOL\"]}".replace("SYMBOL", symbolId));
+                }));
     }
 
     @Override

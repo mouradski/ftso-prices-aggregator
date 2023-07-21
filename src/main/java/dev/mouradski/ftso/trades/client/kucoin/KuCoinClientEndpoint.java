@@ -75,14 +75,9 @@ public class KuCoinClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-        getAssets(true).forEach(base -> {
-            getAllQuotesExceptBusd(true).forEach(quote -> {
-                try {
-                    subscribeToTrades(base.toUpperCase() + "-" + quote);
-                } catch (IOException e) {
-                }
-            });
-        });
+        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> {
+            subscribeToTrades(base.toUpperCase() + "-" + quote);
+        }));
     }
 
     @Override
@@ -91,8 +86,8 @@ public class KuCoinClientEndpoint extends AbstractClientEndpoint {
     }
 
 
-    private void subscribeToTrades(String symbol) throws IOException {
-        var subscribeMessage = String.format("{\"type\":\"subscribe\",\"topic\":\"/market/match:" + symbol + "\",\"privateChannel\":false,\"response\":true}");
+    private void subscribeToTrades(String symbol) {
+        var subscribeMessage = "{\"type\":\"subscribe\",\"topic\":\"/market/match:" + symbol + "\",\"privateChannel\":false,\"response\":true}";
         this.sendMessage(subscribeMessage);
     }
 

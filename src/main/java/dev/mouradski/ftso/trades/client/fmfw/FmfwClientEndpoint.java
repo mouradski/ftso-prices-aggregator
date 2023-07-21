@@ -32,11 +32,7 @@ public class FmfwClientEndpoint extends AbstractClientEndpoint {
 
         var pairs = new ArrayList<String>();
 
-        getAssets().stream().map(String::toUpperCase).forEach(base -> {
-            getAllQuotesExceptBusd(true).forEach(quote -> {
-                pairs.add("\"" + base + quote + "\"");
-            });
-        });
+        getAssets().stream().map(String::toUpperCase).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> pairs.add("\"" + base + quote + "\"")));
 
         this.sendMessage("{\"method\":\"subscribe\", \"ch\":\"trades\", \"params\":{\"symbols\": [PAIRS]}, \"id\": ID}".replace("ID", incAndGetIdAsString()).replace("PAIRS", pairs.stream().collect(Collectors.joining(","))));
     }

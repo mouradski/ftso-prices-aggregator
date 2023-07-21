@@ -40,18 +40,20 @@ public class DigifinexClientEndpoint extends AbstractClientEndpoint {
     protected void subscribe() {
         var markets = getAvailableMarkets();
 
+        var subscriptionMsgTemplate = "{\"method\":\"trades.subscribe\", \"params\":[PAIRS], \"id\":ID}";
+
         getAssets().stream().map(String::toUpperCase).forEach(base -> {
 
             if (markets.contains(base + "_USD")) {
-                this.sendMessage("{\"method\":\"trades.subscribe\", \"params\":[PAIRS], \"id\":ID}".replace("ID", incAndGetIdAsString()).replace("PAIRS", "\"" + base + "_USD\""));
+                this.sendMessage(subscriptionMsgTemplate.replace("ID", incAndGetIdAsString()).replace("PAIRS", "\"" + base + "_USD\""));
             }
 
             if (!base.equals("USDT") && markets.contains(base + "_USDT")) {
-                this.sendMessage("{\"method\":\"trades.subscribe\", \"params\":[PAIRS], \"id\":ID}".replace("ID", incAndGetIdAsString()).replace("PAIRS", "\"" + base + "_USDT\""));
+                this.sendMessage(subscriptionMsgTemplate.replace("ID", incAndGetIdAsString()).replace("PAIRS", "\"" + base + "_USDT\""));
             }
 
             if (!base.equals("USDC") && markets.contains(base + "_USDC")) {
-                this.sendMessage("{\"method\":\"trades.subscribe\", \"params\":[PAIRS], \"id\":ID}".replace("ID", incAndGetIdAsString()).replace("PAIRS", "\"" + base + "_USDC\""));
+                this.sendMessage(subscriptionMsgTemplate.replace("ID", incAndGetIdAsString()).replace("PAIRS", "\"" + base + "_USDC\""));
             }
         });
     }

@@ -59,12 +59,7 @@ public class KrakenClientEndpoint extends AbstractClientEndpoint {
     protected void subscribe() {
         List<String> paris = new ArrayList<>();
 
-        getAssets(true).forEach(base -> {
-            getAllQuotesExceptBusd(true).forEach(quote -> {
-                paris.add("\"" + base + "/" + quote + "\"");
-
-            });
-        });
+        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> paris.add("\"" + base + "/" + quote + "\"")));
 
         this.sendMessage("{\"event\":\"subscribe\", \"pair\":[" + paris.stream().collect(Collectors.joining(",")) + "], \"subscription\":{\"name\":\"trade\"}}");
     }

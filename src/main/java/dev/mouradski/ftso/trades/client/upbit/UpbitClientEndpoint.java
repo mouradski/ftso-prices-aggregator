@@ -1,7 +1,6 @@
 package dev.mouradski.ftso.trades.client.upbit;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.service.TradeService;
@@ -19,8 +18,6 @@ import java.util.stream.Collectors;
 @Component
 public class UpbitClientEndpoint extends AbstractClientEndpoint {
 
-    private ObjectMapper objectMapper = new ObjectMapper();
-
     protected UpbitClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
@@ -35,12 +32,7 @@ public class UpbitClientEndpoint extends AbstractClientEndpoint {
 
         var pairs = new ArrayList<String>();
 
-        getAssets(true).forEach(base -> {
-            getAllQuotesExceptBusd(true).forEach(quote -> {
-                pairs.add("\"" + quote + "-" + base + "\"");
-
-            });
-        });
+        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> pairs.add("\"" + quote + "-" + base + "\"")));
         this.sendMessage("[{\"ticket\":\"trades\"},{\"type\":\"trade\",\"codes\":[SYMBOL]}]".replace("SYMBOL", pairs.stream().collect(Collectors.joining(","))));
 
 
