@@ -50,7 +50,7 @@ public class PionexClientEndpoint extends AbstractClientEndpoint {
                             try {
                                 var symbolId = base + "_" + quote;
                                 if (supportedSymbols.contains(symbolId)) {
-                                    Thread.sleep(counter.getCount() * 500);
+                                    Thread.sleep(incAndGetId() * 500);
                                     this.sendMessage("{\"op\": \"SUBSCRIBE\",\"topic\":  \"TRADE\", \"symbol\": \"SYMBOL\"}".replace("SYMBOL", symbolId));
                                 }
 

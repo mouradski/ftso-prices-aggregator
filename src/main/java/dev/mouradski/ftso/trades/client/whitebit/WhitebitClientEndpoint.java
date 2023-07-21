@@ -52,7 +52,7 @@ public class WhitebitClientEndpoint extends AbstractClientEndpoint {
         });
 
         this.sendMessage("{\"id\": ID,\"method\": \"trades_subscribe\",\"params\": [PAIRS]}"
-                .replace("ID", counter.getCount().toString())
+                .replace("ID", incAndGetIdAsString())
                 .replace("PAIRS", pairs.stream().collect(Collectors.joining(","))));
 
     }
@@ -110,6 +110,6 @@ public class WhitebitClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(fixedDelay = 30000)
     public void ping() {
-        this.sendMessage("{\"id\": ID,\"method\": \"ping\",\"params\": []}".replace("ID", counter.getCount().toString()));
+        this.sendMessage("{\"id\": ID,\"method\": \"ping\",\"params\": []}".replace("ID", incAndGetIdAsString()));
     }
 }

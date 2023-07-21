@@ -38,7 +38,7 @@ public class FmfwClientEndpoint extends AbstractClientEndpoint {
             });
         });
 
-        this.sendMessage("{\"method\":\"subscribe\", \"ch\":\"trades\", \"params\":{\"symbols\": [PAIRS]}, \"id\": ID}".replace("ID", counter.getCount().toString()).replace("PAIRS", pairs.stream().collect(Collectors.joining(","))));
+        this.sendMessage("{\"method\":\"subscribe\", \"ch\":\"trades\", \"params\":{\"symbols\": [PAIRS]}, \"id\": ID}".replace("ID", incAndGetIdAsString()).replace("PAIRS", pairs.stream().collect(Collectors.joining(","))));
     }
 
     @Override

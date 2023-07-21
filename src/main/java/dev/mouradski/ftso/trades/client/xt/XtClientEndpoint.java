@@ -39,7 +39,7 @@ public class XtClientEndpoint extends AbstractClientEndpoint {
         });
 
         this.sendMessage("{     \"method\": \"subscribe\",      \"params\": [PAIRS],      \"id\": \"ID\" }"
-                .replace("ID", counter.getCount().toString())
+                .replace("ID", incAndGetIdAsString())
                 .replace("PAIRS", pairs.stream().collect(Collectors.joining(","))));
     }
 

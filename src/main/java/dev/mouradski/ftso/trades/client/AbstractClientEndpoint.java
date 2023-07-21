@@ -6,7 +6,6 @@ import com.google.gson.Gson;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.Constants;
-import dev.mouradski.ftso.trades.utils.Counter;
 import jakarta.websocket.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -20,6 +19,7 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.Inflater;
@@ -38,7 +38,7 @@ public abstract class AbstractClientEndpoint {
     protected final List<String> assets;
     protected final List<String> exchanges;
     protected Session userSession = null;
-    protected Counter counter = new Counter();
+    protected AtomicInteger counter = new AtomicInteger();
     private ScheduledExecutorService executor;
     private long lastMessageTime;
     private int retries = 3;
@@ -252,5 +252,13 @@ public abstract class AbstractClientEndpoint {
     protected List<String> getAllQuotesExceptBusd(boolean upperCase) {
         return upperCase ? Constants.USD_USDT_USDC.stream().map(String::toUpperCase).collect(Collectors.toList())
                 : Constants.USD_USDT_USDC;
+    }
+
+    protected Integer incAndGetId() {
+        return counter.incrementAndGet();
+    }
+
+    protected String incAndGetIdAsString() {
+        return ((Integer) counter.incrementAndGet()).toString();
     }
 }

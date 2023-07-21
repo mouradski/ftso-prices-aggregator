@@ -43,15 +43,15 @@ public class DigifinexClientEndpoint extends AbstractClientEndpoint {
         getAssets().stream().map(String::toUpperCase).forEach(base -> {
 
             if (markets.contains(base + "_USD")) {
-                this.sendMessage("{\"method\":\"trades.subscribe\", \"params\":[PAIRS], \"id\":ID}".replace("ID", counter.getCount() + "").replace("PAIRS", "\"" + base + "_USD\""));
+                this.sendMessage("{\"method\":\"trades.subscribe\", \"params\":[PAIRS], \"id\":ID}".replace("ID", incAndGetIdAsString()).replace("PAIRS", "\"" + base + "_USD\""));
             }
 
             if (!base.equals("USDT") && markets.contains(base + "_USDT")) {
-                this.sendMessage("{\"method\":\"trades.subscribe\", \"params\":[PAIRS], \"id\":ID}".replace("ID", counter.getCount() + "").replace("PAIRS", "\"" + base + "_USDT\""));
+                this.sendMessage("{\"method\":\"trades.subscribe\", \"params\":[PAIRS], \"id\":ID}".replace("ID", incAndGetIdAsString()).replace("PAIRS", "\"" + base + "_USDT\""));
             }
 
             if (!base.equals("USDC") && markets.contains(base + "_USDC")) {
-                this.sendMessage("{\"method\":\"trades.subscribe\", \"params\":[PAIRS], \"id\":ID}".replace("ID", counter.getCount() + "").replace("PAIRS", "\"" + base + "_USDC\""));
+                this.sendMessage("{\"method\":\"trades.subscribe\", \"params\":[PAIRS], \"id\":ID}".replace("ID", incAndGetIdAsString()).replace("PAIRS", "\"" + base + "_USDC\""));
             }
         });
     }
@@ -63,7 +63,7 @@ public class DigifinexClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(fixedDelay = 20 * 1000)
     public void ping() {
-        this.sendMessage("{\"method\":\"server.ping\", \"param\":[], \"id\":" + counter.getCount() + "}");
+        this.sendMessage("{\"method\":\"server.ping\", \"param\":[], \"id\":" + incAndGetIdAsString() + "}");
     }
 
     @Override

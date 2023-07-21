@@ -21,6 +21,7 @@ public class TradeService {
     }
 
     public void pushTrade(Trade trade) {
+        System.out.println(trade);
         tradeServer.ifPresent(server -> server.broadcastTrade(trade));
         tradeConsummer.ifPresent(consummer -> consummer.processTrade(trade));
     }

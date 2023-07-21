@@ -67,7 +67,7 @@ public class LbankClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(fixedDelay = 30000)
     public void ping() {
-        this.sendMessage("{\"ping\":\"ID\",\"action\":\"ping\"}".replace("ID", counter.getCount().toString()));
+        this.sendMessage("{\"ping\":\"ID\",\"action\":\"ping\"}".replace("ID", incAndGetIdAsString()));
     }
 
 }

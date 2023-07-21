@@ -41,7 +41,7 @@ public class CoinexClientEndpoint extends AbstractClientEndpoint {
 
         this.sendMessage("{   \"method\": \"deals.subscribe\",   \"params\": [PAIRS],   \"id\": ID }"
                 .replace("PAIRS", pairs.stream().collect(Collectors.joining(",")))
-                .replace("ID", counter.getCount().toString()));
+                .replace("ID", incAndGetIdAsString()));
     }
 
     @Override
@@ -74,6 +74,6 @@ public class CoinexClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(fixedDelay = 30000)
     public void ping() {
-        this.sendMessage("{\"method\":\"server.ping\",\"params\":[],\"id\": ID}".replace("ID", counter.getCount().toString()));
+        this.sendMessage("{\"method\":\"server.ping\",\"params\":[],\"id\": ID}".replace("ID", incAndGetIdAsString()));
     }
 }

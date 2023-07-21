@@ -30,7 +30,7 @@ public class BtcexClientEndpoint extends AbstractClientEndpoint {
     protected void subscribe() {
         getAssets(true).stream().filter(base -> !getAllQuotes(true).contains(base)).forEach(symbol -> {
             var msg = "{\"jsonrpc\" : \"2.0\",\"id\" : ID,\"method\" : \"/public/subscribe\",\"params\" : {\"channels\":[\"trades.SYMBOL-USDT-SPOT.raw\"]}}"
-                    .replace("ID", counter.getCount().toString()).replace("SYMBOL", symbol);
+                    .replace("ID", incAndGetIdAsString()).replace("SYMBOL", symbol);
             this.sendMessage(msg);
         });
     }
@@ -62,6 +62,6 @@ public class BtcexClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(fixedDelay = 15000)
     public void ping() {
-        this.sendMessage("{ \"jsonrpc\":\"2.0\",\"id\": ID,\"method\": \"/public/ping\",\"params\":{}}".replace("ID", counter.getCount().toString()));
+        this.sendMessage("{ \"jsonrpc\":\"2.0\",\"id\": ID,\"method\": \"/public/ping\",\"params\":{}}".replace("ID", incAndGetIdAsString()));
     }
 }
