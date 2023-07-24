@@ -45,22 +45,6 @@ public abstract class AbstractClientEndpoint {
         this.priceSender = priceSender;
         this.exchanges = exchanges;
         this.assets = assets;
-
-        if (exchanges == null || exchanges.contains(getExchange())) {
-            try {
-                while (retries-- > 0) {
-                    if (this.connect()) {
-                        break;
-                    }
-                }
-            } catch (Exception e) {
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
-        }
     }
 
     @OnOpen
@@ -213,6 +197,24 @@ public abstract class AbstractClientEndpoint {
     protected abstract void subscribe();
 
     protected abstract String getExchange();
+
+    protected void start() {
+        if (exchanges == null || exchanges.contains(getExchange())) {
+            try {
+                while (retries-- > 0) {
+                    if (this.connect()) {
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        }
+    }
 
     protected boolean connect() {
 
