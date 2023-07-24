@@ -2,12 +2,10 @@ package dev.mouradski.ftso.trades.client.bybit;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
-import dev.mouradski.ftso.trades.client.binance.BinanceTrade;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -60,7 +58,7 @@ public class BybitClientEndpoint extends AbstractClientEndpoint {
 
         Pair<String, String> pair = SymbolHelper.getPair(bybitTrade.getParams().getSymbol());
 
-        return Arrays.asList(Trade.builder().timestamp(bybitTrade.getData().getT()).exchange(getExchange())
+        return Arrays.asList(Trade.builder().timestamp(currentTimestamp()).exchange(getExchange())
                 .base(pair.getLeft()).quote(pair.getRight())
                 .price(Double.parseDouble(bybitTrade.getData().getP()))
                 .amount(Double.parseDouble(bybitTrade.getData().getQ())).build());

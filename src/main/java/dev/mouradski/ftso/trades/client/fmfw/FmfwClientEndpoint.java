@@ -56,7 +56,7 @@ public class FmfwClientEndpoint extends AbstractClientEndpoint {
             var pair = SymbolHelper.getPair(e.getKey());
 
             e.getValue().stream().sorted(Comparator.comparing(FmfwTradeResponse.Trade::getT)).forEach(trade -> {
-                trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(trade.getP()).amount(trade.getQ()).timestamp(trade.getT()).build());
+                trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(trade.getP()).amount(trade.getQ()).timestamp(currentTimestamp()).build());
             });
         });
 

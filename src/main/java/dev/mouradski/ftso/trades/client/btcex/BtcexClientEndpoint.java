@@ -43,6 +43,7 @@ public class BtcexClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected List<Trade> mapTrade(String message) throws JsonProcessingException {
+        System.out.println(message);
         if (!message.contains("trade_id")) {
             return new ArrayList<>();
         }
@@ -56,7 +57,7 @@ public class BtcexClientEndpoint extends AbstractClientEndpoint {
 
             trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
                     .price(tradeData.getPrice()).amount(tradeData.getAmount())
-                    .timestamp(Long.parseLong(tradeData.getTimestamp()) * 1000) // timestamp is sent in seconds
+                    .timestamp(currentTimestamp()) // timestamp is sent in seconds
                     .build());
         });
 

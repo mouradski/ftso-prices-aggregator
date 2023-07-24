@@ -54,7 +54,7 @@ public class HuobiClientEndpoint extends AbstractClientEndpoint {
 
         tradeMessage.getTick().getData().stream().sorted(Comparator.comparing(TradeDetail::getTradeId)).forEach(huobiTrade -> trades.add(Trade.builder().exchange(getExchange())
                 .base(pair.getLeft()).quote(pair.getRight()).price(huobiTrade.getPrice())
-                .amount(huobiTrade.getAmount()).timestamp(huobiTrade.getTs()).build()));
+                .amount(huobiTrade.getAmount()).timestamp(currentTimestamp()).build()));
 
         return trades;
     }

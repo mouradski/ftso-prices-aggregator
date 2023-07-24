@@ -70,7 +70,7 @@ public class BtseClientEndpoint extends AbstractClientEndpoint {
 
             trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
                     .price(tradeHistoryData.getPrice()).amount(tradeHistoryData.getSize())
-                    .timestamp(tradeHistoryData.getTimestamp()).build());
+                    .timestamp(currentTimestamp()).build());
         });
 
         return trades;

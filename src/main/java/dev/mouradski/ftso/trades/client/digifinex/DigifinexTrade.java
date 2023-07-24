@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class DigifinexTrade {
     private Object id;
-    private Double time;
+    private Long time;
     private Double amount;
     private Double price;
     private String type;

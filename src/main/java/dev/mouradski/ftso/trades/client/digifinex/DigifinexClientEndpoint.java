@@ -72,7 +72,6 @@ public class DigifinexClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected List<Trade> mapTrade(String message) throws JsonProcessingException {
-
         var trades = new ArrayList<Trade>();
 
         var tradeResponse = gson.fromJson(message, TradeResponse.class);
@@ -86,12 +85,10 @@ public class DigifinexClientEndpoint extends AbstractClientEndpoint {
         var pair = SymbolHelper.getPair(gson.toJsonTree(tradeResponse.getParams().get(2)).getAsString());
 
         for (var tradeElement : tradesArray) {
-            var trade = gson.fromJson(tradeElement, Trade.class);
+            var trade = gson.fromJson(tradeElement, DigifinexTrade.class);
 
-            var time = Long.valueOf(Double.valueOf(tradeElement.getAsDouble() * 1000).toString());
-            
             trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
-                    .price(trade.getPrice()).amount(trade.getAmount()).timestamp(time).build());
+                    .price(trade.getPrice()).amount(trade.getAmount()).timestamp(currentTimestamp()).build());
         }
 
         return trades;

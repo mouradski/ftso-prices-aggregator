@@ -59,6 +59,6 @@ public class UpbitClientEndpoint extends AbstractClientEndpoint {
         var base = trade.getCode().split("-")[1];
         var quote = trade.getCode().split("-")[0];
 
-        return Arrays.asList(Trade.builder().exchange(getExchange()).base(base).quote(quote).price(trade.getTradePrice()).amount(trade.getTradeVolume()).timestamp(trade.getTimestamp()).build());
+        return Arrays.asList(Trade.builder().exchange(getExchange()).base(base).quote(quote).price(trade.getTradePrice()).amount(trade.getTradeVolume()).timestamp(currentTimestamp()).build());
     }
 }

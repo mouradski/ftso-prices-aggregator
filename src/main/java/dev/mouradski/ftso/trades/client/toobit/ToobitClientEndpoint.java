@@ -53,7 +53,7 @@ public class ToobitClientEndpoint extends AbstractClientEndpoint {
         var pair = SymbolHelper.getPair(tradeMessage.getSymbolName());
 
         ArrayList<Trade> trades = tradeMessage.getTrades().stream().sorted(Comparator.comparing(ToobitTrade::getTime)).map(toobitTrade -> Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
-                .price(toobitTrade.getPrice()).amount(toobitTrade.getQuantity()).timestamp(toobitTrade.getTime()).build()).collect(Collectors.toCollection(ArrayList::new));
+                .price(toobitTrade.getPrice()).amount(toobitTrade.getQuantity()).timestamp(currentTimestamp()).build()).collect(Collectors.toCollection(ArrayList::new));
 
         return trades;
 

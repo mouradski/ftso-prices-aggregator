@@ -107,7 +107,7 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
                     var pair = SymbolHelper.getPair(tradeData.getSymbol());
                     trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
                             .price(tradeData.getPrice()).amount(tradeData.getSize())
-                            .timestamp(tradeData.getS_t() * 1000) // timestamp is in seconds
+                            .timestamp(currentTimestamp()) // timestamp is in seconds
                             .build());
 
                 });
