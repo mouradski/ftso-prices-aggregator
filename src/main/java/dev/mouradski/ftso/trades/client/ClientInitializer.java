@@ -5,9 +5,9 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class CliensInitializer {
+public class ClientInitializer {
 
-    public CliensInitializer(List<AbstractClientEndpoint> clients) {
+    public ClientInitializer(List<AbstractClientEndpoint> clients) {
         clients.parallelStream().forEach(AbstractClientEndpoint::start);
     }
 }
