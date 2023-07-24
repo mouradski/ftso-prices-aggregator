@@ -14,4 +14,5 @@ public class Trade {
     private String quote;
     private Double amount;
     private String exchange;
+    private Long timestamp;
 }

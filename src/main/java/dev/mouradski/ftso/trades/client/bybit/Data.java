@@ -1,4 +1,4 @@
-package dev.mouradski.ftso.trades.client.binance;
+package dev.mouradski.ftso.trades.client.bybit;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -19,13 +19,13 @@ import lombok.ToString;
 @Setter
 @ToString
 public class Data {
-    @JsonProperty("s")
-    public String s;
-    @JsonProperty("p")
-    public Double p;
-    @JsonProperty("q")
-    public Double q;
-    @JsonProperty("T")
+    @JsonProperty("v") // trade id
+    public String v;
+    @JsonProperty("t") // timestamp
     public Long t;
+    @JsonProperty("p") // price
+    public String p;
+    @JsonProperty("q") // quantity
+    public String q;
 
 }

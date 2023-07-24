@@ -2,10 +2,13 @@ package dev.mouradski.ftso.trades.client.bybit;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.client.binance.BinanceTrade;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -18,7 +21,8 @@ import java.util.List;
 @Component
 @ClientEndpoint
 public class BybitClientEndpoint extends AbstractClientEndpoint {
-    protected BybitClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    protected BybitClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges,
+            @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -29,7 +33,10 @@ public class BybitClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-        getAssets().stream().map(String::toUpperCase).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> this.sendMessage("{\"topic\":\"trade\", \"params\":{\"symbol\":\"SYMBOLQUOTE\", \"binary\":false}, \"event\":\"sub\"}".replace("SYMBOL", base).replace("QUOTE", quote))));
+        getAssets().stream().map(String::toUpperCase)
+                .forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> this.sendMessage(
+                        "{\"topic\":\"trade\", \"params\":{\"symbol\":\"SYMBOLQUOTE\", \"binary\":false}, \"event\":\"sub\"}"
+                                .replace("SYMBOL", base).replace("QUOTE", quote))));
     }
 
     @Override
@@ -49,10 +56,13 @@ public class BybitClientEndpoint extends AbstractClientEndpoint {
             return new ArrayList<>();
         }
 
-        var tradeResponse = gson.fromJson(message, TradeResponse.class);
+        var bybitTrade = objectMapper.readValue(message, BybitTrade.class);
 
-        var pair = SymbolHelper.getPair(tradeResponse.getParams().getSymbol());
+        Pair<String, String> pair = SymbolHelper.getPair(bybitTrade.getParams().getSymbol());
 
-        return Arrays.asList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(Double.parseDouble(tradeResponse.getData().get("p"))).amount(Double.parseDouble(tradeResponse.getData().get("q"))).build());
+        return Arrays.asList(Trade.builder().timestamp(bybitTrade.getData().getT()).exchange(getExchange())
+                .base(pair.getLeft()).quote(pair.getRight())
+                .price(Double.parseDouble(bybitTrade.getData().getP()))
+                .amount(Double.parseDouble(bybitTrade.getData().getQ())).build());
     }
 }

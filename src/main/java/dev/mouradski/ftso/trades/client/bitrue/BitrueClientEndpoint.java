@@ -40,7 +40,7 @@ public class BitrueClientEndpoint extends AbstractClientEndpoint {
         var quote = "USDT";
 
         for (var trade : tradeMessage.getTick().getData()) {
-            trades.add(Trade.builder().exchange(getExchange()).price(trade.getPrice()).amount(trade.getAmount()).quote(quote).base(pair).build());
+            trades.add(Trade.builder().exchange(getExchange()).price(trade.getPrice()).amount(trade.getAmount()).quote(quote).base(pair).timestamp(trade.getTs()).build());
         }
 
         return trades;

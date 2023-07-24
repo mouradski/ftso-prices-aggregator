@@ -17,7 +17,8 @@ import java.util.List;
 @ClientEndpoint
 public class BtcexClientEndpoint extends AbstractClientEndpoint {
 
-    protected BtcexClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    protected BtcexClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges,
+            @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -40,7 +41,6 @@ public class BtcexClientEndpoint extends AbstractClientEndpoint {
         return "btcex";
     }
 
-
     @Override
     protected List<Trade> mapTrade(String message) throws JsonProcessingException {
         if (!message.contains("trade_id")) {
@@ -54,7 +54,10 @@ public class BtcexClientEndpoint extends AbstractClientEndpoint {
         tradeResponse.getParams().getData().forEach(tradeData -> {
             var pair = SymbolHelper.getPair(tradeData.getInstrumentName().replace("-SPOT", ""));
 
-            trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(tradeData.getPrice()).amount(tradeData.getAmount()).build());
+            trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
+                    .price(tradeData.getPrice()).amount(tradeData.getAmount())
+                    .timestamp(Long.parseLong(tradeData.getTimestamp()) * 1000) // timestamp is sent in seconds
+                    .build());
         });
 
         return trades;
@@ -62,6 +65,7 @@ public class BtcexClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(fixedDelay = 15000)
     public void ping() {
-        this.sendMessage("{ \"jsonrpc\":\"2.0\",\"id\": ID,\"method\": \"/public/ping\",\"params\":{}}".replace("ID", incAndGetIdAsString()));
+        this.sendMessage("{ \"jsonrpc\":\"2.0\",\"id\": ID,\"method\": \"/public/ping\",\"params\":{}}".replace("ID",
+                incAndGetIdAsString()));
     }
 }

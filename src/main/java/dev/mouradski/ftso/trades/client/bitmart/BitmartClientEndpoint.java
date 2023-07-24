@@ -35,7 +35,8 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
 
     private List<String> supportedSymbols = new ArrayList<>();
 
-    protected BitmartClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    protected BitmartClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges,
+            @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -54,8 +55,8 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
             }
         }));
 
-
-        this.sendMessage("{\"op\":\"subscribe\",\"args\":[PAIRS]}".replace("PAIRS", pairs.stream().collect(Collectors.joining(","))));
+        this.sendMessage("{\"op\":\"subscribe\",\"args\":[PAIRS]}".replace("PAIRS",
+                pairs.stream().collect(Collectors.joining(","))));
 
     }
 
@@ -105,7 +106,9 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
                 .forEach(tradeData -> {
                     var pair = SymbolHelper.getPair(tradeData.getSymbol());
                     trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
-                            .price(tradeData.getPrice()).amount(tradeData.getSize()).build());
+                            .price(tradeData.getPrice()).amount(tradeData.getSize())
+                            .timestamp(tradeData.getS_t() * 1000) // timestamp is in seconds
+                            .build());
 
                 });
 
@@ -117,7 +120,6 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
         this.sendMessage("ping");
     }
 
-
     @Override
     protected void prepareConnection() {
         HttpClient client = HttpClient.newHttpClient();
@@ -127,7 +129,8 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
 
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            dev.mouradski.ftso.trades.client.bitmart.SymbolResponse symbolResponse = objectMapper.readValue(response.body(), SymbolResponse.class);
+            dev.mouradski.ftso.trades.client.bitmart.SymbolResponse symbolResponse = objectMapper
+                    .readValue(response.body(), SymbolResponse.class);
 
             this.supportedSymbols = symbolResponse.getData().getSymbols();
 

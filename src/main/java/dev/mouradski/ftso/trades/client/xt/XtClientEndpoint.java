@@ -58,7 +58,7 @@ public class XtClientEndpoint extends AbstractClientEndpoint {
 
         var pair = SymbolHelper.getPair(eventData.getEvent().replace("trade@", ""));
 
-        return Arrays.asList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(eventData.getData().getPrice()).amount(eventData.getData().getQuantity()).build());
+        return Arrays.asList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(eventData.getData().getPrice()).amount(eventData.getData().getQuantity()).timestamp(eventData.getData().getTime()).build());
     }
 
     @Scheduled(fixedDelay = 20000)

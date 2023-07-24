@@ -9,6 +9,7 @@ import jakarta.websocket.ClientEndpoint;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -52,6 +53,8 @@ public class CoinbaseClientEndpoint extends AbstractClientEndpoint {
 
         var pair = SymbolHelper.getPair(tradeMatch.getProductId());
 
-        return Arrays.asList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(tradeMatch.getPrice()).amount(tradeMatch.getSize()).build());
+        var time = Instant.parse(tradeMatch.getTime()).toEpochMilli();
+
+        return Arrays.asList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(tradeMatch.getPrice()).amount(tradeMatch.getSize()).timestamp(time).build());
     }
 }

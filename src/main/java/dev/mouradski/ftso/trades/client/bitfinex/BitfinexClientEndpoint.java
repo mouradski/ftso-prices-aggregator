@@ -18,7 +18,8 @@ public class BitfinexClientEndpoint extends AbstractClientEndpoint {
 
     private Map<Double, Pair<String, String>> channelIds = new HashMap<>();
 
-    public BitfinexClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    public BitfinexClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges,
+            @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -29,7 +30,10 @@ public class BitfinexClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribe() {
-        getAssets().stream().map(String::toUpperCase).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> this.sendMessage("{\"event\":\"subscribe\", \"channel\":\"trades\",\"symbol\":\"tSYMBOLQUOTE\"}".replace("SYMBOL", base).replace("QUOTE", quote))));
+        getAssets().stream().map(String::toUpperCase)
+                .forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> this
+                        .sendMessage("{\"event\":\"subscribe\", \"channel\":\"trades\",\"symbol\":\"tSYMBOLQUOTE\"}"
+                                .replace("SYMBOL", base).replace("QUOTE", quote))));
     }
 
     @Override
@@ -50,7 +54,9 @@ public class BitfinexClientEndpoint extends AbstractClientEndpoint {
 
         var pair = channelIds.get(channelId);
 
-        return Arrays.asList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(tradeData.get(3)).amount(Math.abs(tradeData.get(2))).build());
+        return Arrays.asList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
+                .price(tradeData.get(3)).amount(Math.abs(tradeData.get(2))).timestamp(System.currentTimeMillis())
+                .build());
     }
 
     @Override

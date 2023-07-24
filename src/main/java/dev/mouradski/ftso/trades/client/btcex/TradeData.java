@@ -7,6 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 class TradeData {
+    @JsonProperty("timestamp")
     String timestamp;
     Double price;
     Double amount;

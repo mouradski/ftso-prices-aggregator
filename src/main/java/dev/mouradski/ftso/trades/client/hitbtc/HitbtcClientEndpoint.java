@@ -65,7 +65,7 @@ public class HitbtcClientEndpoint extends AbstractClientEndpoint {
 
 
             for (HitbtcTrade hitbtcTrade : e.getValue()) {
-                trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(hitbtcTrade.getP()).amount(hitbtcTrade.getQ()).build());
+                trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(hitbtcTrade.getP()).amount(hitbtcTrade.getQ()).timestamp(hitbtcTrade.getT()).build());
             }
         });
 

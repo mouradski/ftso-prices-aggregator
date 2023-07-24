@@ -1,6 +1,5 @@
 package dev.mouradski.ftso.trades.client.btse;
 
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
@@ -17,7 +16,8 @@ import java.util.List;
 @ClientEndpoint
 public class BtseClientEndpoint extends AbstractClientEndpoint {
 
-    protected BtseClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    protected BtseClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges,
+            @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
@@ -34,7 +34,8 @@ public class BtseClientEndpoint extends AbstractClientEndpoint {
                 .forEach(symbol -> getAllQuotesExceptBusd(true).forEach(quote -> {
                     var symbolId = symbol + "-" + quote;
                     pairs.add("\"tradeHistoryApi:SYMBOL\"".replace("SYMBOL", symbolId));
-                    this.sendMessage("{\"op\": \"subscribe\",\"args\": [\"tradeHistoryApi:SYMBOL\"]}".replace("SYMBOL", symbolId));
+                    this.sendMessage("{\"op\": \"subscribe\",\"args\": [\"tradeHistoryApi:SYMBOL\"]}".replace("SYMBOL",
+                            symbolId));
                 }));
     }
 
@@ -68,7 +69,8 @@ public class BtseClientEndpoint extends AbstractClientEndpoint {
             var pair = SymbolHelper.getPair(tradeHistoryData.getSymbol());
 
             trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
-                    .price(tradeHistoryData.getPrice()).amount(tradeHistoryData.getSize()).build());
+                    .price(tradeHistoryData.getPrice()).amount(tradeHistoryData.getSize())
+                    .timestamp(tradeHistoryData.getTimestamp()).build());
         });
 
         return trades;

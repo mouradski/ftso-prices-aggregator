@@ -30,7 +30,7 @@ public class BinanceClientEndpoint extends AbstractClientEndpoint {
 
         Pair<String, String> pair = SymbolHelper.getPair(binanceTrade.getData().getS());
 
-        return Arrays.asList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
+        return Arrays.asList(Trade.builder().timestamp(binanceTrade.getData().getT()).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
                 .price(binanceTrade.getData().getP()).amount(binanceTrade.getData().getQ()).build());
     }
 

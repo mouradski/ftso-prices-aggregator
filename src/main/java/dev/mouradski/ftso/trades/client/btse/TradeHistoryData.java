@@ -13,5 +13,6 @@ class TradeHistoryData {
     private double price;
     @JsonProperty("tradeId")
     private long tradeId;
+    @JsonProperty("timestamp")
     private long timestamp;
 }
