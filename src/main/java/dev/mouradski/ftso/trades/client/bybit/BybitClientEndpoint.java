@@ -53,6 +53,6 @@ public class BybitClientEndpoint extends AbstractClientEndpoint {
 
         var pair = SymbolHelper.getPair(tradeResponse.getParams().getSymbol());
 
-        return Arrays.asList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(Double.parseDouble(tradeResponse.getData().get("p"))).amount(Double.parseDouble(tradeResponse.getData().get("p"))).build());
+        return Arrays.asList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(Double.parseDouble(tradeResponse.getData().get("p"))).amount(Double.parseDouble(tradeResponse.getData().get("q"))).build());
     }
 }
