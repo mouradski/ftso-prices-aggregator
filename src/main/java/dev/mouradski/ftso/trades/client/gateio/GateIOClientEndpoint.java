@@ -39,7 +39,7 @@ public class GateIOClientEndpoint extends AbstractClientEndpoint {
         var gateIOTrade = gson.fromJson(result, GateIOTrade.class);
 
         return Arrays.asList(Trade.builder().exchange(getExchange()).base(gateIOTrade.getCurrencyPair().split("_")[0])
-                .quote(gateIOTrade.getCurrencyPair().split("_")[1]).price(gateIOTrade.getPrice()).amount(gateIOTrade.getAmount()).build());
+                .quote(gateIOTrade.getCurrencyPair().split("_")[1]).price(gateIOTrade.getPrice()).amount(gateIOTrade.getAmount()).timestamp((long)Double.parseDouble(gateIOTrade.getCreateTimeMs())).build());
 
 
     }

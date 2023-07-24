@@ -61,7 +61,7 @@ public class OkexClientEndpoint extends AbstractClientEndpoint {
         var trades = new ArrayList<Trade>();
 
         tradeData.getData().forEach(data -> {
-            trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(data.getPx()).amount(data.getSz()).build());
+            trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(data.getPx()).amount(data.getSz()).timestamp(Long.parseLong(data.getTs())).build());
         });
 
         return trades;

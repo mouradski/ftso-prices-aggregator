@@ -21,5 +21,8 @@ public class TradeData {
 
     @JsonProperty("symbol")
     private String symbol;
+
+    @JsonProperty("symbol")
+    private Long s_t;
 }
 

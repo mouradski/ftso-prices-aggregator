@@ -11,7 +11,7 @@ public class TradeDetail {
     private String id;
 
     @SerializedName("ts")
-    private String ts;
+    private long ts;
 
     @SerializedName("tradeId")
     private long tradeId;

@@ -40,7 +40,7 @@ public class Data {
     @JsonProperty("takerOrderId")
     public String takerOrderId;
     @JsonProperty("time")
-    public String time;
+    public Double time;
     @JsonProperty("tradeId")
     public String tradeId;
     @JsonProperty("type")

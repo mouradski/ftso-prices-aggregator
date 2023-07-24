@@ -55,7 +55,7 @@ public class CryptoComClientEndpoint extends AbstractClientEndpoint {
         var quote = response.getResult().getSubscription().replace("trade.", "").split("_")[1];
 
         response.getResult().getData().forEach(cryptoTrade -> {
-            trades.add(Trade.builder().exchange(getExchange()).base(base).quote(quote).price(cryptoTrade.getP()).amount(cryptoTrade.getQ()).build());
+            trades.add(Trade.builder().exchange(getExchange()).base(base).quote(quote).price(cryptoTrade.getP()).amount(cryptoTrade.getQ()).timestamp(cryptoTrade.getT()).build());
         });
 
 

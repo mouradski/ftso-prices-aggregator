@@ -52,7 +52,7 @@ public class BitgetClientEndpoint extends AbstractClientEndpoint {
 
 
         update.getData().forEach(tradeData -> {
-            trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).amount(tradeData.getQuantity()).price(tradeData.getPrice()).build());
+            trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).amount(tradeData.getQuantity()).price(tradeData.getPrice()).timestamp(System.currentTimeMillis()).build());
         });
 
         return trades;

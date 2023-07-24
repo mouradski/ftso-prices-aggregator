@@ -18,20 +18,20 @@ import java.util.List;
 @Component
 public class BitstampClientEndpoint extends AbstractClientEndpoint {
 
-    public BitstampClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    public BitstampClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges,
+            @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
-
 
     @Override
     protected String getUri() {
         return "wss://ws.bitstamp.net";
     }
 
-
     @Override
     protected void subscribe() {
-        getAssets().forEach(base -> getAllQuotesExceptBusd(false).forEach(quote -> this.sendMessage("{\"event\": \"bts:subscribe\", \"data\": {\"channel\": \"live_trades_" + base + quote + "\"}}")));
+        getAssets().forEach(base -> getAllQuotesExceptBusd(false).forEach(quote -> this.sendMessage(
+                "{\"event\": \"bts:subscribe\", \"data\": {\"channel\": \"live_trades_" + base + quote + "\"}}")));
     }
 
     @Override
@@ -39,24 +39,23 @@ public class BitstampClientEndpoint extends AbstractClientEndpoint {
         return "bitstamp";
     }
 
-
     @Override
     protected List<Trade> mapTrade(String message) throws JsonProcessingException {
         if (message.contains("\"event\":\"trade\"")) {
             var jsonObject = JsonParser.parseString(message).getAsJsonObject();
 
             var channelName = jsonObject.get("channel").getAsString();
-            var symbolId = channelName.substring(12).toUpperCase();  // remove "live_trades_" and convert to upper case
+            var symbolId = channelName.substring(12).toUpperCase(); // remove "live_trades_" and convert to upper case
 
             var tradeData = jsonObject.get("data").getAsJsonObject();
 
             var trade = new Trade();
             trade.setPrice(tradeData.get("price").getAsDouble());
             trade.setAmount(tradeData.get("amount").getAsDouble());
+            trade.setTimestamp(tradeData.get("timestamp").getAsLong() * 1000); // timestamp is sent in seconds
             trade.setExchange(getExchange());
 
             var pair = SymbolHelper.getPair(symbolId);
-
 
             trade.setBase(pair.getLeft());
             trade.setQuote(pair.getRight());

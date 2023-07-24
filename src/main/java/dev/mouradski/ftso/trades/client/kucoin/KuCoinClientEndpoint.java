@@ -37,12 +37,16 @@ public class KuCoinClientEndpoint extends AbstractClientEndpoint {
         if (kucoinTrade.getData() == null) {
             return new ArrayList<>();
         }
+
+        var time = (long)(kucoinTrade.getData().getTime()/1e6); // time is in nanoseconds
+
         return Arrays.asList(Trade.builder()
                 .exchange(getExchange())
                 .price(kucoinTrade.getData().getPrice())
                 .amount(kucoinTrade.getData().getSize())
                 .base(kucoinTrade.getData().getSymbol().split("-")[0])
                 .quote(kucoinTrade.getData().getSymbol().split("-")[1])
+                .timestamp(time)
                 .build());
     }
 

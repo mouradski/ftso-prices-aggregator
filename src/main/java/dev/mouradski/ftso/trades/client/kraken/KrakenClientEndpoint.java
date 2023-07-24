@@ -17,13 +17,15 @@ import java.util.stream.Collectors;
 @Component
 public class KrakenClientEndpoint extends AbstractClientEndpoint {
 
-    public KrakenClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
+    public KrakenClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges,
+            @Value("${assets}") List<String> assets) {
         super(priceSender, exchanges, assets);
     }
 
     @Override
     protected List<Trade> mapTrade(String message) throws JsonProcessingException {
-        if (!message.contains("trade") || message.contains("systemStatus") || message.contains("errorMessage") || message.contains("subscriptionStatus")) {
+        if (!message.contains("trade") || message.contains("systemStatus") || message.contains("errorMessage")
+                || message.contains("subscriptionStatus")) {
             return new ArrayList<>();
         }
 
@@ -43,7 +45,10 @@ public class KrakenClientEndpoint extends AbstractClientEndpoint {
 
             for (var tradeData : tradesData) {
                 var tradeArray = tradeData.getAsJsonArray();
-                trades.add(Trade.builder().exchange(getExchange()).base(base).quote(quote).price(tradeArray.get(0).getAsDouble()).amount(tradeArray.get(1).getAsDouble()).build());
+                trades.add(Trade.builder().exchange(getExchange()).base(base).quote(quote)
+                        .price(tradeArray.get(0).getAsDouble()).amount(tradeArray.get(1).getAsDouble())
+                        .timestamp((long) (tradeArray.get(2).getAsDouble() * 1000)) // timestamp sent in seconds
+                        .build());
             }
         }
 
@@ -59,9 +64,11 @@ public class KrakenClientEndpoint extends AbstractClientEndpoint {
     protected void subscribe() {
         List<String> paris = new ArrayList<>();
 
-        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> paris.add("\"" + base + "/" + quote + "\"")));
+        getAssets(true).forEach(
+                base -> getAllQuotesExceptBusd(true).forEach(quote -> paris.add("\"" + base + "/" + quote + "\"")));
 
-        this.sendMessage("{\"event\":\"subscribe\", \"pair\":[" + paris.stream().collect(Collectors.joining(",")) + "], \"subscription\":{\"name\":\"trade\"}}");
+        this.sendMessage("{\"event\":\"subscribe\", \"pair\":[" + paris.stream().collect(Collectors.joining(","))
+                + "], \"subscription\":{\"name\":\"trade\"}}");
     }
 
     @Override

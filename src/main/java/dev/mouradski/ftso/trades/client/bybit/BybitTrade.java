@@ -1,4 +1,6 @@
-package dev.mouradski.ftso.trades.client.binance;
+package dev.mouradski.ftso.trades.client.bybit;
+
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -10,22 +12,20 @@ import lombok.ToString;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-        "s",
-        "p",
-        "q"
+        "topic",
+        "params",
+        "data"
 })
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
 @Setter
 @ToString
-public class Data {
-    @JsonProperty("s")
-    public String s;
-    @JsonProperty("p")
-    public Double p;
-    @JsonProperty("q")
-    public Double q;
-    @JsonProperty("T")
-    public Long t;
+public class BybitTrade {
+    @JsonProperty
+    public String topic;
+    @JsonProperty("params")
+    public Params params;
+    @JsonProperty("data")
+    public Data data;
 
 }

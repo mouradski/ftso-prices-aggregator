@@ -61,7 +61,8 @@ public class CoinexClientEndpoint extends AbstractClientEndpoint {
                 .sorted(Comparator.comparing(e -> e.get("time")))
                 .forEach(deal -> trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
                         .price(Double.valueOf(deal.get("price").toString()))
-                        .amount(Double.valueOf(deal.get("amount").toString())).build()));
+                        .amount(Double.valueOf(deal.get("amount").toString()))
+                        .timestamp(Long.valueOf(deal.get("time"))).build()));
 
         return trades;
     }
