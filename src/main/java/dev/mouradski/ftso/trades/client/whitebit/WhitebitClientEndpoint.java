@@ -75,7 +75,7 @@ public class WhitebitClientEndpoint extends AbstractClientEndpoint {
 
         ((List<Map>) tradeUpdateMessage.getParams().get(1)).stream()
                 .sorted(Comparator.comparing(v -> v.get("time").toString())).forEach(tradeUpdate -> trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
-                        .price(Double.valueOf(tradeUpdate.get("price").toString())).amount(Double.valueOf(tradeUpdate.get("amount").toString())).timestamp(((long)(Double.valueOf(tradeUpdate.get("time").toString())*1000))).build()));
+                        .price(Double.valueOf(tradeUpdate.get("price").toString())).amount(Double.valueOf(tradeUpdate.get("amount").toString())).timestamp(currentTimestamp()).build()));
 
         return trades;
 

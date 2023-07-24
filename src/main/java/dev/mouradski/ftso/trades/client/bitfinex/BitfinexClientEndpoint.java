@@ -55,7 +55,7 @@ public class BitfinexClientEndpoint extends AbstractClientEndpoint {
         var pair = channelIds.get(channelId);
 
         return Arrays.asList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
-                .price(tradeData.get(3)).amount(Math.abs(tradeData.get(2))).timestamp(System.currentTimeMillis())
+                .price(tradeData.get(3)).amount(Math.abs(tradeData.get(2))).timestamp(currentTimestamp())
                 .build());
     }
 

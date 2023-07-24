@@ -14,13 +14,12 @@ import java.io.*;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.Inflater;
 
@@ -259,5 +258,9 @@ public abstract class AbstractClientEndpoint {
 
     protected String incAndGetIdAsString() {
         return ((Integer) counter.incrementAndGet()).toString();
+    }
+
+    protected Long currentTimestamp() {
+        return Instant.now().toEpochMilli();
     }
 }

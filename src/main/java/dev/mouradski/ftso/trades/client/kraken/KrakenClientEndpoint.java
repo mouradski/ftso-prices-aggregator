@@ -47,7 +47,7 @@ public class KrakenClientEndpoint extends AbstractClientEndpoint {
                 var tradeArray = tradeData.getAsJsonArray();
                 trades.add(Trade.builder().exchange(getExchange()).base(base).quote(quote)
                         .price(tradeArray.get(0).getAsDouble()).amount(tradeArray.get(1).getAsDouble())
-                        .timestamp((long) (tradeArray.get(2).getAsDouble() * 1000)) // timestamp sent in seconds
+                        .timestamp(currentTimestamp()) // timestamp sent in seconds
                         .build());
             }
         }

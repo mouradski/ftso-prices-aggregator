@@ -11,4 +11,5 @@ public class Update {
     private String action;
     private Arg arg;
     private List<TradeUpdateData> data;
+    private String ts;
 }

@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -59,9 +58,7 @@ public class LbankClientEndpoint extends AbstractClientEndpoint {
 
         var pair = SymbolHelper.getPair(tradeWrapper.getPair());
 
-        var time = Instant.parse(tradeWrapper.getTrade().getTs()).toEpochMilli();
-
-        return Arrays.asList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(tradeWrapper.getTrade().getPrice()).amount(tradeWrapper.getTrade().getAmount()).timestamp(time).build());
+        return Arrays.asList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(tradeWrapper.getTrade().getPrice()).amount(tradeWrapper.getTrade().getAmount()).timestamp(currentTimestamp()).build());
     }
 
     @Scheduled(fixedDelay = 30000)

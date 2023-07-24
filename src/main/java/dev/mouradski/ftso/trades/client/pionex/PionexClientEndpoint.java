@@ -74,7 +74,7 @@ public class PionexClientEndpoint extends AbstractClientEndpoint {
 
         tradeResponse.getData().forEach(tradeData -> {
             var pair = SymbolHelper.getPair(tradeData.getSymbol());
-            trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(tradeData.getPrice()).amount(tradeData.getSize()).timestamp(tradeData.getTimestamp()).build());
+            trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(tradeData.getPrice()).amount(tradeData.getSize()).timestamp(currentTimestamp()).build());
         });
 
         return trades;
