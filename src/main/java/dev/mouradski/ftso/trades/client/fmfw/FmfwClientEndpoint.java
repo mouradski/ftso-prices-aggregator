@@ -3,10 +3,8 @@ package dev.mouradski.ftso.trades.client.fmfw;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -17,10 +15,6 @@ import java.util.stream.Collectors;
 @ClientEndpoint
 @Component
 public class FmfwClientEndpoint extends AbstractClientEndpoint {
-
-    protected FmfwClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
-        super(priceSender, exchanges, assets);
-    }
 
     @Override
     protected String getUri() {

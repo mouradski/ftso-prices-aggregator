@@ -3,9 +3,7 @@ package dev.mouradski.ftso.trades.client.bitrue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.TradeService;
 import jakarta.websocket.ClientEndpoint;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -16,10 +14,6 @@ import static dev.mouradski.ftso.trades.utils.Constants.USDT;
 @ClientEndpoint
 @Component
 public class BitrueClientEndpoint extends AbstractClientEndpoint {
-
-    public BitrueClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
-        super(priceSender, exchanges, assets);
-    }
 
     @Override
     protected String getUri() {

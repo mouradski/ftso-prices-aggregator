@@ -32,16 +32,20 @@ public abstract class AbstractClientEndpoint {
     public static final Gson gson = new Gson();
     private static final long DEFAULT_TIMEOUT = 120; // timeout in seconds
     private static final Object sendMutex = new Object();
-    protected final TradeService priceSender;
     protected final ObjectMapper objectMapper = new ObjectMapper();
-    protected final List<String> assets;
-    protected final List<String> exchanges;
+
+    protected TradeService priceSender;
+    protected List<String> assets;
+    protected List<String> exchanges;
     protected Session userSession = null;
     protected AtomicInteger counter = new AtomicInteger();
     private long lastMessageTime;
     private int retries = 3;
 
-    protected AbstractClientEndpoint(TradeService priceSender, List<String> exchanges, List<String> assets) {
+    protected AbstractClientEndpoint() {
+    }
+
+    protected void configure(TradeService priceSender, List<String> exchanges, List<String> assets) {
         this.priceSender = priceSender;
         this.exchanges = exchanges;
         this.assets = assets;

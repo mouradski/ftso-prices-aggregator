@@ -3,11 +3,9 @@ package dev.mouradski.ftso.trades.client.binance;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -19,10 +17,6 @@ import java.util.stream.Collectors;
 public class BinanceClientEndpoint extends AbstractClientEndpoint {
 
     private final String websocketApiBase = "wss://stream.binance.com:9443/stream?streams=";
-
-    public BinanceClientEndpoint(TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
-        super(priceSender, exchanges, assets);
-    }
 
     @Override
     protected List<Trade> mapTrade(String message) throws JsonProcessingException {
