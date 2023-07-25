@@ -10,7 +10,6 @@ import java.util.List;
 public class ClientInitializer {
 
     public ClientInitializer(List<AbstractClientEndpoint> clients, TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
-        clients.parallelStream().forEach(client -> client.configure(priceSender, exchanges, assets));
-        clients.parallelStream().forEach(AbstractClientEndpoint::start);
+        clients.parallelStream().forEach(client -> client.start(priceSender, exchanges, assets));
     }
 }

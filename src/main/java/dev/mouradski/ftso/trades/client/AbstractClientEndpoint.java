@@ -36,19 +36,12 @@ public abstract class AbstractClientEndpoint {
 
     protected TradeService priceSender;
     protected List<String> assets;
-    protected List<String> exchanges;
     protected Session userSession = null;
     protected AtomicInteger counter = new AtomicInteger();
     private long lastMessageTime;
     private int retries = 3;
 
     protected AbstractClientEndpoint() {
-    }
-
-    protected void configure(TradeService priceSender, List<String> exchanges, List<String> assets) {
-        this.priceSender = priceSender;
-        this.exchanges = exchanges;
-        this.assets = assets;
     }
 
     @OnOpen
@@ -204,7 +197,11 @@ public abstract class AbstractClientEndpoint {
 
     protected abstract String getExchange();
 
-    protected void start() {
+    protected void start(TradeService priceSender, List<String> exchanges, List<String> assets) {
+
+        this.priceSender = priceSender;
+        this.assets = assets;
+
         if (exchanges == null || exchanges.contains(getExchange())) {
             try {
                 while (retries-- > 0) {
