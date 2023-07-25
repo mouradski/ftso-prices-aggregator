@@ -53,7 +53,7 @@ public class GeminiClientEndpoint extends AbstractClientEndpoint {
 
         evenWrapper.getEvents().stream().sorted(Comparator.comparing(GeminiTrade.Event::getTradeId)).filter(event -> "trade".equals(event.getEventType())).forEach(event -> {
             var symbol = SymbolHelper.getPair(event.getSymbol());
-            trades.add(Trade.builder().base(symbol.getLeft()).quote(symbol.getRight()).timestamp(currentTimestamp()).price(event.getPrice()).amount(event.getAmount()).timestamp(currentTimestamp()).build());
+            trades.add(Trade.builder().base(symbol.getLeft()).quote(symbol.getRight()).exchange(getExchange()).timestamp(currentTimestamp()).price(event.getPrice()).amount(event.getAmount()).timestamp(currentTimestamp()).build());
         });
 
         return trades;
