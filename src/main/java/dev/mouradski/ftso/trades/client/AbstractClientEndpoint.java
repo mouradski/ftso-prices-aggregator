@@ -180,6 +180,8 @@ public abstract class AbstractClientEndpoint {
         }
     }
 
+    // Implementations must sort extracted trades before returning them
+    // Use timestamp ou id sent by the exchange to do that
     protected List<Trade> mapTrade(String message) throws JsonProcessingException {
         return new ArrayList<>();
     }
