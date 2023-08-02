@@ -4,16 +4,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
-import jakarta.websocket.ClientEndpoint;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
+import io.quarkus.scheduler.Scheduled;
+import jakarta.enterprise.context.ApplicationScoped;
 
+import javax.websocket.ClientEndpoint;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@ApplicationScoped
 @ClientEndpoint
-@Component
 public class OkexClientEndpoint extends AbstractClientEndpoint {
 
     @Override
@@ -62,7 +62,7 @@ public class OkexClientEndpoint extends AbstractClientEndpoint {
         return trades;
     }
 
-    @Scheduled(fixedDelay = 30 * 1000)
+    @Scheduled(every="30s")
     public void ping() {
         this.sendMessage("ping");
     }

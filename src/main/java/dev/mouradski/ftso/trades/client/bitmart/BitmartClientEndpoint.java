@@ -7,12 +7,13 @@ import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.Unpooled;
-import jakarta.websocket.ClientEndpoint;
-import jakarta.websocket.OnMessage;
+import io.quarkus.runtime.annotations.RegisterForReflection;
+import io.quarkus.scheduler.Scheduled;
+import jakarta.enterprise.context.ApplicationScoped;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
+import javax.websocket.ClientEndpoint;
+import javax.websocket.OnMessage;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -26,9 +27,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.zip.Inflater;
 
-@Component
+@ApplicationScoped
 @ClientEndpoint
 @Slf4j
+
 public class BitmartClientEndpoint extends AbstractClientEndpoint {
 
     private List<String> supportedSymbols = new ArrayList<>();
@@ -108,7 +110,7 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
         return trades;
     }
 
-    @Scheduled(fixedDelay = 15000)
+    @Scheduled(every="15s")
     public void ping() {
         this.sendMessage("ping");
     }

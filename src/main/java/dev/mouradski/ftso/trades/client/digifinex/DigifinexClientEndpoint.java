@@ -4,10 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
-import jakarta.websocket.ClientEndpoint;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
+import io.quarkus.runtime.annotations.RegisterForReflection;
+import io.quarkus.scheduler.Scheduled;
+import jakarta.enterprise.context.ApplicationScoped;
 
+import javax.websocket.ClientEndpoint;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -19,8 +20,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@ApplicationScoped
 @ClientEndpoint
-@Component
+
 public class DigifinexClientEndpoint extends AbstractClientEndpoint {
 
     @Override
@@ -58,7 +60,7 @@ public class DigifinexClientEndpoint extends AbstractClientEndpoint {
         return "digifinex";
     }
 
-    @Scheduled(fixedDelay = 20 * 1000)
+    @Scheduled(every="20s")
     public void ping() {
         this.sendMessage("{\"method\":\"server.ping\", \"param\":[], \"id\":" + incAndGetIdAsString() + "}");
     }

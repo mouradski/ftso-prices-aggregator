@@ -4,11 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
-import jakarta.websocket.ClientEndpoint;
+import io.quarkus.scheduler.Scheduled;
+import jakarta.enterprise.context.ApplicationScoped;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
+
+import javax.websocket.ClientEndpoint;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -18,8 +19,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@ApplicationScoped
 @ClientEndpoint
-@Component
 @Slf4j
 public class WhitebitClientEndpoint extends AbstractClientEndpoint {
 
@@ -97,7 +98,7 @@ public class WhitebitClientEndpoint extends AbstractClientEndpoint {
         }
     }
 
-    @Scheduled(fixedDelay = 30000)
+    @Scheduled(every="30s")
     public void ping() {
         this.sendMessage("{\"id\": ID,\"method\": \"ping\",\"params\": []}".replace("ID", incAndGetIdAsString()));
     }

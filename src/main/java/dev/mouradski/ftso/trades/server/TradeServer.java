@@ -3,23 +3,22 @@ package dev.mouradski.ftso.trades.server;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.mouradski.ftso.trades.model.Trade;
-import jakarta.websocket.OnClose;
-import jakarta.websocket.OnError;
-import jakarta.websocket.OnOpen;
-import jakarta.websocket.Session;
-import jakarta.websocket.server.ServerEndpoint;
+import io.quarkus.runtime.annotations.RegisterForReflection;
+import jakarta.enterprise.context.ApplicationScoped;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Component;
 
+import javax.websocket.OnClose;
+import javax.websocket.OnError;
+import javax.websocket.OnOpen;
+import javax.websocket.Session;
+import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-@Component
 @ServerEndpoint("/trade")
 @Slf4j
-@ConditionalOnProperty("serve.websocket")
+@ApplicationScoped
 public class TradeServer {
 
     protected static final Set<TradeServer> listeners = new CopyOnWriteArraySet<>();
@@ -43,8 +42,10 @@ public class TradeServer {
 
     public void broadcastTrade(Trade trade) {
         try {
+            System.out.println(trade);
             var messageAsString = objectMapper.writeValueAsString(trade);
             listeners.forEach(listener -> {
+                System.out.println(trade);
                 listener.sendMessage(messageAsString);
             });
         } catch (IOException e) {

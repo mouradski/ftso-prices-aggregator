@@ -3,10 +3,11 @@ package dev.mouradski.ftso.trades.client.kucoin;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import jakarta.websocket.ClientEndpoint;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
+import io.quarkus.runtime.annotations.RegisterForReflection;
+import io.quarkus.scheduler.Scheduled;
+import jakarta.enterprise.context.ApplicationScoped;
 
+import javax.websocket.ClientEndpoint;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -17,8 +18,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+@ApplicationScoped
 @ClientEndpoint
-@Component
+
 public class KuCoinClientEndpoint extends AbstractClientEndpoint {
 
     private String token;
@@ -87,7 +89,7 @@ public class KuCoinClientEndpoint extends AbstractClientEndpoint {
         this.sendMessage(subscribeMessage);
     }
 
-    @Scheduled(fixedDelay = 50000)
+    @Scheduled(every="50s")
     public void ping() {
         this.sendMessage("{\"type\":\"ping\", \"id\":" + new Date().getTime() + "}");
     }

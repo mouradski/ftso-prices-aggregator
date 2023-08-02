@@ -6,10 +6,9 @@ import com.google.gson.Gson;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.Constants;
-import jakarta.websocket.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.EnableScheduling;
 
+import javax.websocket.*;
 import java.io.*;
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -26,7 +25,6 @@ import java.util.zip.Inflater;
 import static dev.mouradski.ftso.trades.utils.Constants.SYMBOLS;
 
 @Slf4j
-@EnableScheduling
 public abstract class AbstractClientEndpoint {
 
     public static final Gson gson = new Gson();

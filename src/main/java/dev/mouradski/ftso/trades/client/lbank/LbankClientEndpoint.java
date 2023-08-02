@@ -4,16 +4,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
-import jakarta.websocket.ClientEndpoint;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
+import io.quarkus.runtime.annotations.RegisterForReflection;
+import io.quarkus.scheduler.Scheduled;
+import jakarta.enterprise.context.ApplicationScoped;
 
+import javax.websocket.ClientEndpoint;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@ApplicationScoped
 @ClientEndpoint
-@Component
+
 public class LbankClientEndpoint extends AbstractClientEndpoint {
 
     @Override
@@ -55,7 +57,7 @@ public class LbankClientEndpoint extends AbstractClientEndpoint {
         return Arrays.asList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(tradeWrapper.getTrade().getPrice()).amount(tradeWrapper.getTrade().getAmount()).timestamp(currentTimestamp()).build());
     }
 
-    @Scheduled(fixedDelay = 30000)
+    @Scheduled(every="30s")
     public void ping() {
         this.sendMessage("{\"ping\":\"ID\",\"action\":\"ping\"}".replace("ID", incAndGetIdAsString()));
     }

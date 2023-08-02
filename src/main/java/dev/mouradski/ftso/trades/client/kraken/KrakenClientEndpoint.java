@@ -4,15 +4,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.JsonArray;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import jakarta.websocket.ClientEndpoint;
-import org.springframework.stereotype.Component;
+import io.quarkus.runtime.annotations.RegisterForReflection;
+import jakarta.enterprise.context.ApplicationScoped;
 
+import javax.websocket.ClientEndpoint;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@ApplicationScoped
 @ClientEndpoint
-@Component
+
 public class KrakenClientEndpoint extends AbstractClientEndpoint {
 
     @Override

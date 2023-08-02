@@ -4,14 +4,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
-import jakarta.websocket.ClientEndpoint;
+import io.quarkus.runtime.annotations.RegisterForReflection;
+import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.stereotype.Component;
 
+import javax.websocket.ClientEndpoint;
 import java.util.*;
 
-@Component
+@ApplicationScoped
 @ClientEndpoint
+
 public class BitfinexClientEndpoint extends AbstractClientEndpoint {
 
     private Map<Double, Pair<String, String>> channelIds = new HashMap<>();

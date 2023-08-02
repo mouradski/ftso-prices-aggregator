@@ -4,18 +4,20 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
-import jakarta.websocket.ClientEndpoint;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
+import io.quarkus.runtime.annotations.RegisterForReflection;
+import io.quarkus.scheduler.Scheduled;
+import jakarta.enterprise.context.ApplicationScoped;
 
+import javax.websocket.ClientEndpoint;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@ApplicationScoped
 @ClientEndpoint
-@Component
+
 public class CoinexClientEndpoint extends AbstractClientEndpoint {
 
     @Override
@@ -61,7 +63,7 @@ public class CoinexClientEndpoint extends AbstractClientEndpoint {
         return trades;
     }
 
-    @Scheduled(fixedDelay = 30000)
+    @Scheduled(every="30s")
     public void ping() {
         this.sendMessage("{\"method\":\"server.ping\",\"params\":[],\"id\": ID}".replace("ID", incAndGetIdAsString()));
     }

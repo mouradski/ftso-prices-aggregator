@@ -2,26 +2,26 @@ package dev.mouradski.ftso.trades.service;
 
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.server.TradeServer;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-import java.util.Optional;
 
 @Slf4j
-@Component
+@ApplicationScoped
 public class TradeService {
 
-    private final Optional<TradeServer> tradeServer;
-    private final Optional<TradeConsummer> tradeConsummer;
-
-    public TradeService(@Autowired(required = false) TradeServer tradeServer, @Autowired(required = false) TradeConsummer tradeConsummer) {
-        this.tradeServer = Optional.ofNullable(tradeServer);
-        this.tradeConsummer = Optional.ofNullable(tradeConsummer);
-    }
+    @Inject
+    Instance<TradeServer> tradeServer;
+    @Inject
+    Instance<TradeConsummer> tradeConsumer;
 
     public void pushTrade(Trade trade) {
-        tradeServer.ifPresent(server -> server.broadcastTrade(trade));
-        tradeConsummer.ifPresent(consummer -> consummer.processTrade(trade));
+
+        tradeServer.forEach(server -> server.broadcastTrade(trade));
+
+        tradeConsumer.forEach(consumer -> consumer.processTrade(trade));
     }
 }

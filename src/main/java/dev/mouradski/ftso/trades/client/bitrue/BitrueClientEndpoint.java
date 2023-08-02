@@ -3,16 +3,18 @@ package dev.mouradski.ftso.trades.client.bitrue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import jakarta.websocket.ClientEndpoint;
-import org.springframework.stereotype.Component;
+import io.quarkus.runtime.annotations.RegisterForReflection;
+import jakarta.enterprise.context.ApplicationScoped;
 
+import javax.websocket.ClientEndpoint;
 import java.util.ArrayList;
 import java.util.List;
 
 import static dev.mouradski.ftso.trades.utils.Constants.USDT;
 
+@ApplicationScoped
 @ClientEndpoint
-@Component
+
 public class BitrueClientEndpoint extends AbstractClientEndpoint {
 
     @Override

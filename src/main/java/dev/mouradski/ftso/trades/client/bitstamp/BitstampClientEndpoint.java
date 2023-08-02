@@ -5,15 +5,17 @@ import com.google.gson.JsonParser;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
-import jakarta.websocket.ClientEndpoint;
-import org.springframework.stereotype.Component;
+import io.quarkus.runtime.annotations.RegisterForReflection;
+import jakarta.enterprise.context.ApplicationScoped;
 
+import javax.websocket.ClientEndpoint;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@ApplicationScoped
 @ClientEndpoint
-@Component
+
 public class BitstampClientEndpoint extends AbstractClientEndpoint {
 
     @Override

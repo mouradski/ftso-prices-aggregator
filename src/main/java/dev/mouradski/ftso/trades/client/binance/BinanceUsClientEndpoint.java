@@ -1,9 +1,11 @@
 package dev.mouradski.ftso.trades.client.binance;
 
-import jakarta.websocket.ClientEndpoint;
-import org.springframework.stereotype.Component;
+import io.quarkus.runtime.annotations.RegisterForReflection;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+import javax.websocket.ClientEndpoint;
+
+@ApplicationScoped
 @ClientEndpoint
 public class BinanceUsClientEndpoint extends BinanceClientEndpoint {
 

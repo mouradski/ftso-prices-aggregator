@@ -4,17 +4,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
-import jakarta.websocket.ClientEndpoint;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
+import io.quarkus.scheduler.Scheduled;
+import jakarta.enterprise.context.ApplicationScoped;
 
+import javax.websocket.ClientEndpoint;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 
+@ApplicationScoped
 @ClientEndpoint
-@Component
 public class MexcClientEndpoint extends AbstractClientEndpoint {
 
     @Override
@@ -32,7 +32,7 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
         return "mexc";
     }
 
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(every="5s")
     public void pint() {
         this.sendMessage("ping");
     }
