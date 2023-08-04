@@ -6,8 +6,12 @@ import com.google.gson.Gson;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.Constants;
+import io.quarkus.runtime.StartupEvent;
+import jakarta.enterprise.event.Observes;
+import jakarta.inject.Inject;
 import jakarta.websocket.*;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.io.*;
 import java.net.URI;
@@ -27,19 +31,30 @@ import static dev.mouradski.ftso.trades.utils.Constants.SYMBOLS;
 @Slf4j
 public abstract class AbstractClientEndpoint {
 
+    @Inject
+    TradeService priceSender;
+
+    @ConfigProperty(name = "assets")
+    List<String> assets;
+
+    @ConfigProperty(name = "exchanges")
+    List<String> exchanges;
+
     public static final Gson gson = new Gson();
     private static final long DEFAULT_TIMEOUT = 120; // timeout in seconds
     private static final Object sendMutex = new Object();
     protected final ObjectMapper objectMapper = new ObjectMapper();
 
-    protected TradeService priceSender;
-    protected List<String> assets;
     protected Session userSession = null;
     protected AtomicInteger counter = new AtomicInteger();
     private long lastMessageTime;
     private int retries = 3;
 
     protected AbstractClientEndpoint() {
+    }
+
+    void startup(@Observes StartupEvent event) {
+        this.start();
     }
 
     @OnOpen
@@ -195,11 +210,7 @@ public abstract class AbstractClientEndpoint {
 
     protected abstract String getExchange();
 
-    protected void start(TradeService priceSender, List<String> exchanges, List<String> assets) {
-
-        this.priceSender = priceSender;
-        this.assets = assets;
-
+    protected void start() {
         if (exchanges == null || exchanges.contains(getExchange())) {
             try {
                 while (retries-- > 0) {
