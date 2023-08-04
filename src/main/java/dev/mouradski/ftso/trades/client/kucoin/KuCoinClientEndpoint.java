@@ -3,11 +3,10 @@ package dev.mouradski.ftso.trades.client.kucoin;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import io.quarkus.runtime.annotations.RegisterForReflection;
 import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.websocket.ClientEndpoint;
 
-import javax.websocket.ClientEndpoint;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;

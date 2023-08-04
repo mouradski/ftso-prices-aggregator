@@ -6,8 +6,8 @@ import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.websocket.ClientEndpoint;
 
-import javax.websocket.ClientEndpoint;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;

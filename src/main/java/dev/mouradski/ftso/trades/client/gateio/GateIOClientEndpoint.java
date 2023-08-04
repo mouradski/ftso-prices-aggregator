@@ -5,11 +5,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.JsonParser;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import io.quarkus.runtime.annotations.RegisterForReflection;
 import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.websocket.ClientEndpoint;
 
-import javax.websocket.ClientEndpoint;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

@@ -5,9 +5,9 @@ import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.websocket.ClientEndpoint;
 import org.apache.commons.lang3.tuple.Pair;
 
-import javax.websocket.ClientEndpoint;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;

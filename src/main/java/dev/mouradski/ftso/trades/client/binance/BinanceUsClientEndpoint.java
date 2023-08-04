@@ -1,9 +1,7 @@
 package dev.mouradski.ftso.trades.client.binance;
 
-import io.quarkus.runtime.annotations.RegisterForReflection;
 import jakarta.enterprise.context.ApplicationScoped;
-
-import javax.websocket.ClientEndpoint;
+import jakarta.websocket.ClientEndpoint;
 
 @ApplicationScoped
 @ClientEndpoint

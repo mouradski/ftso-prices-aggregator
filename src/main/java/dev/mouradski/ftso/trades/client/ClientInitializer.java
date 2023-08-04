@@ -2,7 +2,6 @@ package dev.mouradski.ftso.trades.client;
 
 import dev.mouradski.ftso.trades.service.TradeService;
 import io.quarkus.runtime.Startup;
-import io.quarkus.runtime.annotations.RegisterForReflection;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Any;
@@ -16,7 +15,6 @@ import java.util.List;
 
 @Startup
 public class ClientInitializer {
-
 
     @Inject
     @Any

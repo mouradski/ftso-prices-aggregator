@@ -6,9 +6,9 @@ import com.google.gson.Gson;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.Constants;
+import jakarta.websocket.*;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.websocket.*;
 import java.io.*;
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -167,8 +167,8 @@ public abstract class AbstractClientEndpoint {
             if (userSession != null && this.userSession.isOpen()) {
                 try {
                     log.debug("Sending message to {}, payload : {}", getExchange(), message);
-                    this.userSession.getBasicRemote().sendText(message);
-                } catch (IOException e) {
+                    this.userSession.getAsyncRemote().sendText(message);
+                } catch (Exception e) {
                     log.debug("Caught exception sending msg to {}, msg : {}", getExchange());
                 }
             }

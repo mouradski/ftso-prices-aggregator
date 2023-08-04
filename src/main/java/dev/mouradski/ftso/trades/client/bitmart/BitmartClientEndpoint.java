@@ -7,13 +7,12 @@ import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.Unpooled;
-import io.quarkus.runtime.annotations.RegisterForReflection;
 import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.websocket.ClientEndpoint;
+import jakarta.websocket.OnMessage;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.websocket.ClientEndpoint;
-import javax.websocket.OnMessage;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;

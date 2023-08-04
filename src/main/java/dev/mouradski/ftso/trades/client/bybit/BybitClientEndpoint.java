@@ -4,12 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
-import io.quarkus.runtime.annotations.RegisterForReflection;
 import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.websocket.ClientEndpoint;
 import org.apache.commons.lang3.tuple.Pair;
 
-import javax.websocket.ClientEndpoint;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -17,7 +16,6 @@ import java.util.List;
 
 @ApplicationScoped
 @ClientEndpoint
-
 public class BybitClientEndpoint extends AbstractClientEndpoint {
     @Override
     protected String getUri() {

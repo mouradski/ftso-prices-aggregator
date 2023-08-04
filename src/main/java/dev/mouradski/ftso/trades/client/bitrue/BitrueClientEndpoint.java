@@ -3,10 +3,9 @@ package dev.mouradski.ftso.trades.client.bitrue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
-import io.quarkus.runtime.annotations.RegisterForReflection;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.websocket.ClientEndpoint;
 
-import javax.websocket.ClientEndpoint;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +35,7 @@ public class BitrueClientEndpoint extends AbstractClientEndpoint {
         var quote = "USDT";
 
         for (var trade : tradeMessage.getTick().getData()) {
-            trades.add(Trade.builder().exchange(getExchange()).price(trade.getPrice()).amount(trade.getVol()).quote(quote).base(pair).timestamp(currentTimestamp()).build());
+            trades.add(Trade.builder().exchange(getExchange()).price(trade.getPrice()).amount(trade.getAmount()).quote(quote).base(pair).timestamp(currentTimestamp()).build());
         }
 
         return trades;

@@ -3,15 +3,14 @@ package dev.mouradski.ftso.trades.server;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.mouradski.ftso.trades.model.Trade;
-import io.quarkus.runtime.annotations.RegisterForReflection;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.websocket.OnClose;
+import jakarta.websocket.OnError;
+import jakarta.websocket.OnOpen;
+import jakarta.websocket.Session;
+import jakarta.websocket.server.ServerEndpoint;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.websocket.OnClose;
-import javax.websocket.OnError;
-import javax.websocket.OnOpen;
-import javax.websocket.Session;
-import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -42,10 +41,8 @@ public class TradeServer {
 
     public void broadcastTrade(Trade trade) {
         try {
-            System.out.println(trade);
             var messageAsString = objectMapper.writeValueAsString(trade);
             listeners.forEach(listener -> {
-                System.out.println(trade);
                 listener.sendMessage(messageAsString);
             });
         } catch (IOException e) {
@@ -55,8 +52,8 @@ public class TradeServer {
 
     private void sendMessage(String message) {
         try {
-            this.session.getBasicRemote().sendText(message);
-        } catch (IOException e) {
+            this.session.getAsyncRemote().sendText(message);
+        } catch (Exception e) {
             log.error("Caught exception while sending message to Session " + this.session.getId(), e.getMessage(), e);
         }
     }

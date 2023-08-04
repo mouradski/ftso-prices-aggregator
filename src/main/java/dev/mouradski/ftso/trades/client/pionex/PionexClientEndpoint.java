@@ -5,9 +5,9 @@ import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.websocket.ClientEndpoint;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.websocket.ClientEndpoint;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
