@@ -54,8 +54,8 @@ public class TradeServer {
 
     private void sendMessage(String message) {
         try {
-            this.session.getBasicRemote().sendText(message);
-        } catch (IOException e) {
+            this.session.getAsyncRemote().sendText(message);
+        } catch (Exception e) {
             log.error("Caught exception while sending message to Session " + this.session.getId(), e.getMessage(), e);
         }
     }

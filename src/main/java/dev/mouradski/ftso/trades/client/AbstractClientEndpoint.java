@@ -31,7 +31,6 @@ public abstract class AbstractClientEndpoint {
 
     public static final Gson gson = new Gson();
     private static final long DEFAULT_TIMEOUT = 120; // timeout in seconds
-    private static final Object sendMutex = new Object();
     protected final ObjectMapper objectMapper = new ObjectMapper();
 
     protected TradeService priceSender;
@@ -165,14 +164,12 @@ public abstract class AbstractClientEndpoint {
     }
 
     protected void sendMessage(String message) {
-        synchronized (sendMutex) {
-            if (userSession != null && this.userSession.isOpen()) {
-                try {
-                    log.debug("Sending message to {}, payload : {}", getExchange(), message);
-                    this.userSession.getBasicRemote().sendText(message);
-                } catch (IOException e) {
-                    log.debug("Caught exception sending msg to {}, msg : {}", getExchange());
-                }
+        if (userSession != null && this.userSession.isOpen()) {
+            try {
+                log.debug("Sending message to {}, payload : {}", getExchange(), message);
+                this.userSession.getAsyncRemote().sendText(message);
+            } catch (Exception e) {
+                log.debug("Caught exception sending msg to {}, msg : {}", getExchange());
             }
         }
     }
