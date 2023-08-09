@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @ClientEndpoint
@@ -43,10 +44,10 @@ public class OkexClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected List<Trade> mapTrade(String message) throws JsonProcessingException {
+    protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
 
         if (!message.contains("\"channel\":\"trades\"")) {
-            return new ArrayList<>();
+            return Optional.empty();
         }
 
         var tradeData = objectMapper.readValue(message, TradeData.class);
@@ -59,7 +60,7 @@ public class OkexClientEndpoint extends AbstractClientEndpoint {
             trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(data.getPx()).amount(data.getSz()).timestamp(currentTimestamp()).build());
         });
 
-        return trades;
+        return Optional.of(trades);
     }
 
     @Scheduled(fixedDelay = 30 * 1000)

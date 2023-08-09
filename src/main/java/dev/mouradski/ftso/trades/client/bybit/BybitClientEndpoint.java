@@ -9,10 +9,10 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @ClientEndpoint
@@ -41,19 +41,19 @@ public class BybitClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected List<Trade> mapTrade(String message) throws JsonProcessingException {
+    protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
 
         if (!message.contains("trade") || !message.contains("data")) {
-            return new ArrayList<>();
+            return Optional.empty();
         }
 
         var bybitTrade = objectMapper.readValue(message, BybitTrade.class);
 
         Pair<String, String> pair = SymbolHelper.getPair(bybitTrade.getParams().getSymbol());
 
-        return Arrays.asList(Trade.builder().timestamp(currentTimestamp()).exchange(getExchange())
+        return Optional.of(Collections.singletonList(Trade.builder().timestamp(currentTimestamp()).exchange(getExchange())
                 .base(pair.getLeft()).quote(pair.getRight())
                 .price(Double.parseDouble(bybitTrade.getData().getP()))
-                .amount(Double.parseDouble(bybitTrade.getData().getQ())).build());
+                .amount(Double.parseDouble(bybitTrade.getData().getQ())).build()));
     }
 }

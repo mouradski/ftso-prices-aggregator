@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 
 @ClientEndpoint
@@ -38,9 +39,9 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected List<Trade> mapTrade(String message) throws JsonProcessingException {
+    protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
         if (!message.contains("push.deal")) {
-            return new ArrayList<>();
+            return Optional.empty();
         }
 
         var tradeData = objectMapper.readValue(message, TradeData.class);
@@ -49,11 +50,10 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
 
         var trades = new ArrayList<Trade>();
 
-
         tradeData.getData().getDeals().stream().sorted(Comparator.comparing(Deal::getT)).forEach(deal -> {
             trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(deal.getP()).amount(deal.getQ()).timestamp(currentTimestamp()).build());
         });
 
-        return trades;
+        return Optional.of(trades);
     }
 }

@@ -10,8 +10,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @ClientEndpoint
@@ -19,10 +20,10 @@ import java.util.stream.Collectors;
 public class GateIOClientEndpoint extends AbstractClientEndpoint {
 
     @Override
-    protected List<Trade> mapTrade(String message) throws JsonProcessingException {
+    protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
 
         if (!message.contains("spot.trades") || message.contains("status")) {
-            return new ArrayList<>();
+            return Optional.empty();
         }
 
 
@@ -32,8 +33,8 @@ public class GateIOClientEndpoint extends AbstractClientEndpoint {
 
         var gateIOTrade = gson.fromJson(result, GateIOTrade.class);
 
-        return Arrays.asList(Trade.builder().exchange(getExchange()).base(gateIOTrade.getCurrencyPair().split("_")[0])
-                .quote(gateIOTrade.getCurrencyPair().split("_")[1]).price(gateIOTrade.getPrice()).amount(gateIOTrade.getAmount()).timestamp(currentTimestamp()).build());
+        return Optional.of(Collections.singletonList(Trade.builder().exchange(getExchange()).base(gateIOTrade.getCurrencyPair().split("_")[0])
+                .quote(gateIOTrade.getCurrencyPair().split("_")[1]).price(gateIOTrade.getPrice()).amount(gateIOTrade.getAmount()).timestamp(currentTimestamp()).build()));
 
 
     }

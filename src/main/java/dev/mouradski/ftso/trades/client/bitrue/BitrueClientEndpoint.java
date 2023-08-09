@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static dev.mouradski.ftso.trades.utils.Constants.USDT;
 
@@ -21,14 +22,16 @@ public class BitrueClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected List<Trade> mapTrade(String message) throws JsonProcessingException {
-        var trades = new ArrayList<Trade>();
+    protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
 
         var tradeMessage = gson.fromJson(message, TradeMessage.class);
 
         if (tradeMessage.getChannel() == null || tradeMessage.getTick() == null || tradeMessage.getTick().getData() == null) {
-            return trades;
+            return Optional.empty();
         }
+
+        var trades = new ArrayList<Trade>();
+
 
         var pair = parseSymbol(tradeMessage.getChannel());
         var quote = "USDT";
@@ -37,7 +40,7 @@ public class BitrueClientEndpoint extends AbstractClientEndpoint {
             trades.add(Trade.builder().exchange(getExchange()).price(trade.getPrice()).amount(trade.getAmount()).quote(quote).base(pair).timestamp(currentTimestamp()).build());
         }
 
-        return trades;
+        return Optional.of(trades);
     }
 
     private String parseSymbol(String channel) {

@@ -8,10 +8,7 @@ import jakarta.websocket.ClientEndpoint;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @ClientEndpoint
@@ -40,9 +37,9 @@ public class CoinexClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected List<Trade> mapTrade(String message) throws JsonProcessingException {
+    protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
         if (!message.contains("deals.update")) {
-            return new ArrayList<>();
+            return Optional.empty();
         }
 
         var dealUpdate = this.objectMapper.readValue(message, DealUpdate.class);
@@ -58,7 +55,7 @@ public class CoinexClientEndpoint extends AbstractClientEndpoint {
                         .amount(Double.valueOf(deal.get("amount").toString()))
                         .timestamp(currentTimestamp()).build()));
 
-        return trades;
+        return Optional.of(trades);
     }
 
     @Scheduled(fixedDelay = 30000)

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @ClientEndpoint
@@ -16,10 +17,10 @@ import java.util.stream.Collectors;
 public class KrakenClientEndpoint extends AbstractClientEndpoint {
 
     @Override
-    protected List<Trade> mapTrade(String message) throws JsonProcessingException {
+    protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
         if (!message.contains("trade") || message.contains("systemStatus") || message.contains("errorMessage")
                 || message.contains("subscriptionStatus")) {
-            return new ArrayList<>();
+            return Optional.empty();
         }
 
         var trades = new ArrayList<Trade>();
@@ -45,7 +46,7 @@ public class KrakenClientEndpoint extends AbstractClientEndpoint {
             }
         }
 
-        return trades;
+        return Optional.of(trades);
     }
 
     @Override

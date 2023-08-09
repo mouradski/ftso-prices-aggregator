@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @ClientEndpoint
@@ -37,9 +38,9 @@ public class FmfwClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected List<Trade> mapTrade(String message) throws JsonProcessingException {
+    protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
         if (!message.contains("\"p\"") || !message.contains("trade") || !message.contains("update")) {
-            return new ArrayList<>();
+            return Optional.empty();
         }
 
         var fmfwTradeResponse = objectMapper.readValue(message, dev.mouradski.ftso.trades.client.fmfw.FmfwTradeResponse.class);
@@ -54,6 +55,6 @@ public class FmfwClientEndpoint extends AbstractClientEndpoint {
             });
         });
 
-        return trades;
+        return Optional.of(trades);
     }
 }

@@ -19,10 +19,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.Inflater;
 
@@ -85,10 +82,10 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected List<Trade> mapTrade(String message) throws JsonProcessingException {
+    protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
 
         if (!message.contains("data")) {
-            return new ArrayList<>();
+            return Optional.empty();
         }
         var root = this.objectMapper.readValue(message, Root.class);
 
@@ -105,7 +102,7 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
 
                 });
 
-        return trades;
+        return Optional.of(trades);
     }
 
     @Scheduled(fixedDelay = 15000)
