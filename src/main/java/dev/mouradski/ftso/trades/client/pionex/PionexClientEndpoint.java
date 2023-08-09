@@ -13,10 +13,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -57,9 +54,9 @@ public class PionexClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected List<Trade> mapTrade(String message) throws JsonProcessingException {
+    protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
         if (!message.contains("tradeId")) {
-            return new ArrayList<>();
+            return Optional.empty();
         }
 
         var tradeResponse = objectMapper.readValue(message, TradeResponse.class);
@@ -71,7 +68,7 @@ public class PionexClientEndpoint extends AbstractClientEndpoint {
             trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(tradeData.getPrice()).amount(tradeData.getSize()).timestamp(currentTimestamp()).build());
         });
 
-        return trades;
+        return Optional.of(trades);
     }
 
     @Override

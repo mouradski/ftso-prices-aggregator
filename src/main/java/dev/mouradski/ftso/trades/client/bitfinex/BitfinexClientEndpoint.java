@@ -36,9 +36,9 @@ public class BitfinexClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected List<Trade> mapTrade(String message) throws JsonProcessingException {
+    protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
         if (!message.contains("te")) {
-            return new ArrayList<>();
+            return Optional.empty();
         }
 
         var messageArray = gson.fromJson(message, Object[].class);
@@ -48,9 +48,9 @@ public class BitfinexClientEndpoint extends AbstractClientEndpoint {
 
         var pair = channelIds.get(channelId);
 
-        return Arrays.asList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
+        return Optional.of(Collections.singletonList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
                 .price(tradeData.get(3)).amount(Math.abs(tradeData.get(2))).timestamp(currentTimestamp())
-                .build());
+                .build()));
     }
 
     @Override

@@ -12,10 +12,10 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @ApplicationScoped
 @ClientEndpoint
@@ -26,21 +26,21 @@ public class KuCoinClientEndpoint extends AbstractClientEndpoint {
     private String instance;
 
     @Override
-    protected List<Trade> mapTrade(String message) throws JsonProcessingException {
+    protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
         var kucoinTrade = this.objectMapper.readValue(message, KucoinTrade.class);
 
         if (kucoinTrade.getData() == null) {
-            return new ArrayList<>();
+            return Optional.empty();
         }
 
-        return Arrays.asList(Trade.builder()
+        return Optional.of(Collections.singletonList(Trade.builder()
                 .exchange(getExchange())
                 .price(kucoinTrade.getData().getPrice())
                 .amount(kucoinTrade.getData().getSize())
                 .base(kucoinTrade.getData().getSymbol().split("-")[0])
                 .quote(kucoinTrade.getData().getSymbol().split("-")[1])
                 .timestamp(currentTimestamp())
-                .build());
+                .build()));
     }
 
     @Override

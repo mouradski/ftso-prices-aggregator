@@ -38,9 +38,9 @@ public class BitforexClientEndpoint extends AbstractClientEndpoint {
 
 
     @Override
-    protected List<Trade> mapTrade(String message) throws JsonProcessingException {
+    protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
         if (!message.contains("businessType")) {
-            return new ArrayList<>();
+            return Optional.empty();
         }
 
         var trades = new ArrayList<Trade>();
@@ -55,7 +55,7 @@ public class BitforexClientEndpoint extends AbstractClientEndpoint {
                 trades.add(Trade.builder().exchange(getExchange()).base(pair.getRight()).quote(pair.getLeft()).amount(data.getAmount()).price(data.getPrice()).timestamp(currentTimestamp()).build());
         });
 
-        return trades;
+        return Optional.of(trades);
     }
 
     @Scheduled(every="20s")

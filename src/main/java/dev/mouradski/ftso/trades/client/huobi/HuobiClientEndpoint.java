@@ -7,10 +7,7 @@ import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @ApplicationScoped
 @ClientEndpoint
@@ -34,15 +31,14 @@ public class HuobiClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected List<Trade> mapTrade(String message) throws JsonProcessingException {
-
-        var trades = new ArrayList<Trade>();
-
+    protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
         var tradeMessage = gson.fromJson(message, Response.class);
 
         if (tradeMessage.getCh() == null) {
-            return new ArrayList<>();
+            return Optional.empty();
         }
+
+        var trades = new ArrayList<Trade>();
 
         var symbolId = tradeMessage.getCh().split("\\.")[1].toUpperCase();
 
@@ -52,7 +48,7 @@ public class HuobiClientEndpoint extends AbstractClientEndpoint {
                 .base(pair.getLeft()).quote(pair.getRight()).price(huobiTrade.getPrice())
                 .amount(huobiTrade.getAmount()).timestamp(currentTimestamp()).build()));
 
-        return trades;
+        return Optional.of(trades);
     }
 
     @Override

@@ -9,6 +9,7 @@ import jakarta.websocket.ClientEndpoint;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @ApplicationScoped
 @ClientEndpoint
@@ -49,10 +50,10 @@ public class BtseClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected List<Trade> mapTrade(String message) throws JsonProcessingException {
+    protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
 
         if (!message.contains("tradeId")) {
-            return new ArrayList<>();
+            return Optional.empty();
         }
 
         var tradeHistoryResponse = this.objectMapper.readValue(message, TradeHistoryResponse.class);
@@ -67,6 +68,6 @@ public class BtseClientEndpoint extends AbstractClientEndpoint {
                     .timestamp(currentTimestamp()).build());
         });
 
-        return trades;
+        return Optional.of(trades);
     }
 }

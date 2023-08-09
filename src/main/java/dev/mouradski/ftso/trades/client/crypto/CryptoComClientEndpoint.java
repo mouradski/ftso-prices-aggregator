@@ -10,6 +10,7 @@ import jakarta.websocket.ClientEndpoint;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @ApplicationScoped
 @ClientEndpoint
@@ -36,10 +37,10 @@ public class CryptoComClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected List<Trade> mapTrade(String message) throws JsonProcessingException {
+    protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
 
         if (!message.contains("result")) {
-            return new ArrayList();
+            return Optional.empty();
         }
 
         var response = gson.fromJson(message, Response.class);
@@ -54,7 +55,7 @@ public class CryptoComClientEndpoint extends AbstractClientEndpoint {
         });
 
 
-        return trades;
+        return Optional.of(trades);
     }
 
     @Override

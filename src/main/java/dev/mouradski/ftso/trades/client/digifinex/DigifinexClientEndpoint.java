@@ -13,10 +13,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -65,14 +62,14 @@ public class DigifinexClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected List<Trade> mapTrade(String message) throws JsonProcessingException {
-        var trades = new ArrayList<Trade>();
-
+    protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
         var tradeResponse = gson.fromJson(message, TradeResponse.class);
 
         if (tradeResponse.getParams() == null) {
-            return trades;
+            return Optional.empty();
         }
+
+        var trades = new ArrayList<Trade>();
 
         var tradesArray = gson.toJsonTree(tradeResponse.getParams().get(1)).getAsJsonArray();
 
@@ -85,7 +82,7 @@ public class DigifinexClientEndpoint extends AbstractClientEndpoint {
                     .price(trade.getPrice()).amount(trade.getAmount()).timestamp(currentTimestamp()).build());
         }
 
-        return trades;
+        return Optional.of(trades);
     }
 
     private Set<String> getAvailableMarkets() {

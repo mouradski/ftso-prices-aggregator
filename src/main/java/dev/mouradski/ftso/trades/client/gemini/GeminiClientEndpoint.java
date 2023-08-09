@@ -10,6 +10,7 @@ import jakarta.websocket.ClientEndpoint;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -41,10 +42,10 @@ public class GeminiClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected List<Trade> mapTrade(String message) throws JsonProcessingException {
+    protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
 
         if (!message.contains("trade")) {
-            return new ArrayList<>();
+            return Optional.empty();
         }
 
         var evenWrapper = this.objectMapper.readValue(message, GeminiTrade.class);
@@ -57,6 +58,6 @@ public class GeminiClientEndpoint extends AbstractClientEndpoint {
             trades.add(Trade.builder().base(symbol.getLeft()).quote(symbol.getRight()).exchange(getExchange()).timestamp(currentTimestamp()).price(event.getPrice()).amount(event.getAmount()).timestamp(currentTimestamp()).build());
         });
 
-        return trades;
+        return Optional.of(trades);
     }
 }

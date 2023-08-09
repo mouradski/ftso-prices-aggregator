@@ -55,9 +55,9 @@ public class WhitebitClientEndpoint extends AbstractClientEndpoint {
 
 
     @Override
-    protected List<Trade> mapTrade(String message) throws JsonProcessingException {
+    protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
         if (!message.contains("trades_update")) {
-            return new ArrayList<>();
+            return Optional.empty();
         }
 
         var trades = new ArrayList<Trade>();
@@ -71,7 +71,7 @@ public class WhitebitClientEndpoint extends AbstractClientEndpoint {
                 .sorted(Comparator.comparing(v -> v.get("time").toString())).forEach(tradeUpdate -> trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
                         .price(Double.valueOf(tradeUpdate.get("price").toString())).amount(Double.valueOf(tradeUpdate.get("amount").toString())).timestamp(currentTimestamp()).build()));
 
-        return trades;
+        return Optional.of(trades);
 
     }
 

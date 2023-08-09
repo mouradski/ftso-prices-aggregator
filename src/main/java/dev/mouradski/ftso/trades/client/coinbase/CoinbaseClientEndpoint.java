@@ -9,8 +9,9 @@ import jakarta.websocket.ClientEndpoint;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -38,10 +39,10 @@ public class CoinbaseClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected List<Trade> mapTrade(String message) throws JsonProcessingException {
+    protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
 
         if (!message.contains("trade_id")) {
-            return new ArrayList<>();
+            return Optional.empty();
         }
 
         var tradeMatch = this.objectMapper.readValue(message, TradeMatch.class);
@@ -50,6 +51,6 @@ public class CoinbaseClientEndpoint extends AbstractClientEndpoint {
 
         var time = Instant.parse(tradeMatch.getTime()).toEpochMilli();
 
-        return Arrays.asList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(tradeMatch.getPrice()).amount(tradeMatch.getSize()).timestamp(time).build());
+        return Optional.of(Collections.singletonList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(tradeMatch.getPrice()).amount(tradeMatch.getSize()).timestamp(time).build()));
     }
 }

@@ -8,9 +8,8 @@ import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @ApplicationScoped
 @ClientEndpoint
@@ -34,7 +33,7 @@ public class BitstampClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected List<Trade> mapTrade(String message) throws JsonProcessingException {
+    protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
         if (message.contains("\"event\":\"trade\"")) {
             var jsonObject = JsonParser.parseString(message).getAsJsonObject();
 
@@ -54,9 +53,9 @@ public class BitstampClientEndpoint extends AbstractClientEndpoint {
             trade.setBase(pair.getLeft());
             trade.setQuote(pair.getRight());
 
-            return Arrays.asList(trade);
+            return Optional.of(List.of(trade));
         } else {
-            return new ArrayList<>();
+            return Optional.empty();
         }
     }
 

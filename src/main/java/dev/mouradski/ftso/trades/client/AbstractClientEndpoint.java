@@ -18,8 +18,8 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -100,7 +100,7 @@ public abstract class AbstractClientEndpoint {
             this.decodeMetadata(message);
 
             if (!this.pong(message)) {
-                this.mapTrade(message).forEach(this.priceSender::pushTrade);
+                this.mapTrade(message).ifPresent(tradeList -> tradeList.forEach(this.priceSender::pushTrade));
             }
 
         } catch (Exception e) {
@@ -189,12 +189,12 @@ public abstract class AbstractClientEndpoint {
 
     // Implementations must sort extracted trades before returning them
     // Use timestamp or id sent by the exchange to do that
-    protected List<Trade> mapTrade(String message) throws JsonProcessingException {
-        return new ArrayList<>();
+    protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
+        return Optional.empty();
     }
 
-    protected List<Trade> mapTrade(ByteBuffer message) throws JsonProcessingException {
-        return new ArrayList<>();
+    protected Optional<List<Trade>>  mapTrade(ByteBuffer message) throws JsonProcessingException {
+        return Optional.empty();
     }
 
     protected void decodeMetadata(String message) {

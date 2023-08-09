@@ -10,6 +10,7 @@ import jakarta.websocket.ClientEndpoint;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -38,13 +39,13 @@ public class HitbtcClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected List<Trade> mapTrade(String message) throws JsonProcessingException {
+    protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
         var trades = new ArrayList<Trade>();
 
         var response = gson.fromJson(message, Response.class);
 
         if (response.getSnapshot() == null) {
-            return new ArrayList<>();
+            return Optional.empty();
         }
 
         response.getSnapshot().entrySet().forEach(e -> {
@@ -64,7 +65,7 @@ public class HitbtcClientEndpoint extends AbstractClientEndpoint {
             }
         });
 
-        return trades;
+        return Optional.of(trades);
     }
 
     @Override

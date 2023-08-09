@@ -10,6 +10,7 @@ import jakarta.websocket.ClientEndpoint;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @ApplicationScoped
 @ClientEndpoint
@@ -33,10 +34,10 @@ public class BitgetClientEndpoint extends AbstractClientEndpoint {
 
 
     @Override
-    protected List<Trade> mapTrade(String message) throws JsonProcessingException {
+    protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
 
         if (message.contains("error") || !message.contains("update")) {
-            return new ArrayList<>();
+            return Optional.empty();
         }
 
         var trades = new ArrayList<Trade>();
@@ -50,7 +51,7 @@ public class BitgetClientEndpoint extends AbstractClientEndpoint {
             trades.add(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).amount(tradeData.getQuantity()).price(tradeData.getPrice()).timestamp(currentTimestamp()).build());
         });
 
-        return trades;
+        return Optional.of(trades);
     }
 
     @Scheduled(every="30s")
