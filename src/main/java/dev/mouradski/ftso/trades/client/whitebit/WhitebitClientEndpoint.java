@@ -44,7 +44,7 @@ public class WhitebitClientEndpoint extends AbstractClientEndpoint {
 
         this.sendMessage("{\"id\": ID,\"method\": \"trades_subscribe\",\"params\": [PAIRS]}"
                 .replace("ID", incAndGetIdAsString())
-                .replace("PAIRS", pairs.stream().collect(Collectors.joining(","))));
+                .replace("PAIRS", String.join(",", pairs)));
 
     }
 

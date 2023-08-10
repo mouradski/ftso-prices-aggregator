@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 @ClientEndpoint
@@ -33,7 +32,7 @@ public class XtClientEndpoint extends AbstractClientEndpoint {
 
         this.sendMessage("{     \"method\": \"subscribe\",      \"params\": [PAIRS],      \"id\": \"ID\" }"
                 .replace("ID", incAndGetIdAsString())
-                .replace("PAIRS", pairs.stream().collect(Collectors.joining(","))));
+                .replace("PAIRS", String.join(",", pairs)));
     }
 
     @Override

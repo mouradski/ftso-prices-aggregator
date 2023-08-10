@@ -20,7 +20,6 @@ import java.net.http.HttpResponse;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.zip.Inflater;
 
 @ApplicationScoped
@@ -47,7 +46,7 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
         }));
 
         this.sendMessage("{\"op\":\"subscribe\",\"args\":[PAIRS]}".replace("PAIRS",
-                pairs.stream().collect(Collectors.joining(","))));
+                String.join(",", pairs)));
 
     }
 

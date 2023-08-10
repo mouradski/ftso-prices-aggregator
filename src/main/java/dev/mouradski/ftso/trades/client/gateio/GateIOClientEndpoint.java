@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 @ClientEndpoint
@@ -57,7 +56,7 @@ public class GateIOClientEndpoint extends AbstractClientEndpoint {
         var timestamp = System.currentTimeMillis();
         var subscribeMessage = String.format(
                 "{\"time\": %d, \"channel\": \"spot.trades\", \"event\": \"subscribe\", \"payload\": [%s]}", timestamp,
-                pairs.stream().collect(Collectors.joining(",")));
+                String.join(",", pairs));
 
         this.sendMessage(subscribeMessage);
     }

@@ -9,7 +9,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 @ClientEndpoint
@@ -28,7 +27,7 @@ public class CoinexClientEndpoint extends AbstractClientEndpoint {
         getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> pairs.add("\"" + base + quote + "\"")));
 
         this.sendMessage("{   \"method\": \"deals.subscribe\",   \"params\": [PAIRS],   \"id\": ID }"
-                .replace("PAIRS", pairs.stream().collect(Collectors.joining(",")))
+                .replace("PAIRS", String.join(",", pairs))
                 .replace("ID", incAndGetIdAsString()));
     }
 

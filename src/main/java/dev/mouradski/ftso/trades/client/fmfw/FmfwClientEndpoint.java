@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 @ClientEndpoint
@@ -29,7 +28,7 @@ public class FmfwClientEndpoint extends AbstractClientEndpoint {
 
         getAssets().stream().map(String::toUpperCase).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> pairs.add("\"" + base + quote + "\"")));
 
-        this.sendMessage("{\"method\":\"subscribe\", \"ch\":\"trades\", \"params\":{\"symbols\": [PAIRS]}, \"id\": ID}".replace("ID", incAndGetIdAsString()).replace("PAIRS", pairs.stream().collect(Collectors.joining(","))));
+        this.sendMessage("{\"method\":\"subscribe\", \"ch\":\"trades\", \"params\":{\"symbols\": [PAIRS]}, \"id\": ID}".replace("ID", incAndGetIdAsString()).replace("PAIRS", String.join(",", pairs)));
     }
 
     @Override
