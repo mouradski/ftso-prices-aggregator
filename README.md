@@ -25,5 +25,8 @@ docker-compose up
 
 ws://localhost:8985/trade
 
+## Demo
+
+wscat --connect ws://51.15.221.166:8985/trade
 
 
