@@ -8,25 +8,16 @@ on:
 
 jobs:
   test:
-    name: Test
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [ 'java' ]
+    name: Maven Test
+    runs-on: [x64, linux]
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Maven Test
+      - name: Deploy container
         run: |
-          ./mvnw test
+          mvn test
 
   deploy:
     name: Deploy
