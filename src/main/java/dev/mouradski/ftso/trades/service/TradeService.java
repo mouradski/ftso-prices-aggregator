@@ -13,12 +13,16 @@ import lombok.extern.slf4j.Slf4j;
 public class TradeService {
 
     @Inject
-    Instance<TradeServer> tradeServer;
+    TradeServer tradeServer;
     @Inject
     Instance<TradeConsummer> tradeConsumer;
 
     public void pushTrade(Trade trade) {
-        tradeServer.forEach(server -> server.broadcastTrade(trade));
+        tradeServer.broadcastTrade(trade);
         tradeConsumer.forEach(consumer -> consumer.processTrade(trade));
+    }
+
+    public void setTradeServer(TradeServer tradeServer) {
+        this.tradeServer = tradeServer;
     }
 }
