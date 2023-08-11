@@ -1,6 +1,6 @@
 # FTSO-WS-PRICES
 
-A digital asset price aggregator, the app centralizes real-time trade retrieval from over 28 exchanges using Websocket APIs and distributes them via websocket in a single, simple format.
+A digital asset price aggregator, the app centralizes real-time trade retrieval from over 31 exchanges using Websocket APIs and distributes them via websocket in a single, simple format.
 
 Collect the prices of the following assets in real time: "xrp", "btc", "eth", "ltc", "algo", "xlm", "ada", "matic", "
 sol", "fil", "flr", "sgb", "doge", "xdc", "arb", "avax", "bnb", "usdc", "busd", "usdt", "dgb", "bch"
