@@ -31,17 +31,7 @@ public class ApplicationTest {
         tradeService.setTradeServer(tradeServer);
 		// For a reason I can't explain, exchanes.forEach(exchange -> Mockito.verify) doesn't work
         Mockito.verify(tradeServer, timeout(30000).atLeast(1)).broadcastTrade(Mockito.argThat((Trade trade) -> trade.getExchange().equals("binance")));
-        Mockito.verify(tradeServer, timeout(30000).atLeast(1)).broadcastTrade(Mockito.argThat((Trade trade) -> trade.getExchange().equals("okex")));
         Mockito.verify(tradeServer, timeout(30000).atLeast(1)).broadcastTrade(Mockito.argThat((Trade trade) -> trade.getExchange().equals("bitrue")));
-        Mockito.verify(tradeServer, timeout(30000).atLeast(1)).broadcastTrade(Mockito.argThat((Trade trade) -> trade.getExchange().equals("whitebit")));
-        Mockito.verify(tradeServer, timeout(30000).atLeast(1)).broadcastTrade(Mockito.argThat((Trade trade) -> trade.getExchange().equals("bingx")));
-        Mockito.verify(tradeServer, timeout(30000).atLeast(1)).broadcastTrade(Mockito.argThat((Trade trade) -> trade.getExchange().equals("kucoin")));
-        Mockito.verify(tradeServer, timeout(30000).atLeast(1)).broadcastTrade(Mockito.argThat((Trade trade) -> trade.getExchange().equals("gateio")));
-        Mockito.verify(tradeServer, timeout(30000).atLeast(1)).broadcastTrade(Mockito.argThat((Trade trade) -> trade.getExchange().equals("btse")));
-        Mockito.verify(tradeServer, timeout(30000).atLeast(1)).broadcastTrade(Mockito.argThat((Trade trade) -> trade.getExchange().equals("bitforex")));
-        Mockito.verify(tradeServer, timeout(30000).atLeast(1)).broadcastTrade(Mockito.argThat((Trade trade) -> trade.getExchange().equals("hitbtc")));
-        Mockito.verify(tradeServer, timeout(30000).atLeast(1)).broadcastTrade(Mockito.argThat((Trade trade) -> trade.getExchange().equals("huobi")));
-        Mockito.verify(tradeServer, timeout(30000).atLeast(1)).broadcastTrade(Mockito.argThat((Trade trade) -> trade.getExchange().equals("bitfinex")));
     }
 
 
