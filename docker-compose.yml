@@ -1,8 +1,8 @@
 version: "3.3"
 services:
   bot:
-    container_name: trade-ws-client
-    image: trade-ws-client
+    container_name: trade-ws-aggregator
+    image: trade-ws-aggregator
     build: .
     env_file: .env
     ports:

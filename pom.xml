@@ -4,10 +4,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>dev.mouradski.ftso</groupId>
-  <artifactId>exchanges-client</artifactId>
+  <artifactId>trade-ws-aggregator</artifactId>
   <version>1.1.0</version>
-  <name>exchanges-client</name>
-  <description>Demo project for Spring Boot</description>
+  <name>trade-ws-aggregator</name>
+  <description>A digital asset price aggregator, the app centralizes real-time trade retrieval from over exchanges using Websocket APIs and distributes them via websocket in a single, simple format.</description>
   <properties>
     <compiler-plugin.version>3.11.0</compiler-plugin.version>
     <maven.compiler.release>17</maven.compiler.release>
@@ -87,7 +87,7 @@
     </dependency>
   </dependencies>
   <build>
-    <finalName>ws-client</finalName>
+    <finalName>trade-ws-aggregator</finalName>
     <plugins>
       <plugin>
         <groupId>${quarkus.platform.group-id}</groupId>
