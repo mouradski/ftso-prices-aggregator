@@ -20,20 +20,28 @@ public class SymbolHelper {
     }
 
     private static String getBaseCurrency(String pair) {
-        String[] baseCurrencies = {"USDT", "USDC", "BUSD"};
 
-        for (String baseCurrency : baseCurrencies) {
+        var baseCurrencies = new String[] {"USDT", "USDC", "BUSD"};
+
+        for (var baseCurrency : baseCurrencies) {
             if (pair.startsWith(baseCurrency)) {
                 return baseCurrency;
             }
         }
 
-        String quote = pair.substring(pair.length() - 4);
+        var quote = pair.substring(pair.length() - 4);
 
         if (!quote.startsWith("U") && !quote.startsWith("B")) {
             quote = "USD";
         }
 
-        return pair.replace(quote, "");
+        var base = pair.replace(quote, "");
+
+        if (base.length() == 2) {
+            quote = "USD";
+            base = pair.replace(quote, "");
+        }
+
+        return base;
     }
 }
