@@ -9,10 +9,12 @@ import lombok.*;
 @Builder
 @ToString
 public class Trade {
-    private Double price;
+    private String exchange;
     private String base;
     private String quote;
+    private Double price;
     private Double amount;
-    private String exchange;
     private Long timestamp;
+    private Double volumeWeightByExchangeBaseQuote;
+    private Double volumeWeightByExchangeBase;
 }

@@ -13,6 +13,4 @@ public class BitrueTrade {
     private Double vol;
     private Long ts;
     private String ds;
-
-    // Getters and setters...
 }

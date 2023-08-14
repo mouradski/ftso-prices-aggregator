@@ -7,6 +7,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,9 +38,8 @@ public class BitrueClientEndpoint extends AbstractClientEndpoint {
         var pair = parseSymbol(tradeMessage.getChannel());
         var quote = "USDT";
 
-        for (var trade : tradeMessage.getTick().getData()) {
-            trades.add(Trade.builder().exchange(getExchange()).price(trade.getPrice()).amount(trade.getVol()).quote(quote).base(pair).timestamp(currentTimestamp()).build());
-        }
+        tradeMessage.getTick().getData().stream().sorted(Comparator.comparing(BitrueTrade::getTs)).forEach(trade ->
+                trades.add(Trade.builder().exchange(getExchange()).price(trade.getPrice()).amount(trade.getVol()).quote(quote).base(pair).timestamp(currentTimestamp()).build()));
 
         return Optional.of(trades);
     }

@@ -9,6 +9,4 @@ import java.util.List;
 @Setter
 public class Tick {
     private List<BitrueTrade> data;
-
-    // Getters and setters...
 }

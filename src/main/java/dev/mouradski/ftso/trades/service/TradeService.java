@@ -17,7 +17,13 @@ public class TradeService {
     @Inject
     Instance<TradeConsummer> tradeConsumer;
 
+    @Inject
+    VolumesService volumesService;
+
     public void pushTrade(Trade trade) {
+        var weights = volumesService.updateVolumes(trade.getExchange(), trade.getBase(), trade.getQuote(), trade.getAmount());
+        trade.setVolumeWeightByExchangeBaseQuote(weights.getLeft());
+        trade.setVolumeWeightByExchangeBase(weights.getRight());
         tradeServer.broadcastTrade(trade);
         tradeConsumer.forEach(consumer -> consumer.processTrade(trade));
     }
