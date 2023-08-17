@@ -5,6 +5,7 @@ import dev.mouradski.ftso.trades.server.TradeServer;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusMock;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import java.util.Set;
 import static org.mockito.Mockito.timeout;
 
 @QuarkusTest
+@TestProfile(dev.mouradski.ftso.trades.TestProfile.class)
 public class ApplicationTest {
 
     @ConfigProperty(name = "exchanges")
