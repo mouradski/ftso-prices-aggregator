@@ -56,8 +56,10 @@ public class XtClientEndpoint extends AbstractClientEndpoint {
 
         tickerEvent.getData().forEach(ticker -> {
             var pair = SymbolHelper.getPair(ticker.getSymbol());
-            tickers.add(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(Double.valueOf(ticker.getClose())).timestamp(currentTimestamp()).build());
 
+            if (getAssets(false).contains(pair.getLeft().toLowerCase()) && getAllQuotes(false).contains(pair.getRight().toLowerCase())) {
+                tickers.add(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(Double.valueOf(ticker.getClose())).timestamp(currentTimestamp()).build());
+            }
         });
 
         return Optional.of(tickers);
