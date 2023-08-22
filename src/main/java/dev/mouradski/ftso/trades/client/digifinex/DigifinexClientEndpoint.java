@@ -2,6 +2,8 @@ package dev.mouradski.ftso.trades.client.digifinex;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.client.bitrue.Tick;
+import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
@@ -26,7 +28,7 @@ public class DigifinexClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected void subscribe() {
+    protected void subscribeTrade() {
         var markets = getAvailableMarkets();
 
         var subscriptionMsgTemplate = "{\"method\":\"trades.subscribe\", \"params\":[PAIRS], \"id\":ID}";
@@ -48,6 +50,52 @@ public class DigifinexClientEndpoint extends AbstractClientEndpoint {
                         "\"" + base + "_USDC\""));
             }
         });
+    }
+
+    @Override
+    protected void subscribeTicker() {
+        var markets = getAvailableMarkets();
+
+        var subscriptionMsgTemplate = "{\"method\":\"ticker.subscribe\", \"params\":[PAIRS], \"id\":ID}";
+
+        getAssets().stream().map(String::toUpperCase).forEach(base -> {
+
+            if (markets.contains(base + "_USD")) {
+                this.sendMessage(subscriptionMsgTemplate.replace("ID", incAndGetIdAsString()).replace("PAIRS",
+                        "\"" + base + "_USD\""));
+            }
+
+            if (!base.equals("USDT") && markets.contains(base + "_USDT")) {
+                this.sendMessage(subscriptionMsgTemplate.replace("ID", incAndGetIdAsString()).replace("PAIRS",
+                        "\"" + base + "_USDT\""));
+            }
+
+            if (!base.equals("USDC") && markets.contains(base + "_USDC")) {
+                this.sendMessage(subscriptionMsgTemplate.replace("ID", incAndGetIdAsString()).replace("PAIRS",
+                        "\"" + base + "_USDC\""));
+            }
+        });
+    }
+
+    @Override
+    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
+
+        if (!message.contains("ticker.update")) {
+            return Optional.empty();
+        }
+
+        var tickerResponse = objectMapper.readValue(message, TickerResponse.class);
+
+        var tickers = new ArrayList<Ticker>();
+
+        tickerResponse.getParams().forEach(tickerData -> {
+            var pair = SymbolHelper.getPair(tickerData.getSymbol());
+
+            tickers.add(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(tickerData.getLast()).timestamp(currentTimestamp()).build());
+
+        });
+
+        return Optional.of(tickers);
     }
 
     @Override

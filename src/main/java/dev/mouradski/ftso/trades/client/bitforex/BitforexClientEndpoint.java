@@ -2,6 +2,7 @@ package dev.mouradski.ftso.trades.client.bitforex;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
@@ -23,12 +24,34 @@ public class BitforexClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected void subscribe() {
+    protected void subscribeTrade() {
         getAssets(false).forEach(base -> {
             getAllQuotesExceptBusd(false).forEach(quote -> {
                 this.sendMessage("[{     \"type\": \"subHq\",     \"event\": \"trade\",     \"param\": {         \"businessType\": \"coin-QUOTE-BASE\",         \"size\": 20     } }]".replace("BASE", base).replace("QUOTE", quote));
             });
         });
+    }
+
+    @Override
+    protected void subscribeTicker() {
+        getAssets(false).forEach(base -> {
+            getAllQuotesExceptBusd(false).forEach(quote -> {
+                this.sendMessage("[{     \"type\": \"subHq\",     \"event\": \"ticker\",     \"param\": {         \"businessType\": \"coin-QUOTE-BASE\",         \"size\": 20     } }]".replace("BASE", base).replace("QUOTE", quote));
+            });
+        });
+    }
+
+    @Override
+    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
+        if (!message.contains("24H")) {
+            return Optional.empty();
+        }
+
+        var tickerEvent = objectMapper.readValue(message, TickerEvent.class);
+
+        var pair = SymbolHelper.getPair(tickerEvent.getParam().getBusinessType().replace("coin-", ""));
+
+        return Optional.of(Collections.singletonList(Ticker.builder().exchange(getExchange()).base(pair.getRight()).quote(pair.getLeft()).lastPrice(tickerEvent.getData().getLast()).timestamp(currentTimestamp()).build()));
     }
 
     @Override
@@ -39,7 +62,7 @@ public class BitforexClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
-        if (!message.contains("businessType")) {
+        if (!message.contains("businessType") || message.contains("24H")) {
             return Optional.empty();
         }
 

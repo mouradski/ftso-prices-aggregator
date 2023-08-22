@@ -2,6 +2,7 @@ package dev.mouradski.ftso.trades.client.bitmart;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import io.netty.buffer.ByteBuf;
@@ -36,7 +37,7 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected void subscribe() {
+    protected void subscribeTrade() {
         var pairs = new ArrayList<String>();
 
         getAssets(true).forEach(base -> Arrays.asList("USDT").forEach(quote -> {
@@ -46,8 +47,41 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
         }));
 
         this.sendMessage("{\"op\":\"subscribe\",\"args\":[PAIRS]}".replace("PAIRS",
-                pairs.stream().collect(Collectors.joining(","))));
+                String.join(",", pairs)));
 
+    }
+
+    @Override
+    protected void subscribeTicker() {
+        var pairs = new ArrayList<String>();
+
+        getAssets(true).forEach(base -> Arrays.asList("USDT").forEach(quote -> {
+            if (supportedSymbols.contains(base + "_" + quote)) {
+                pairs.add("\"spot/ticker:" + base + "_" + quote + "\"");
+            }
+        }));
+
+        this.sendMessage("{\"op\":\"subscribe\",\"args\":[PAIRS]}".replace("PAIRS",
+                String.join(",", pairs)));
+
+    }
+
+    @Override
+    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
+        if (!message.contains("open_24h")) {
+            return Optional.empty();
+        }
+
+        var tickerResponse = objectMapper.readValue(message, TickerResponse.class);
+
+        var tickers = new ArrayList<Ticker>();
+
+        for (var ticker : tickerResponse.getData()) {
+            var pair = SymbolHelper.getPair(ticker.getSymbol());
+            tickers.add(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(ticker.getLastPrice()).timestamp(currentTimestamp()).build());
+        }
+
+        return Optional.of(tickers);
     }
 
     @Override

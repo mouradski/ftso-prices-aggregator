@@ -2,8 +2,10 @@ package dev.mouradski.ftso.trades.client.kucoin;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import jakarta.websocket.ClientEndpoint;
+import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -42,6 +44,8 @@ public class KuCoinClientEndpoint extends AbstractClientEndpoint {
                 .build()));
     }
 
+
+
     @Override
     protected String getUri() {
         return instance + "?token=" + token;
@@ -70,10 +74,29 @@ public class KuCoinClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected void subscribe() {
+    protected void subscribeTrade() {
         getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> {
             subscribeToTrades(base.toUpperCase() + "-" + quote);
         }));
+    }
+
+    @Override
+    protected void subscribeTicker() {
+        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> {
+            subscribeToTicker(base.toUpperCase() + "-" + quote);
+        }));
+    }
+
+    @Override
+    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
+        if (!message.contains("/market/ticker")) {
+            return Optional.empty();
+        }
+        var tickerMessage = objectMapper.readValue(message, TickerMessage.class);
+
+        var pair = SymbolHelper.getPair(tickerMessage.getTopic().split(":")[1]);
+
+        return Optional.of(Collections.singletonList(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(tickerMessage.getData().getPrice()).timestamp(currentTimestamp()).build()));
     }
 
     @Override
@@ -84,6 +107,11 @@ public class KuCoinClientEndpoint extends AbstractClientEndpoint {
 
     private void subscribeToTrades(String symbol) {
         var subscribeMessage = "{\"type\":\"subscribe\",\"topic\":\"/market/match:" + symbol + "\",\"privateChannel\":false,\"response\":true}";
+        this.sendMessage(subscribeMessage);
+    }
+
+    private void subscribeToTicker(String symbol) {
+        var subscribeMessage = "{\"type\":\"subscribe\",\"topic\":\"/market/ticker:" + symbol + "\",\"privateChannel\":false,\"response\":true}";
         this.sendMessage(subscribeMessage);
     }
 

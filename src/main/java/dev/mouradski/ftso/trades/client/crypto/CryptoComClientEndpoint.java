@@ -3,14 +3,13 @@ package dev.mouradski.ftso.trades.client.crypto;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import jakarta.websocket.ClientEndpoint;
 import org.springframework.stereotype.Component;
+import dev.mouradski.ftso.trades.utils.SymbolHelper;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @ClientEndpoint
 @Component
@@ -22,12 +21,35 @@ public class CryptoComClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected void subscribe() {
+    protected void subscribeTrade() {
         getAssets().stream().filter(v -> !v.equals("usdt")).map(String::toUpperCase).forEach(base -> {
             this.sendMessage("{\"id\": " + incAndGetId() + ",\"method\": \"subscribe\",\"params\": {\"channels\": [\"trade." + base + "_USDT\"]},\"nonce\": " + new Date().getTime() + "}");
             this.sendMessage("{\"id\": " + incAndGetId() + ",\"method\": \"subscribe\",\"params\": {\"channels\": [\"trade." + base + "_USD\"]},\"nonce\": " + new Date().getTime() + "}");
         });
 
+    }
+
+    @Override
+    protected void subscribeTicker() {
+        getAssets().stream().filter(v -> !v.equals("usdt")).map(String::toUpperCase).forEach(base -> {
+            this.sendMessage("{\"id\": " + incAndGetId() + ",\"method\": \"subscribe\",\"params\": {\"channels\": [\"ticker." + base + "_USDT\"]},\"nonce\": " + new Date().getTime() + "}");
+            this.sendMessage("{\"id\": " + incAndGetId() + ",\"method\": \"subscribe\",\"params\": {\"channels\": [\"ticker." + base + "_USD\"]},\"nonce\": " + new Date().getTime() + "}");
+        });
+    }
+
+    @Override
+    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
+        if (!message.contains("ticker.")) {
+            return Optional.empty();
+        }
+
+        var tickerResponse = objectMapper.readValue(message, dev.mouradski.ftso.trades.client.crypto.Ticker.class);
+
+        var pair = SymbolHelper.getPair(tickerResponse.getResult().getSubscription().replace("ticker.", ""));
+
+
+
+        return Optional.of(Collections.singletonList(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(tickerResponse.getResult().getData().get(0).getA()).timestamp(currentTimestamp()).build()));
     }
 
     @Override

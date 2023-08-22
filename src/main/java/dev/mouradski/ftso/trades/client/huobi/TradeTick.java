@@ -8,7 +8,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class Tick {
+public class TradeTick {
     @SerializedName("id")
     private long id;
 

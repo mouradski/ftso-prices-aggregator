@@ -2,13 +2,13 @@ package dev.mouradski.ftso.trades.client.bitrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
+import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static dev.mouradski.ftso.trades.utils.Constants.USDT;
 
@@ -36,9 +36,8 @@ public class BitrueClientEndpoint extends AbstractClientEndpoint {
         var pair = parseSymbol(tradeMessage.getChannel());
         var quote = "USDT";
 
-        for (var trade : tradeMessage.getTick().getData()) {
-            trades.add(Trade.builder().exchange(getExchange()).price(trade.getPrice()).amount(trade.getAmount()).quote(quote).base(pair).timestamp(currentTimestamp()).build());
-        }
+        tradeMessage.getTick().getData().stream().sorted(Comparator.comparing(BitrueTrade::getTs)).forEach(trade ->
+                trades.add(Trade.builder().exchange(getExchange()).price(trade.getPrice()).amount(trade.getVol()).quote(quote).base(pair).timestamp(currentTimestamp()).build()));
 
         return Optional.of(trades);
     }
@@ -54,8 +53,26 @@ public class BitrueClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected void subscribe() {
+    protected void subscribeTrade() {
         getAssets().stream().filter(v -> !v.contains("usd")).forEach(base -> this.sendMessage("{\"event\":\"sub\",\"params\":{\"cb_id\":\"CB_ID\",\"channel\":\"market_CB_ID_trade_ticker\"}}".replaceAll("CB_ID", base + USDT)));
+    }
+
+    @Override
+    protected void subscribeTicker() {
+        getAssets().stream().filter(v -> !v.contains("usd")).forEach(base -> this.sendMessage("{\"event\":\"sub\",\"params\":{\"cb_id\":\"CB_ID\",\"channel\":\"market_CB_ID_ticker\"}}".replaceAll("CB_ID", base + USDT)));
+    }
+
+    @Override
+    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
+        if (!message.contains("close")) {
+            return Optional.empty();
+        }
+
+        var tickerResponse = objectMapper.readValue(message, TickerResponse.class);
+
+        var pair = SymbolHelper.getPair(tickerResponse.getChannel().replace("market_", "").replace("_ticker", ""));
+
+        return Optional.of(Collections.singletonList(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(tickerResponse.getTick().getClose()).timestamp(currentTimestamp()).build()));
     }
 
     @Override

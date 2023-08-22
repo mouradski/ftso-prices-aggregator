@@ -2,6 +2,7 @@ package dev.mouradski.ftso.trades.client.btse;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
@@ -21,7 +22,7 @@ public class BtseClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected void subscribe() {
+    protected void subscribeTrade() {
         var pairs = new ArrayList<String>();
         getAssets(true).stream()
                 .filter(base -> !getAllQuotes(true).contains(base))
@@ -32,6 +33,7 @@ public class BtseClientEndpoint extends AbstractClientEndpoint {
                             symbolId));
                 }));
     }
+
 
     @Override
     protected String getExchange() {

@@ -2,12 +2,18 @@ package dev.mouradski.ftso.trades.client.coinex;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -15,20 +21,51 @@ import java.util.stream.Collectors;
 @Component
 public class CoinexClientEndpoint extends AbstractClientEndpoint {
 
+    private HttpClient client = HttpClient.newHttpClient();
+
     @Override
     protected String getUri() {
         return "wss://socket.coinex.com";
     }
 
     @Override
-    protected void subscribe() {
+    protected void subscribeTrade() {
         var pairs = new ArrayList<String>();
 
         getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> pairs.add("\"" + base + quote + "\"")));
 
         this.sendMessage("{   \"method\": \"deals.subscribe\",   \"params\": [PAIRS],   \"id\": ID }"
-                .replace("PAIRS", pairs.stream().collect(Collectors.joining(",")))
+                .replace("PAIRS", String.join(",", pairs))
                 .replace("ID", incAndGetIdAsString()));
+    }
+
+
+    @Scheduled(fixedDelay = 30000)
+    public void getTickers() {
+        if (subscribeTicker && exchanges.contains(getExchange())) {
+            var request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.coinex.com/v1/market/ticker/all"))
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
+
+            try {
+                var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+                var tickerResponse = gson.fromJson(response.body(), TickerResponse.class);
+
+                tickerResponse.getData().getTicker().entrySet().forEach(tickerEntry -> {
+                    var pair = SymbolHelper.getPair(tickerEntry.getKey());
+
+                    if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                        pushTickers(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(tickerEntry.getValue().getLast()).timestamp(currentTimestamp()).build());
+                    }
+                });
+
+            } catch (IOException | InterruptedException e) {
+                //TODO
+            }
+        }
     }
 
     @Override

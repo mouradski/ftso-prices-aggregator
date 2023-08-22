@@ -8,5 +8,5 @@ import lombok.Setter;
 public class EventData {
     private String topic;
     private String event;
-    private TradeData data;
+    private EventDetail data;
 }

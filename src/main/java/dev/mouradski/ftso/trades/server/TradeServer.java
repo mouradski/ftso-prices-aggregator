@@ -2,6 +2,7 @@ package dev.mouradski.ftso.trades.server;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import jakarta.websocket.OnClose;
 import jakarta.websocket.OnError;
@@ -49,6 +50,18 @@ public class TradeServer {
             });
         } catch (IOException e) {
             log.error("Caught exception while broadcasting trade : {}", trade, e);
+        }
+    }
+
+
+    public void broadcastTicker(Ticker ticker) {
+        try {
+            var messageAsString = objectMapper.writeValueAsString(ticker);
+            listeners.forEach(listener -> {
+                listener.sendMessage(messageAsString);
+            });
+        } catch (IOException e) {
+            log.error("Caught exception while broadcasting ticker : {}", ticker, e);
         }
     }
 

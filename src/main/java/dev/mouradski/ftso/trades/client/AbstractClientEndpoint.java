@@ -3,10 +3,12 @@ package dev.mouradski.ftso.trades.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.Constants;
 import jakarta.websocket.*;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
@@ -39,6 +41,13 @@ public abstract class AbstractClientEndpoint {
     protected AtomicInteger counter = new AtomicInteger();
     private long lastMessageTime;
     private int retries = 3;
+
+
+
+    protected boolean subscribeTrade = true;
+
+    protected boolean subscribeTicker = true;
+
 
     protected AbstractClientEndpoint() {
     }
@@ -87,13 +96,22 @@ public abstract class AbstractClientEndpoint {
             this.decodeMetadata(message);
 
             if (!this.pong(message)) {
-                this.mapTrade(message).ifPresent(tradeList -> tradeList.forEach(this.priceSender::pushTrade));
+                if (subscribeTrade) {
+                    this.mapTrade(message).ifPresent(tradeList -> tradeList.forEach(this.priceSender::pushTrade));
+                }
+                if (subscribeTicker) {
+                    this.mapTicker(message).ifPresent(tickerList -> tickerList.forEach(this.priceSender::pushTicker));
+                }
             }
 
         } catch (Exception e) {
             log.debug("Caught exception receiving msg from {}, msg : {}", getExchange(), message, e);
         }
 
+    }
+
+    protected void pushTickers(Ticker ticker) {
+        this.priceSender.pushTicker(ticker);
     }
 
     private boolean isGzipCompressed(byte[] data) {
@@ -180,6 +198,10 @@ public abstract class AbstractClientEndpoint {
         return Optional.empty();
     }
 
+    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
+        return Optional.empty();
+    }
+
     protected Optional<List<Trade>>  mapTrade(ByteBuffer message) throws JsonProcessingException {
         return Optional.empty();
     }
@@ -190,14 +212,33 @@ public abstract class AbstractClientEndpoint {
 
     protected abstract String getUri();
 
-    protected abstract void subscribe();
+    protected void subscribe() {
+        if (subscribeTrade) {
+            subscribeTrade();
+        }
+
+        if (subscribeTicker) {
+            subscribeTicker();
+        }
+    }
+
+    protected void subscribeTrade() {
+    }
+
+    protected void subscribeTicker() {
+    }
 
     protected abstract String getExchange();
 
-    protected void start(TradeService priceSender, List<String> exchanges, List<String> assets) {
+    protected List<String> exchanges;
 
+    protected void start(TradeService priceSender, List<String> exchanges, List<String> assets, boolean subscribeTrade, boolean subscribeTicker) {
+
+        this.subscribeTicker = subscribeTicker;
+        this.subscribeTrade = subscribeTrade;
         this.priceSender = priceSender;
         this.assets = assets;
+        this.exchanges = exchanges;
 
         if (exchanges == null || exchanges.contains(getExchange())) {
             try {

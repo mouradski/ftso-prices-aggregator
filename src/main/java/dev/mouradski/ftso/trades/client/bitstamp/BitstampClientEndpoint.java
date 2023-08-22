@@ -3,6 +3,7 @@ package dev.mouradski.ftso.trades.client.bitstamp;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.JsonParser;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.websocket.ClientEndpoint;
@@ -21,7 +22,7 @@ public class BitstampClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected void subscribe() {
+    protected void subscribeTrade() {
         getAssets().forEach(base -> getAllQuotesExceptBusd(false).forEach(quote -> this.sendMessage(
                 "{\"event\": \"bts:subscribe\", \"data\": {\"channel\": \"live_trades_" + base + quote + "\"}}")));
     }

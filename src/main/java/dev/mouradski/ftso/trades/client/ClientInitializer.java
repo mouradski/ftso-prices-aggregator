@@ -9,7 +9,7 @@ import java.util.List;
 @Component
 public class ClientInitializer {
 
-    public ClientInitializer(List<AbstractClientEndpoint> clients, TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets) {
-        clients.parallelStream().forEach(client -> client.start(priceSender, exchanges, assets));
+    public ClientInitializer(List<AbstractClientEndpoint> clients, TradeService priceSender, @Value("${exchanges}") List<String> exchanges, @Value("${assets}") List<String> assets, @Value("${subscribe.trade:false}") Boolean subscribeTrade, @Value("${subscribe.ticker:true}") Boolean subscribeTicker) {
+        clients.parallelStream().forEach(client -> client.start(priceSender, exchanges, assets, subscribeTrade, subscribeTicker));
     }
 }
