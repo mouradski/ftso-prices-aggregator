@@ -1,5 +1,6 @@
 package dev.mouradski.ftso.trades.service;
 
+import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.server.TradeServer;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -28,7 +29,7 @@ public class TradeService {
         tradeConsumer.forEach(consumer -> consumer.processTrade(trade));
     }
 
-    public void setTradeServer(TradeServer tradeServer) {
-        this.tradeServer = tradeServer;
+    public void pushTicker(Ticker ticker) {
+        tradeServer.broadcastTicker(ticker);
     }
 }

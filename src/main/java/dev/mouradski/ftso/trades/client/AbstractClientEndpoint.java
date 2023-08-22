@@ -3,6 +3,7 @@ package dev.mouradski.ftso.trades.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.Constants;
@@ -38,7 +39,7 @@ public abstract class AbstractClientEndpoint {
     List<String> assets;
 
     @ConfigProperty(name = "exchanges")
-    List<String> exchanges;
+    protected List<String> exchanges;
 
     public static final Gson gson = new Gson();
     private static final long DEFAULT_TIMEOUT = 120; // timeout in seconds
@@ -48,6 +49,11 @@ public abstract class AbstractClientEndpoint {
     protected AtomicInteger counter = new AtomicInteger();
     private long lastMessageTime;
     private int retries = 3;
+
+    @ConfigProperty(name = "subscribe.trade")
+    protected boolean subscribeTrade = true;
+    @ConfigProperty(name = "subscribe.ticker")
+    protected boolean subscribeTicker = true;
 
     protected AbstractClientEndpoint() {
     }
@@ -100,13 +106,22 @@ public abstract class AbstractClientEndpoint {
             this.decodeMetadata(message);
 
             if (!this.pong(message)) {
-                this.mapTrade(message).ifPresent(tradeList -> tradeList.forEach(this.priceSender::pushTrade));
+                if (subscribeTrade) {
+                    this.mapTrade(message).ifPresent(tradeList -> tradeList.forEach(this.priceSender::pushTrade));
+                }
+                if (subscribeTicker) {
+                    this.mapTicker(message).ifPresent(tickerList -> tickerList.forEach(this.priceSender::pushTicker));
+                }
             }
 
         } catch (Exception e) {
             log.debug("Caught exception receiving msg from {}, msg : {}", getExchange(), message, e);
         }
 
+    }
+
+    protected void pushTickers(Ticker ticker) {
+        this.priceSender.pushTicker(ticker);
     }
 
     private boolean isGzipCompressed(byte[] data) {
@@ -193,6 +208,10 @@ public abstract class AbstractClientEndpoint {
         return Optional.empty();
     }
 
+    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
+        return Optional.empty();
+    }
+
     protected Optional<List<Trade>>  mapTrade(ByteBuffer message) throws JsonProcessingException {
         return Optional.empty();
     }
@@ -203,7 +222,21 @@ public abstract class AbstractClientEndpoint {
 
     protected abstract String getUri();
 
-    protected abstract void subscribe();
+    protected void subscribe() {
+        if (subscribeTrade) {
+            subscribeTrade();
+        }
+
+        if (subscribeTicker) {
+            subscribeTicker();
+        }
+    }
+
+    protected void subscribeTrade() {
+    }
+
+    protected void subscribeTicker() {
+    }
 
     protected abstract String getExchange();
 

@@ -2,7 +2,9 @@ package dev.mouradski.ftso.trades.client.upbit;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
+import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
@@ -22,7 +24,7 @@ public class UpbitClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected void subscribe() {
+    protected void subscribeTrade() {
 
         var pairs = new ArrayList<String>();
 
@@ -30,6 +32,30 @@ public class UpbitClientEndpoint extends AbstractClientEndpoint {
         this.sendMessage("[{\"ticket\":\"trades\"},{\"type\":\"trade\",\"codes\":[SYMBOL]}]".replace("SYMBOL", String.join(",", pairs)));
 
 
+    }
+
+    @Override
+    protected void subscribeTicker() {
+
+        var pairs = new ArrayList<String>();
+
+        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> pairs.add("\"" + quote + "-" + base + "\"")));
+        this.sendMessage("[{\"ticket\":\"trades\"},{\"type\":\"ticker\",\"codes\":[SYMBOL]}]".replace("SYMBOL", String.join(",", pairs)));
+
+
+    }
+
+    @Override
+    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
+        if (!message.contains("ticker")) {
+            return Optional.empty();
+        }
+
+        var tickerData = objectMapper.readValue(message, UpbitTicker.class);
+
+        var pair = SymbolHelper.getPair(tickerData.getCode());
+
+        return Optional.of(Collections.singletonList(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(tickerData.getLastPrice()).timestamp(currentTimestamp()).build()));
     }
 
     @Override

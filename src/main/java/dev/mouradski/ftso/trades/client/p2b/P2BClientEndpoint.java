@@ -4,16 +4,14 @@ package dev.mouradski.ftso.trades.client.p2b;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @ApplicationScoped
 @ClientEndpoint
@@ -24,7 +22,7 @@ public class P2BClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected void subscribe() {
+    protected void subscribeTrade() {
         var subscribeTemplate = "{\"method\":\"deals.subscribe\",\"params\":[SYMBOLS],\"id\":ID}";
         
         var symbols = new ArrayList<String>();
@@ -32,6 +30,31 @@ public class P2BClientEndpoint extends AbstractClientEndpoint {
         getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> symbols.add("\"" + base + "_" + quote + "\"")));
 
         this.sendMessage(subscribeTemplate.replace("SYMBOLS", String.join(",", symbols)).replace("ID", incAndGetIdAsString()));
+    }
+
+    @Override
+    protected void subscribeTicker() {
+        var subscribeTemplate = "{\"method\":\"price.subscribe\",\"params\":[SYMBOLS],\"id\":ID}";
+
+        var symbols = new ArrayList<String>();
+
+        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> symbols.add("\"" + base + "_" + quote + "\"")));
+
+        this.sendMessage(subscribeTemplate.replace("SYMBOLS", String.join(",", symbols)).replace("ID", incAndGetIdAsString()));
+    }
+
+    @Override
+    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
+        if (!message.contains("price.update")) {
+            return Optional.empty();
+        }
+
+        var priceUpdate = objectMapper.readValue(message, PriceUpdate.class);
+
+        var pair = SymbolHelper.getPair(priceUpdate.getParams()[0]);
+        var lastPrice = Double.valueOf(priceUpdate.getParams()[1]);
+
+        return Optional.of(Collections.singletonList(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(lastPrice).timestamp(currentTimestamp()).build()));
     }
 
     @Override

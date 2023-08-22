@@ -17,7 +17,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class BinanceTrade {
+public class BinanceEvent {
 
     @JsonProperty("stream")
     public String stream;
