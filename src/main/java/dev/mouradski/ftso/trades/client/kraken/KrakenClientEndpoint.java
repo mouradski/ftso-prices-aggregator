@@ -63,7 +63,7 @@ public class KrakenClientEndpoint extends AbstractClientEndpoint {
 
         var jsonArray = new JSONArray(message);
 
-       	var pair = SymbolHelper.getPair(jsonArray.getString(3).replace("XBT", "BTC"));
+       	var pair = SymbolHelper.getPair(jsonArray.getString(3).replace("XBT", "BTC").replace("XDG", "DOGE"));
 
 
         var details = jsonArray.getJSONObject(1);
