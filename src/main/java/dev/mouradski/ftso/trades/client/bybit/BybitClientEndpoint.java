@@ -2,7 +2,6 @@ package dev.mouradski.ftso.trades.client.bybit;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
-import dev.mouradski.ftso.trades.client.whitebit.MarketPair;
 import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
@@ -16,9 +15,10 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 @ApplicationScoped
 @ClientEndpoint
@@ -68,7 +68,6 @@ public class BybitClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
-        System.out.println(message);
         return super.mapTicker(message);
     }
 

@@ -3,7 +3,6 @@ package dev.mouradski.ftso.trades.client.bitstamp;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.JsonParser;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
-import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import jakarta.enterprise.context.ApplicationScoped;

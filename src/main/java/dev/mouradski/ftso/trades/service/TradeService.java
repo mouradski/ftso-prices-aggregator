@@ -1,6 +1,5 @@
 package dev.mouradski.ftso.trades.service;
 
-import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.server.TradeServer;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -25,11 +24,7 @@ public class TradeService {
         var weights = volumesService.updateVolumes(trade.getExchange(), trade.getBase(), trade.getQuote(), trade.getAmount());
         trade.setVolumeWeightByExchangeBaseQuote(weights.getLeft());
         trade.setVolumeWeightByExchangeBase(weights.getRight());
-        tradeServer.broadcastTrade(trade);
+        tradeServer.broadcast(trade);
         tradeConsumer.forEach(consumer -> consumer.processTrade(trade));
-    }
-
-    public void pushTicker(Ticker ticker) {
-        tradeServer.broadcastTicker(ticker);
     }
 }

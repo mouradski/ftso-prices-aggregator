@@ -90,10 +90,6 @@ public class BitfinexClientEndpoint extends AbstractClientEndpoint {
     @Override
     protected void decodeMetadata(String message) {
         if (message.contains("subscribed")) {
-
-            if (message.contains("USDT")) {
-                System.out.println("debug");
-            }
             var symbolId = message.split("\"pair\":\"")[1].split("\"")[0].replace("t", "");
             var channelId = Double.valueOf(message.split("\"chanId\":")[1].split(",")[0]);
             var pair = SymbolHelper.getPair(symbolId);

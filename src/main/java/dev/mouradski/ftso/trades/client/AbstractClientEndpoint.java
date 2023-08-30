@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
+import dev.mouradski.ftso.trades.service.TickerService;
 import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.Constants;
 import io.quarkus.runtime.StartupEvent;
@@ -33,7 +34,10 @@ import static dev.mouradski.ftso.trades.utils.Constants.SYMBOLS;
 public abstract class AbstractClientEndpoint {
 
     @Inject
-    TradeService priceSender;
+    TradeService tradeService;
+
+    @Inject
+    TickerService tickerService;
 
     @ConfigProperty(name = "assets")
     List<String> assets;
@@ -107,10 +111,10 @@ public abstract class AbstractClientEndpoint {
 
             if (!this.pong(message)) {
                 if (subscribeTrade) {
-                    this.mapTrade(message).ifPresent(tradeList -> tradeList.forEach(this.priceSender::pushTrade));
+                    this.mapTrade(message).ifPresent(tradeList -> tradeList.forEach(this.tradeService::pushTrade));
                 }
                 if (subscribeTicker) {
-                    this.mapTicker(message).ifPresent(tickerList -> tickerList.forEach(this.priceSender::pushTicker));
+                    this.mapTicker(message).ifPresent(tickerList -> tickerList.forEach(this.tickerService::pushTicker));
                 }
             }
 
@@ -121,7 +125,7 @@ public abstract class AbstractClientEndpoint {
     }
 
     protected void pushTickers(Ticker ticker) {
-        this.priceSender.pushTicker(ticker);
+        this.tickerService.pushTicker(ticker);
     }
 
     private boolean isGzipCompressed(byte[] data) {

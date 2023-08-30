@@ -33,4 +33,6 @@ ws://localhost:8985/trade
 
 wscat --connect ws://51.15.221.166:8986/trade
 
+wscat --connect ws://51.15.221.166:8986/ticker
+
 

@@ -39,7 +39,6 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
-        System.out.println(message);
         return super.mapTicker(message);
     }
 
