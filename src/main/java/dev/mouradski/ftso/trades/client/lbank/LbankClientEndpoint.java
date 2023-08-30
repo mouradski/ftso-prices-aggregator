@@ -2,6 +2,7 @@ package dev.mouradski.ftso.trades.client.lbank;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import io.quarkus.scheduler.Scheduled;
@@ -23,8 +24,27 @@ public class LbankClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected void subscribe() {
+    protected void subscribeTrade() {
         getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> this.sendMessage("{\"action\":\"subscribe\", \"subscribe\":\"trade\", \"pair\":\"SYMBOL_QUOTE\"}".replaceAll("SYMBOL", base).replace("QUOTE", quote))));
+    }
+
+    @Override
+    protected void subscribeTicker() {
+        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> this.sendMessage("{\"action\":\"subscribe\", \"subscribe\":\"tick\", \"pair\":\"SYMBOL_QUOTE\"}".replaceAll("SYMBOL", base).replace("QUOTE", quote))));
+    }
+
+    @Override
+    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
+        if (!message.contains("tick")) {
+            return Optional.empty();
+        }
+
+
+        var tickerData = objectMapper.readValue(message, TickerData.class);
+
+        var pair = SymbolHelper.getPair(tickerData.getPair());
+
+        return Optional.of(Collections.singletonList(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(tickerData.getTick().getLatest()).timestamp(currentTimestamp()).build()));
     }
 
     @Override

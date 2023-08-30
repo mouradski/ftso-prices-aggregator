@@ -21,6 +21,8 @@ import lombok.ToString;
 public class Data {
     @JsonProperty("s")
     public String s;
+    @JsonProperty("c")
+    public Double c;
     @JsonProperty("p")
     public Double p;
     @JsonProperty("q")

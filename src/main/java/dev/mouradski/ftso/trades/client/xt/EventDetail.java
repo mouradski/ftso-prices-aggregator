@@ -1,12 +1,14 @@
 package dev.mouradski.ftso.trades.client.xt;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class TradeData {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class EventDetail {
 
     @JsonProperty("s")
     private String symbol;

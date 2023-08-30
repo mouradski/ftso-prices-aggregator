@@ -2,8 +2,10 @@ package dev.mouradski.ftso.trades.client.pionex;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
+import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +25,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class PionexClientEndpoint extends AbstractClientEndpoint {
 
+    private HttpClient client = HttpClient.newHttpClient();
     protected Set<String> supportedSymbols;
 
     @Override
@@ -31,7 +34,7 @@ public class PionexClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected void subscribe() {
+    protected void subscribeTrade() {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         getAssets(true).stream()
                 .filter(base -> !getAllQuotes(true).contains(base))
@@ -47,6 +50,7 @@ public class PionexClientEndpoint extends AbstractClientEndpoint {
                     }
                 })));
     }
+
 
     @Override
     protected String getExchange() {
@@ -79,6 +83,34 @@ public class PionexClientEndpoint extends AbstractClientEndpoint {
         }
 
         return false;
+    }
+
+    @Scheduled(every = "2s")
+    public void getTickers() {
+        if (subscribeTicker && exchanges.contains(getExchange())) {
+            var request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.pionex.com/api/v1/market/tickers"))
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
+
+            try {
+                var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+                var tickerData = gson.fromJson(response.body(), TickerData.class);
+
+                tickerData.getData().getTickers().forEach(ticker -> {
+                    var pair = SymbolHelper.getPair(ticker.getSymbol());
+
+                    if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                        pushTickers(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(ticker.getClose()).timestamp(currentTimestamp()).build());
+                    }
+                });
+
+            } catch (IOException | InterruptedException e) {
+                //TODO
+            }
+        }
     }
 
     @Override

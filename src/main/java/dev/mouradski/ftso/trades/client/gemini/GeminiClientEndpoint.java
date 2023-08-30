@@ -33,7 +33,7 @@ public class GeminiClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected void subscribe() {
+    protected void subscribeTrade() {
     }
 
     @Override

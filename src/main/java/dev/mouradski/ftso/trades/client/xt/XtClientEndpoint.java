@@ -2,6 +2,7 @@ package dev.mouradski.ftso.trades.client.xt;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import io.quarkus.scheduler.Scheduled;
@@ -23,7 +24,7 @@ public class XtClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected void subscribe() {
+    protected void subscribeTrade() {
         var pairs = new ArrayList<String>();
 
         getAssets(false).forEach(base -> getAllQuotesExceptBusd(false).forEach(quote -> {
@@ -33,6 +34,36 @@ public class XtClientEndpoint extends AbstractClientEndpoint {
         this.sendMessage("{     \"method\": \"subscribe\",      \"params\": [PAIRS],      \"id\": \"ID\" }"
                 .replace("ID", incAndGetIdAsString())
                 .replace("PAIRS", String.join(",", pairs)));
+    }
+
+    @Override
+    protected void subscribeTicker() {
+        this.sendMessage("{     \"method\": \"subscribe\",  \"params\": [\"tickers\"]}");
+    }
+
+    @Override
+    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
+        if (!message.contains("tickers")) {
+            return Optional.empty();
+        }
+
+        var tickers = new ArrayList<Ticker>();
+
+
+        var tickerEvent = this.objectMapper.readValue(message, TickerEvent.class);
+
+
+
+        tickerEvent.getData().forEach(ticker -> {
+            var pair = SymbolHelper.getPair(ticker.getSymbol());
+
+            if (getAssets(false).contains(pair.getLeft().toLowerCase()) && getAllQuotes(false).contains(pair.getRight().toLowerCase())) {
+                tickers.add(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(Double.valueOf(ticker.getClose())).timestamp(currentTimestamp()).build());
+            }
+        });
+
+        return Optional.of(tickers);
+
     }
 
     @Override

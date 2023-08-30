@@ -2,6 +2,7 @@ package dev.mouradski.ftso.trades.client.whitebit;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import io.quarkus.scheduler.Scheduled;
@@ -31,7 +32,7 @@ public class WhitebitClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected void subscribe() {
+    protected void subscribeTrade() {
         var pairs = new ArrayList<String>();
 
         getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> {
@@ -46,6 +47,37 @@ public class WhitebitClientEndpoint extends AbstractClientEndpoint {
                 .replace("ID", incAndGetIdAsString())
                 .replace("PAIRS", String.join(",", pairs)));
 
+    }
+
+    @Override
+    protected void subscribeTicker() {
+        var pairs = new ArrayList<String>();
+
+        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> {
+            var pair = base + "_" + quote;
+
+            if (supportedSymbols.contains(pair)) {
+                pairs.add("\"" + pair + "\"");
+            }
+        }));
+
+        this.sendMessage("{\"id\": ID,\"method\": \"lastprice_subscribe\",\"params\": [PAIRS]}"
+                .replace("ID", incAndGetIdAsString())
+                .replace("PAIRS", String.join(",", pairs)));
+
+    }
+
+    @Override
+    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
+        if (!message.contains("lastprice_update")) {
+            return Optional.empty();
+        }
+
+        var priceUpdate = objectMapper.readValue(message, PriceUpdate.class);
+
+        var pair = SymbolHelper.getPair(priceUpdate.getSymbol());
+
+        return Optional.of(Collections.singletonList(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(priceUpdate.getLastPrice()).timestamp(currentTimestamp()).build()));
     }
 
     @Override

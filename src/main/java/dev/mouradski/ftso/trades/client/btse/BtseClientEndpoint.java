@@ -22,7 +22,7 @@ public class BtseClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected void subscribe() {
+    protected void subscribeTrade() {
         var pairs = new ArrayList<String>();
         getAssets(true).stream()
                 .filter(base -> !getAllQuotes(true).contains(base))
@@ -33,6 +33,7 @@ public class BtseClientEndpoint extends AbstractClientEndpoint {
                             symbolId));
                 }));
     }
+
 
     @Override
     protected String getExchange() {

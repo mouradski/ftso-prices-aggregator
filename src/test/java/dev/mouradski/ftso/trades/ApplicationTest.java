@@ -10,6 +10,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
 import java.util.Set;
 
 import static org.mockito.Mockito.timeout;
@@ -33,7 +34,7 @@ public class ApplicationTest {
     @Test
     void shouldBroadcastTrades() {
         exchanges.forEach(exchange -> {
-            Mockito.verify(tradeServer, timeout(60000).atLeast(1).description("No trades received from exchange " + exchange)).broadcastTrade(Mockito.argThat((Trade trade) -> trade.getExchange().equals(exchange)));
+            Mockito.verify(tradeServer, timeout(60000).atLeast(1).description("No trades received from exchange " + exchange)).broadcast(Mockito.argThat((Trade trade) -> trade.getExchange().equals(exchange)));
         });
     }
 }

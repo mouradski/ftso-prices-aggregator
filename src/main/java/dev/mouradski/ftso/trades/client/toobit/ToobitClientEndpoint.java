@@ -2,6 +2,7 @@ package dev.mouradski.ftso.trades.client.toobit;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import io.quarkus.scheduler.Scheduled;
@@ -21,10 +22,31 @@ public class ToobitClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected void subscribe() {
+    protected void subscribeTrade() {
 
         var pairs = getAssets(true).stream().map(v -> v + "USDT").collect(Collectors.joining(","));
         this.sendMessage("{\"symbol\": \"PAIRS\",\"topic\": \"trade\",\"event\": \"sub\",\"params\":{\"binary\": false}}".replace("PAIRS", pairs));
+    }
+
+    @Override
+    protected void subscribeTicker() {
+        var pairs = getAssets(true).stream().map(v -> v + "USDT").collect(Collectors.joining(","));
+        this.sendMessage("{\"symbol\": \"PAIRS\",\"topic\": \"realtimes\",\"event\": \"sub\",\"params\":{\"binary\": false}}".replace("PAIRS", pairs));
+    }
+
+    @Override
+    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
+
+        if (!message.contains("realtimeInterval")) {
+            return Optional.empty();
+        }
+
+        var tickerData = objectMapper.readValue(message, TickerData.class);
+
+        var pair = SymbolHelper.getPair(tickerData.getSymbol());
+
+
+        return Optional.of(Collections.singletonList(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(tickerData.getData().get(0).getC()).timestamp(currentTimestamp()).build()));
     }
 
     @Override

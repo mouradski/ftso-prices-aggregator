@@ -1,13 +1,12 @@
 package dev.mouradski.ftso.trades.client.huobi;
 
-
 import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class Response {
+public class TickerResponse {
     @SerializedName("ch")
     private String ch;
 
@@ -15,5 +14,5 @@ public class Response {
     private long ts;
 
     @SerializedName("tick")
-    private Tick tick;
+    private TickerDetail tick;
 }

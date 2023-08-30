@@ -24,11 +24,7 @@ public class TradeService {
         var weights = volumesService.updateVolumes(trade.getExchange(), trade.getBase(), trade.getQuote(), trade.getAmount());
         trade.setVolumeWeightByExchangeBaseQuote(weights.getLeft());
         trade.setVolumeWeightByExchangeBase(weights.getRight());
-        tradeServer.broadcastTrade(trade);
+        tradeServer.broadcast(trade);
         tradeConsumer.forEach(consumer -> consumer.processTrade(trade));
-    }
-
-    public void setTradeServer(TradeServer tradeServer) {
-        this.tradeServer = tradeServer;
     }
 }
