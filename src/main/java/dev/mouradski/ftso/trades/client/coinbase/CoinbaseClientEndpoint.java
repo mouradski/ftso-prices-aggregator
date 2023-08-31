@@ -49,7 +49,7 @@ public class CoinbaseClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
-        if (!message.contains("trade_id")) {
+        if (!message.contains("match")) {
             return Optional.empty();
         }
 
