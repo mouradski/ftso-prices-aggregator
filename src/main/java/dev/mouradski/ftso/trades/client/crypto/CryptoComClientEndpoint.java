@@ -60,8 +60,7 @@ public class CryptoComClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
-
-        if (!message.contains("result")) {
+        if (!message.contains("trade.")) {
             return Optional.empty();
         }
 
@@ -75,7 +74,6 @@ public class CryptoComClientEndpoint extends AbstractClientEndpoint {
         response.getResult().getData().forEach(cryptoTrade -> {
             trades.add(Trade.builder().exchange(getExchange()).base(base).quote(quote).price(cryptoTrade.getP()).amount(cryptoTrade.getQ()).timestamp(currentTimestamp()).build());
         });
-
 
         return Optional.of(trades);
     }
