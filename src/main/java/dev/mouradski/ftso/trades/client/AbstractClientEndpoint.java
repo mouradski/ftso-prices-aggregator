@@ -8,8 +8,7 @@ import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.service.TickerService;
 import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.Constants;
-import io.quarkus.runtime.StartupEvent;
-import jakarta.enterprise.event.Observes;
+import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.websocket.*;
 import lombok.extern.slf4j.Slf4j;
@@ -51,7 +50,8 @@ public abstract class AbstractClientEndpoint {
 
     protected Session userSession = null;
     protected AtomicInteger counter = new AtomicInteger();
-    private long lastMessageTime;
+    private long lastTradeTime;
+    private long lastTickerTime;
     private int retries = 3;
 
     @ConfigProperty(name = "subscribe.trade")
@@ -62,9 +62,14 @@ public abstract class AbstractClientEndpoint {
     protected AbstractClientEndpoint() {
     }
 
+    /*
     void startup(@Observes StartupEvent event) {
         this.start();
     }
+
+     */
+
+
 
     @OnOpen
     public void onOpen(Session userSession) {
@@ -72,9 +77,11 @@ public abstract class AbstractClientEndpoint {
         log.info("Opening websocket for {} ....", getExchange());
         this.userSession = userSession;
         var executor = Executors.newSingleThreadScheduledExecutor();
-        this.lastMessageTime = System.currentTimeMillis();
+        this.lastTradeTime = System.currentTimeMillis();
+        this.lastTickerTime = System.currentTimeMillis();
         executor.scheduleAtFixedRate(() -> {
-            if (this.userSession != null && this.userSession.isOpen() && System.currentTimeMillis() - lastMessageTime > getTimeout() * 1000) {
+            if (this.userSession != null && this.userSession.isOpen() && ((subscribeTrade && System.currentTimeMillis() - lastTradeTime > getTimeout() * 1000)
+             || (subscribeTicker && System.currentTimeMillis() - lastTickerTime > getTimeout() * 1000))) {
 
                 log.info("No message received for {} seconds. Reconnecting...", getTimeout());
 
@@ -105,16 +112,16 @@ public abstract class AbstractClientEndpoint {
     @OnMessage
     public void onMessage(String message) throws JsonProcessingException {
         try {
-            lastMessageTime = System.currentTimeMillis();
+            lastTradeTime = System.currentTimeMillis();
 
             this.decodeMetadata(message);
 
             if (!this.pong(message)) {
                 if (subscribeTrade) {
-                    this.mapTrade(message).ifPresent(tradeList -> tradeList.forEach(this.tradeService::pushTrade));
+                    this.mapTrade(message).ifPresent(tradeList -> tradeList.forEach(this::pushTrade));
                 }
                 if (subscribeTicker) {
-                    this.mapTicker(message).ifPresent(tickerList -> tickerList.forEach(this.tickerService::pushTicker));
+                    this.mapTicker(message).ifPresent(tickerList -> tickerList.forEach(this::pushTicker));
                 }
             }
 
@@ -124,7 +131,13 @@ public abstract class AbstractClientEndpoint {
 
     }
 
-    protected void pushTickers(Ticker ticker) {
+    protected void pushTrade(Trade trade) {
+        this.lastTradeTime = System.currentTimeMillis();
+        this.tradeService.pushTrade(trade);
+    }
+
+    protected void pushTicker(Ticker ticker) {
+        this.lastTickerTime = System.currentTimeMillis();
         this.tickerService.pushTicker(ticker);
     }
 
@@ -150,8 +163,6 @@ public abstract class AbstractClientEndpoint {
 
     @OnMessage
     public void onMessage(ByteBuffer message) throws JsonProcessingException {
-
-        lastMessageTime = System.currentTimeMillis();
 
         var data = message.array();
         var result = "";
@@ -244,7 +255,8 @@ public abstract class AbstractClientEndpoint {
 
     protected abstract String getExchange();
 
-    protected void start() {
+    @PostConstruct
+    public void start() {
         if (exchanges == null || exchanges.contains(getExchange())) {
             try {
                 while (retries-- > 0) {

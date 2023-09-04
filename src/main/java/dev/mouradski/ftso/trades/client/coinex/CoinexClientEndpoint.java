@@ -58,7 +58,7 @@ public class CoinexClientEndpoint extends AbstractClientEndpoint {
                     var pair = SymbolHelper.getPair(tickerEntry.getKey());
 
                     if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
-                        pushTickers(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(tickerEntry.getValue().getLast()).timestamp(currentTimestamp()).build());
+                        pushTicker(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(tickerEntry.getValue().getLast()).timestamp(currentTimestamp()).build());
                     }
                 });
 

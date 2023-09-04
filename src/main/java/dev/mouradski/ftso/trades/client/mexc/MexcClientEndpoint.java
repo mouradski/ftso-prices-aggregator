@@ -65,7 +65,7 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
                     var pair = SymbolHelper.getPair(ticker.getSymbol());
 
                     if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
-                        pushTickers(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(ticker.getPrice()).timestamp(currentTimestamp()).build());
+                        pushTicker(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(ticker.getPrice()).timestamp(currentTimestamp()).build());
                     }
                 });
 
