@@ -5,6 +5,7 @@ import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
+import io.quarkus.runtime.Startup;
 import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
@@ -16,6 +17,7 @@ import java.util.Optional;
 
 @ApplicationScoped
 @ClientEndpoint
+@Startup
 public class UpbitClientEndpoint extends AbstractClientEndpoint {
 
     @Override

@@ -5,6 +5,7 @@ import com.google.gson.JsonParser;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
+import io.quarkus.runtime.Startup;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 
@@ -13,7 +14,7 @@ import java.util.Optional;
 
 @ApplicationScoped
 @ClientEndpoint
-
+@Startup
 public class BitstampClientEndpoint extends AbstractClientEndpoint {
 
     @Override

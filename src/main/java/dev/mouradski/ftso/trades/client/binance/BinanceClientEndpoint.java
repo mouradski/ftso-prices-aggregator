@@ -5,6 +5,7 @@ import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
+import io.quarkus.runtime.Startup;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 import org.apache.commons.lang3.tuple.Pair;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 
 @ApplicationScoped
 @ClientEndpoint
+@Startup
 public class BinanceClientEndpoint extends AbstractClientEndpoint {
 
     private final String websocketApiBase = "wss://stream.binance.com:9443/stream?streams=";

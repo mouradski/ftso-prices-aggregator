@@ -5,6 +5,7 @@ import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
+import io.quarkus.runtime.Startup;
 import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 @ApplicationScoped
 @ClientEndpoint
 @Slf4j
+@Startup
 public class PionexClientEndpoint extends AbstractClientEndpoint {
 
     private HttpClient client = HttpClient.newHttpClient();

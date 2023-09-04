@@ -8,7 +8,9 @@ import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.service.TickerService;
 import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.Constants;
+import io.quarkus.runtime.StartupEvent;
 import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import jakarta.websocket.*;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +24,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPInputStream;
@@ -50,13 +53,12 @@ public abstract class AbstractClientEndpoint {
 
     protected Session userSession = null;
     protected AtomicInteger counter = new AtomicInteger();
-    private long lastTradeTime;
-    private long lastTickerTime;
+    private long lastMessageTime;
     private int retries = 3;
 
-    @ConfigProperty(name = "subscribe.trade")
+    //@ConfigProperty(name = "subscribe.trade")
     protected boolean subscribeTrade = true;
-    @ConfigProperty(name = "subscribe.ticker")
+    //@ConfigProperty(name = "subscribe.ticker")
     protected boolean subscribeTicker = true;
 
     protected AbstractClientEndpoint() {
@@ -69,19 +71,15 @@ public abstract class AbstractClientEndpoint {
 
      */
 
-
-
     @OnOpen
     public void onOpen(Session userSession) {
         userSession.setMaxTextMessageBufferSize(1024 * 1024 * 10);
         log.info("Opening websocket for {} ....", getExchange());
         this.userSession = userSession;
         var executor = Executors.newSingleThreadScheduledExecutor();
-        this.lastTradeTime = System.currentTimeMillis();
-        this.lastTickerTime = System.currentTimeMillis();
+        this.lastMessageTime = System.currentTimeMillis();
         executor.scheduleAtFixedRate(() -> {
-            if (this.userSession != null && this.userSession.isOpen() && ((subscribeTrade && System.currentTimeMillis() - lastTradeTime > getTimeout() * 1000)
-             || (subscribeTicker && System.currentTimeMillis() - lastTickerTime > getTimeout() * 1000))) {
+            if (this.userSession != null && this.userSession.isOpen() && System.currentTimeMillis() - lastMessageTime > getTimeout() * 1000) {
 
                 log.info("No message received for {} seconds. Reconnecting...", getTimeout());
 
@@ -112,16 +110,16 @@ public abstract class AbstractClientEndpoint {
     @OnMessage
     public void onMessage(String message) throws JsonProcessingException {
         try {
-            lastTradeTime = System.currentTimeMillis();
+            lastMessageTime = System.currentTimeMillis();
 
             this.decodeMetadata(message);
 
             if (!this.pong(message)) {
                 if (subscribeTrade) {
-                    this.mapTrade(message).ifPresent(tradeList -> tradeList.forEach(this::pushTrade));
+                    this.mapTrade(message).ifPresent(tradeList -> tradeList.forEach(this.tradeService::pushTrade));
                 }
                 if (subscribeTicker) {
-                    this.mapTicker(message).ifPresent(tickerList -> tickerList.forEach(this::pushTicker));
+                    this.mapTicker(message).ifPresent(tickerList -> tickerList.forEach(this.tickerService::pushTicker));
                 }
             }
 
@@ -131,13 +129,7 @@ public abstract class AbstractClientEndpoint {
 
     }
 
-    protected void pushTrade(Trade trade) {
-        this.lastTradeTime = System.currentTimeMillis();
-        this.tradeService.pushTrade(trade);
-    }
-
     protected void pushTicker(Ticker ticker) {
-        this.lastTickerTime = System.currentTimeMillis();
         this.tickerService.pushTicker(ticker);
     }
 
@@ -163,6 +155,8 @@ public abstract class AbstractClientEndpoint {
 
     @OnMessage
     public void onMessage(ByteBuffer message) throws JsonProcessingException {
+
+        lastMessageTime = System.currentTimeMillis();
 
         var data = message.array();
         var result = "";
@@ -256,33 +250,24 @@ public abstract class AbstractClientEndpoint {
     protected abstract String getExchange();
 
     @PostConstruct
-    public void start() {
+    protected void start() {
         if (exchanges == null || exchanges.contains(getExchange())) {
-            try {
-                while (retries-- > 0) {
-                    if (this.connect()) {
-                        break;
-                    }
-                }
-            } catch (Exception e) {
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
+            this.connect();
         }
     }
 
-    protected boolean connect() {
+    protected synchronized boolean connect() {
 
-        prepareConnection();
+        if (this.userSession == null || !this.userSession.isOpen()) {
+            prepareConnection();
 
-        try {
-            var container = ContainerProvider.getWebSocketContainer();
-            container.connectToServer(this, new URI(getUri()));
-        } catch (Exception e) {
-            return false;
+            try {
+                var container = ContainerProvider.getWebSocketContainer();
+                container.connectToServer(this, new URI(getUri()));
+            } catch (Exception e) {
+                return false;
+            }
+
         }
 
         return true;

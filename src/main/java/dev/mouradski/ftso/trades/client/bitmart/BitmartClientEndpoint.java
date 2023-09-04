@@ -8,6 +8,7 @@ import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.Unpooled;
+import io.quarkus.runtime.Startup;
 import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
@@ -26,7 +27,7 @@ import java.util.zip.Inflater;
 @ApplicationScoped
 @ClientEndpoint
 @Slf4j
-
+@Startup
 public class BitmartClientEndpoint extends AbstractClientEndpoint {
 
     private List<String> supportedSymbols = new ArrayList<>();
