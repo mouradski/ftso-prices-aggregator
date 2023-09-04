@@ -1,7 +1,6 @@
 package dev.mouradski.ftso.trades.server;
 
 import dev.mouradski.ftso.trades.model.Ticker;
-import io.quarkus.runtime.Startup;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.server.ServerEndpoint;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +11,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 @ServerEndpoint("/ticker")
 @Slf4j
 @ApplicationScoped
-@Startup
 public class TickerServer extends WsServer<Ticker> {
 
     protected static final Set<WsServer<Ticker>> listeners = new CopyOnWriteArraySet<>();
