@@ -8,9 +8,7 @@ import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.service.TickerService;
 import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.Constants;
-import io.quarkus.runtime.StartupEvent;
 import jakarta.annotation.PostConstruct;
-import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import jakarta.websocket.*;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +22,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPInputStream;
@@ -54,22 +51,16 @@ public abstract class AbstractClientEndpoint {
     protected Session userSession = null;
     protected AtomicInteger counter = new AtomicInteger();
     private long lastMessageTime;
-    private int retries = 3;
 
-    //@ConfigProperty(name = "subscribe.trade")
-    protected boolean subscribeTrade = true;
-    //@ConfigProperty(name = "subscribe.ticker")
-    protected boolean subscribeTicker = true;
+    @ConfigProperty(name = "subscribe.trade")
+    protected boolean subscribeTrade;
+
+    @ConfigProperty(name = "subscribe.ticker")
+    protected boolean subscribeTicker;
 
     protected AbstractClientEndpoint() {
     }
 
-    /*
-    void startup(@Observes StartupEvent event) {
-        this.start();
-    }
-
-     */
 
     @OnOpen
     public void onOpen(Session userSession) {
