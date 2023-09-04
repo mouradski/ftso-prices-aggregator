@@ -9,6 +9,7 @@ import dev.mouradski.ftso.trades.service.TickerService;
 import dev.mouradski.ftso.trades.service.TradeService;
 import dev.mouradski.ftso.trades.utils.Constants;
 import io.quarkus.runtime.StartupEvent;
+import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import jakarta.websocket.*;
@@ -23,6 +24,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPInputStream;
@@ -62,9 +64,14 @@ public abstract class AbstractClientEndpoint {
     protected AbstractClientEndpoint() {
     }
 
+    /*
     void startup(@Observes StartupEvent event) {
         this.start();
     }
+
+     */
+
+
 
     @OnOpen
     public void onOpen(Session userSession) {
@@ -244,7 +251,8 @@ public abstract class AbstractClientEndpoint {
 
     protected abstract String getExchange();
 
-    protected void start() {
+    @PostConstruct
+    public void start() {
         if (exchanges == null || exchanges.contains(getExchange())) {
             try {
                 while (retries-- > 0) {
