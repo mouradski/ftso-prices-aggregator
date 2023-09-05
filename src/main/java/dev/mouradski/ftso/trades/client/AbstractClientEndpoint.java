@@ -247,17 +247,35 @@ public abstract class AbstractClientEndpoint {
     }
 
     protected synchronized boolean connect() {
-        if (this.userSession == null || !this.userSession.isOpen()) {
-            prepareConnection();
-
-            try {
-                var container = ContainerProvider.getWebSocketContainer();
-                container.connectToServer(this, new URI(getUri()));
-            } catch (Exception e) {
+        var connected = false;
+        var reconnectAttemptCount = 0;
+        var maxReconnectAttempts = 18;
+        do {
+            if (reconnectAttemptCount > maxReconnectAttempts) {
+                log.error("Unable to reconnect to {} after {} attempts.", getExchange(), reconnectAttemptCount);
                 return false;
             }
 
-        }
+            if (this.userSession == null || !this.userSession.isOpen()) {
+                prepareConnection();
+
+                try {
+                    var container = ContainerProvider.getWebSocketContainer();
+                    container.connectToServer(this, new URI(getUri()));
+                } catch (Exception e) {
+                    log.error("Unable to connect to {}", getExchange());
+                    log.error(e.getMessage(), e.getStackTrace().toString());
+
+                    try {
+                        // implement exponential backoff up to 2^18 seconds ()
+                        Thread.sleep(Math.round(Math.pow(2, reconnectAttemptCount)) * 1000);
+                    } catch (Exception e2) {
+                    }
+
+                }
+                connected = true;
+            }
+        } while (connected == false);
 
         log.info("Connected to {}", getExchange());
         return true;
