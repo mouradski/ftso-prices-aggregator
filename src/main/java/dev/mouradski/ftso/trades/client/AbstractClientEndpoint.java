@@ -252,8 +252,13 @@ public abstract class AbstractClientEndpoint {
         var maxReconnectAttempts = 18;
         do {
             if (reconnectAttemptCount > maxReconnectAttempts) {
-                log.error("Unable to reconnect to {} after {} attempts.", getExchange(), reconnectAttemptCount);
-                return false;
+                log.error("Unable to reconnect to {} after {} attempts. Will try again in 1 hour", getExchange(),
+                        reconnectAttemptCount);
+
+                try {
+                    Thread.sleep(60 * 60 * 1000);
+                } catch (Exception e) {
+                }
             }
 
             if (this.userSession == null || !this.userSession.isOpen()) {
@@ -263,12 +268,12 @@ public abstract class AbstractClientEndpoint {
                     var container = ContainerProvider.getWebSocketContainer();
                     container.connectToServer(this, new URI(getUri()));
                 } catch (Exception e) {
-                    log.error("Unable to connect to {}", getExchange());
+                    var waitTime = Math.round(Math.pow(2, reconnectAttemptCount)) * 1000;
+                    log.error("Unable to connect to {}, waiting {} seconds to try again", getExchange(), waitTime);
                     log.error(e.getMessage(), e.getStackTrace().toString());
-
                     try {
                         // implement exponential backoff up to 2^18 seconds ()
-                        Thread.sleep(Math.round(Math.pow(2, reconnectAttemptCount)) * 1000);
+                        Thread.sleep(waitTime);
                     } catch (Exception e2) {
                     }
 
