@@ -269,7 +269,8 @@ public abstract class AbstractClientEndpoint {
                     container.connectToServer(this, new URI(getUri()));
                 } catch (Exception e) {
                     var waitTime = Math.round(Math.pow(2, reconnectAttemptCount)) * 1000;
-                    log.error("Unable to connect to {}, waiting {} seconds to try again", getExchange(), waitTime/1000);
+                    log.error("Unable to connect to {}, waiting {} seconds to try again", getExchange(),
+                            waitTime / 1000);
                     log.error(e.getMessage(), e.getStackTrace().toString());
                     try {
                         // implement exponential backoff up to 2^18 seconds ()
@@ -280,7 +281,7 @@ public abstract class AbstractClientEndpoint {
                 }
                 connected = true;
             }
-        } while (connected == false);
+        } while (!connected);
 
         log.info("Connected to {}", getExchange());
         return true;
