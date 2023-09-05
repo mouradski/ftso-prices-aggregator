@@ -61,7 +61,6 @@ public abstract class AbstractClientEndpoint {
     protected AbstractClientEndpoint() {
     }
 
-
     @OnOpen
     public void onOpen(Session userSession) {
         userSession.setMaxTextMessageBufferSize(1024 * 1024 * 10);
@@ -70,17 +69,16 @@ public abstract class AbstractClientEndpoint {
         var executor = Executors.newSingleThreadScheduledExecutor();
         this.lastMessageTime = System.currentTimeMillis();
         executor.scheduleAtFixedRate(() -> {
-            if (this.userSession != null && this.userSession.isOpen() && System.currentTimeMillis() - lastMessageTime > getTimeout() * 1000) {
+            if (this.userSession != null && this.userSession.isOpen()
+                    && System.currentTimeMillis() - lastMessageTime > getTimeout() * 1000) {
 
-                log.info("No message received for {} seconds. Reconnecting...", getTimeout());
+                log.info("No message received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
 
                 onClose(userSession, new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "Timeout"));
 
                 connect();
             }
         }, getTimeout(), getTimeout(), TimeUnit.SECONDS);
-
-        log.info("Connected to {}", getExchange());
 
         subscribe();
     }
@@ -93,6 +91,8 @@ public abstract class AbstractClientEndpoint {
             Thread.sleep(2000);
             this.userSession = null;
         } catch (Exception e) {
+            log.info("An exception occured while reconnecting to {}", getExchange());
+            log.error(e.getMessage(), e.getStackTrace().toString());
         }
 
         connect();
@@ -212,13 +212,12 @@ public abstract class AbstractClientEndpoint {
         return Optional.empty();
     }
 
-    protected Optional<List<Trade>>  mapTrade(ByteBuffer message) throws JsonProcessingException {
+    protected Optional<List<Trade>> mapTrade(ByteBuffer message) throws JsonProcessingException {
         return Optional.empty();
     }
 
     protected void decodeMetadata(String message) {
     }
-
 
     protected abstract String getUri();
 
@@ -248,7 +247,6 @@ public abstract class AbstractClientEndpoint {
     }
 
     protected synchronized boolean connect() {
-
         if (this.userSession == null || !this.userSession.isOpen()) {
             prepareConnection();
 
@@ -261,6 +259,7 @@ public abstract class AbstractClientEndpoint {
 
         }
 
+        log.info("Connected to {}", getExchange());
         return true;
     }
 
