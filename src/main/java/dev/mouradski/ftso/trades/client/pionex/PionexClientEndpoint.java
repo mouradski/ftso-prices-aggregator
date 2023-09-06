@@ -87,6 +87,11 @@ public class PionexClientEndpoint extends AbstractClientEndpoint {
         return false;
     }
 
+    @Override
+    protected boolean httpTicker() {
+        return true;
+    }
+
     @Scheduled(every = "2s")
     public void getTickers() {
         if (subscribeTicker && exchanges.contains(getExchange())) {

@@ -45,12 +45,13 @@ public abstract class AbstractClientEndpoint {
     protected List<String> exchanges;
 
     public static final Gson gson = new Gson();
-    private static final long DEFAULT_TIMEOUT = 30; // timeout in seconds
+    private static final long DEFAULT_TIMEOUT_IN_SECONDS = 120; // timeout in seconds
     protected final ObjectMapper objectMapper = new ObjectMapper();
 
     protected Session userSession = null;
     protected AtomicInteger counter = new AtomicInteger();
-    private long lastMessageTime;
+    private long lastTradeTime = System.currentTimeMillis();
+    private long lastTickerTime = System.currentTimeMillis();
 
     @ConfigProperty(name = "subscribe.trade")
     protected boolean subscribeTrade;
@@ -65,18 +66,25 @@ public abstract class AbstractClientEndpoint {
     public void onOpen(Session userSession) {
         userSession.setMaxTextMessageBufferSize(1024 * 1024 * 10);
         this.userSession = userSession;
-        this.lastMessageTime = System.currentTimeMillis();
         var executor = Executors.newSingleThreadScheduledExecutor();
         executor.scheduleAtFixedRate(() -> {
-            if (this.userSession != null && this.userSession.isOpen()
-                    && System.currentTimeMillis() - lastMessageTime > getTimeout() * 1000) {
+            if (subscribeTrade && this.userSession != null && this.userSession.isOpen() && System.currentTimeMillis() - lastTradeTime > getTimeout() * 1000) {
 
-                log.info("No message received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
+                log.info("No trade received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
 
                 onClose(userSession,
                         new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "No data received in a while"));
 
             }
+
+            if (subscribeTicker && !httpTicker() && this.userSession != null && this.userSession.isOpen() && System.currentTimeMillis() - lastTickerTime > getTimeout() * 1000) {
+                log.info("No ticker received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
+
+                onClose(userSession, new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "Timeout"));
+
+                connect();
+            }
+
         }, getTimeout(), getTimeout(), TimeUnit.SECONDS);
 
         subscribe();
@@ -100,16 +108,14 @@ public abstract class AbstractClientEndpoint {
     @OnMessage
     public void onMessage(String message) throws JsonProcessingException {
         try {
-            lastMessageTime = System.currentTimeMillis();
-
             this.decodeMetadata(message);
 
             if (!this.pong(message)) {
                 if (subscribeTrade) {
-                    this.mapTrade(message).ifPresent(tradeList -> tradeList.forEach(this.tradeService::pushTrade));
+                    this.mapTrade(message).ifPresent(tradeList -> tradeList.forEach(this::pushTrade));
                 }
                 if (subscribeTicker) {
-                    this.mapTicker(message).ifPresent(tickerList -> tickerList.forEach(this.tickerService::pushTicker));
+                    this.mapTicker(message).ifPresent(tickerList -> tickerList.forEach(this::pushTicker));
                 }
             }
 
@@ -119,7 +125,13 @@ public abstract class AbstractClientEndpoint {
 
     }
 
+    private void pushTrade(Trade trade) {
+        this.lastTradeTime = System.currentTimeMillis();
+        this.tradeService.pushTrade(trade);
+    }
+
     protected void pushTicker(Ticker ticker) {
+        this.lastTickerTime = System.currentTimeMillis();
         this.tickerService.pushTicker(ticker);
     }
 
@@ -145,8 +157,6 @@ public abstract class AbstractClientEndpoint {
 
     @OnMessage
     public void onMessage(ByteBuffer message) throws JsonProcessingException {
-
-        lastMessageTime = System.currentTimeMillis();
 
         var data = message.array();
         var result = "";
@@ -188,6 +198,10 @@ public abstract class AbstractClientEndpoint {
     }
 
     protected void prepareConnection() {
+    }
+
+    protected boolean httpTicker() {
+        return false;
     }
 
     protected void sendMessage(String message) {
@@ -275,7 +289,7 @@ public abstract class AbstractClientEndpoint {
     }
 
     protected long getTimeout() {
-        return DEFAULT_TIMEOUT;
+        return DEFAULT_TIMEOUT_IN_SECONDS;
     }
 
     protected List<String> getAssets() {

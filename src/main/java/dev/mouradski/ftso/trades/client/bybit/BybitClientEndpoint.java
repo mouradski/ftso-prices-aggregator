@@ -39,6 +39,11 @@ public class BybitClientEndpoint extends AbstractClientEndpoint {
                                 .replace("SYMBOL", base).replace("QUOTE", quote))));
     }
 
+    @Override
+    protected boolean httpTicker() {
+        return true;
+    }
+
     @Scheduled(every = "3s")
     public void getTickers() {
         if (subscribeTicker && exchanges.contains(getExchange())) {

@@ -40,6 +40,10 @@ public class CoinexClientEndpoint extends AbstractClientEndpoint {
                 .replace("ID", incAndGetIdAsString()));
     }
 
+    @Override
+    protected boolean httpTicker() {
+        return true;
+    }
 
     @Scheduled(every = "3s")
     public void getTickers() {

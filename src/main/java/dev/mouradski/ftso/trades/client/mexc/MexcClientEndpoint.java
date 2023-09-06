@@ -49,6 +49,11 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
         return "mexc";
     }
 
+    @Override
+    protected boolean httpTicker() {
+        return true;
+    }
+
     @Scheduled(every = "5s")
     public void getTickers() {
         if (subscribeTicker && exchanges.contains(getExchange())) {
