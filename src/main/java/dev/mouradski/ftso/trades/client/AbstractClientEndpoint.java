@@ -74,15 +74,12 @@ public abstract class AbstractClientEndpoint {
 
                 onClose(userSession,
                         new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "No data received in a while"));
-
             }
 
             if (subscribeTicker && !httpTicker() && this.userSession != null && this.userSession.isOpen() && System.currentTimeMillis() - lastTickerTime > getTimeout() * 1000) {
                 log.info("No ticker received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
 
                 onClose(userSession, new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "Timeout"));
-
-                connect();
             }
 
         }, getTimeout(), getTimeout(), TimeUnit.SECONDS);
