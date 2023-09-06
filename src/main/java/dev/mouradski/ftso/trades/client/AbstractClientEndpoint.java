@@ -54,6 +54,8 @@ public abstract class AbstractClientEndpoint {
 
     private Long timeout;
 
+    private boolean shutdown = false;
+
     protected final ObjectMapper objectMapper = new ObjectMapper();
 
     protected Session userSession = null;
@@ -103,8 +105,12 @@ public abstract class AbstractClientEndpoint {
 
     @OnClose
     public void onClose(Session userSession, CloseReason reason) {
-        log.info("Closing websocket for {}, Reason : {}", getExchange(), reason.getReasonPhrase());
 
+        if (shutdown) {
+            return;
+        }
+
+        log.info("Closing websocket for {}, Reason : {}", getExchange(), reason.getReasonPhrase());
         try {
             Thread.sleep(2000);
             this.userSession = null;
@@ -268,6 +274,10 @@ public abstract class AbstractClientEndpoint {
         }
     }
 
+    public void shutdown() throws IOException {
+        shutdown = true;
+        this.userSession.close();
+    }
     public synchronized boolean connect() {
         var reconnectWaitTimeSeconds = 10;
 

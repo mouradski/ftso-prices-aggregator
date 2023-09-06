@@ -44,6 +44,16 @@ public abstract class WsServer<T> {
         }
     }
 
+
+    public void disconnect() {
+        getListeners().forEach(listener -> {
+            try {
+                listener.session.close();
+            } catch (IOException ignored) {
+            }
+        });
+    }
+
     void sendMessage(String message) {
         try {
             this.session.getAsyncRemote().sendText(message);

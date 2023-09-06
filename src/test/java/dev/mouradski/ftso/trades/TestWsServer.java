@@ -1,10 +1,7 @@
 package dev.mouradski.ftso.trades;
 
 import dev.mouradski.ftso.trades.server.WsServer;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import jakarta.websocket.server.ServerEndpoint;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
