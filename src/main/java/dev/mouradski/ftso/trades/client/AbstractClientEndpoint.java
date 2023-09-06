@@ -264,9 +264,9 @@ public abstract class AbstractClientEndpoint {
 
             try {
                 var container = ContainerProvider.getWebSocketContainer();
+                // throws if connection is unsuccesful
                 container.connectToServer(this, new URI(getUri()));
 
-                // throws if connection is unsuccesful
                 log.info("Connected to {}", getExchange());
                 return true;
             } catch (Exception e) {
