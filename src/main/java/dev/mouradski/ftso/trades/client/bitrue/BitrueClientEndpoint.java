@@ -85,7 +85,7 @@ public class BitrueClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected long getTimeout() {
-        return 300;
+        return 30;
     }
 
     @Override
