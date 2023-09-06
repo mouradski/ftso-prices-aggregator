@@ -95,8 +95,6 @@ public abstract class AbstractClientEndpoint {
             Thread.sleep(2000);
             this.userSession = null;
         } catch (Exception e) {
-            log.info("An exception occured while reconnecting to {}", getExchange());
-            log.error(e.getMessage(), e.getStackTrace().toString());
         }
 
         connect();
