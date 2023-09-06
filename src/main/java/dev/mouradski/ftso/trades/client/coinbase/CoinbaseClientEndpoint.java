@@ -9,7 +9,6 @@ import io.quarkus.runtime.Startup;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -58,9 +57,8 @@ public class CoinbaseClientEndpoint extends AbstractClientEndpoint {
 
         var pair = SymbolHelper.getPair(tradeMatch.getProductId());
 
-        var time = Instant.parse(tradeMatch.getTime()).toEpochMilli();
 
-        return Optional.of(Collections.singletonList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(tradeMatch.getPrice()).amount(tradeMatch.getSize()).timestamp(time).build()));
+        return Optional.of(Collections.singletonList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(tradeMatch.getPrice()).amount(tradeMatch.getSize()).timestamp(currentTimestamp()).build()));
     }
 
     @Override

@@ -30,6 +30,7 @@ public abstract class WsServer<T> {
 
     @OnError
     public void onError(Session session, Throwable throwable) {
+        System.out.println("");
     }
 
     public void broadcast(T message) {
@@ -41,6 +42,16 @@ public abstract class WsServer<T> {
         } catch (IOException e) {
             log.error("Caught exception while broadcasting {} : {}", message.getClass().getSimpleName(), message, e);
         }
+    }
+
+
+    public void disconnect() {
+        getListeners().forEach(listener -> {
+            try {
+                listener.session.close();
+            } catch (IOException ignored) {
+            }
+        });
     }
 
     void sendMessage(String message) {
