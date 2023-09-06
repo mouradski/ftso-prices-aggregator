@@ -45,7 +45,11 @@ public abstract class AbstractClientEndpoint {
     protected List<String> exchanges;
 
     public static final Gson gson = new Gson();
-    private static final long DEFAULT_TIMEOUT_IN_SECONDS = 120; // timeout in seconds
+
+    @Inject
+    @ConfigProperty(name = "default_message_timeout", defaultValue = "30")
+    private long DEFAULT_TIMEOUT_IN_SECONDS; // timeout in seconds
+
     protected final ObjectMapper objectMapper = new ObjectMapper();
 
     protected Session userSession = null;
@@ -62,34 +66,29 @@ public abstract class AbstractClientEndpoint {
     protected AbstractClientEndpoint() {
     }
 
-
     @OnOpen
     public void onOpen(Session userSession) {
         userSession.setMaxTextMessageBufferSize(1024 * 1024 * 10);
-        log.info("Opening websocket for {} ....", getExchange());
         this.userSession = userSession;
         var executor = Executors.newSingleThreadScheduledExecutor();
         executor.scheduleAtFixedRate(() -> {
-            if (subscribeTrade && this.userSession != null && this.userSession.isOpen() && System.currentTimeMillis() - lastTradeTime > getTimeout() * 1000) {
+            if (subscribeTrade && this.userSession != null && this.userSession.isOpen()
+                    && System.currentTimeMillis() - lastTradeTime > getTimeout() * 1000) {
 
                 log.info("No trade received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
 
-                onClose(userSession, new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "Timeout"));
-
-                connect();
+                onClose(userSession,
+                        new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "No data received in a while"));
             }
 
-            if (subscribeTicker && !httpTicker() && this.userSession != null && this.userSession.isOpen() && System.currentTimeMillis() - lastTickerTime > getTimeout() * 1000) {
+            if (subscribeTicker && !httpTicker() && this.userSession != null && this.userSession.isOpen()
+                    && System.currentTimeMillis() - lastTickerTime > getTimeout() * 1000) {
                 log.info("No ticker received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
 
                 onClose(userSession, new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "Timeout"));
-
-                connect();
             }
 
         }, getTimeout(), getTimeout(), TimeUnit.SECONDS);
-
-        log.info("Connected to {}", getExchange());
 
         subscribe();
     }
@@ -227,13 +226,12 @@ public abstract class AbstractClientEndpoint {
         return Optional.empty();
     }
 
-    protected Optional<List<Trade>>  mapTrade(ByteBuffer message) throws JsonProcessingException {
+    protected Optional<List<Trade>> mapTrade(ByteBuffer message) throws JsonProcessingException {
         return Optional.empty();
     }
 
     protected void decodeMetadata(String message) {
     }
-
 
     protected abstract String getUri();
 
@@ -263,20 +261,32 @@ public abstract class AbstractClientEndpoint {
     }
 
     protected synchronized boolean connect() {
+        var reconnectWaitTimeSeconds = 10;
+
+        log.info("Opening websocket for {} ....", getExchange());
 
         if (this.userSession == null || !this.userSession.isOpen()) {
             prepareConnection();
 
             try {
                 var container = ContainerProvider.getWebSocketContainer();
+                // throws if connection is unsuccesful
                 container.connectToServer(this, new URI(getUri()));
-            } catch (Exception e) {
-                return false;
-            }
 
+                log.info("Connected to {}", getExchange());
+                return true;
+            } catch (Exception e) {
+                log.error("Unable to connect to {}, waiting {} seconds to try again", getExchange(),
+                        reconnectWaitTimeSeconds);
+
+                var executor = Executors.newSingleThreadScheduledExecutor();
+                executor.schedule(() -> {
+                    connect();
+                }, reconnectWaitTimeSeconds, TimeUnit.SECONDS);
+            }
         }
 
-        return true;
+        return false;
     }
 
     protected long getTimeout() {

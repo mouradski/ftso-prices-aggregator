@@ -17,12 +17,14 @@ public abstract class WsServer<T> {
 
     @OnOpen
     public void onOpen(Session session) {
+        log.info("Client connected to {} channel", session.getRequestURI());
         this.session = session;
         this.getListeners().add(this);
     }
 
     @OnClose
     public void onClose(Session session) {
+        log.info("Client disconnected from {} channel", session.getRequestURI());
         getListeners().remove(this);
     }
 
@@ -48,5 +50,6 @@ public abstract class WsServer<T> {
             log.error("Caught exception while sending message to Session " + this.session.getId(), e.getMessage(), e);
         }
     }
+
     protected abstract Set<WsServer<T>> getListeners();
 }
