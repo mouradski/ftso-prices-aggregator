@@ -45,7 +45,7 @@ public abstract class AbstractClientEndpoint {
     protected List<String> exchanges;
 
     public static final Gson gson = new Gson();
-    private static final long DEFAULT_TIMEOUT = 120; // timeout in seconds
+    private static final long DEFAULT_TIMEOUT = 30; // timeout in seconds
     protected final ObjectMapper objectMapper = new ObjectMapper();
 
     protected Session userSession = null;
@@ -64,19 +64,18 @@ public abstract class AbstractClientEndpoint {
     @OnOpen
     public void onOpen(Session userSession) {
         userSession.setMaxTextMessageBufferSize(1024 * 1024 * 10);
-        log.info("Opening websocket for {} ....", getExchange());
         this.userSession = userSession;
-        var executor = Executors.newSingleThreadScheduledExecutor();
         this.lastMessageTime = System.currentTimeMillis();
+        var executor = Executors.newSingleThreadScheduledExecutor();
         executor.scheduleAtFixedRate(() -> {
             if (this.userSession != null && this.userSession.isOpen()
                     && System.currentTimeMillis() - lastMessageTime > getTimeout() * 1000) {
 
                 log.info("No message received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
 
-                onClose(userSession, new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "Timeout"));
+                onClose(userSession,
+                        new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "No data received in a while"));
 
-                connect();
             }
         }, getTimeout(), getTimeout(), TimeUnit.SECONDS);
 
@@ -247,44 +246,32 @@ public abstract class AbstractClientEndpoint {
     }
 
     protected synchronized boolean connect() {
-        var connected = false;
-        var reconnectAttemptCount = 0;
-        var maxReconnectAttempts = 18;
-        do {
-            if (reconnectAttemptCount > maxReconnectAttempts) {
-                log.error("Unable to reconnect to {} after {} attempts. Will try again in 1 hour", getExchange(),
-                        reconnectAttemptCount);
+        var reconnectWaitTimeSeconds = 10;
 
-                try {
-                    Thread.sleep(60 * 60 * 1000);
-                } catch (Exception e) {
-                }
+        log.info("Opening websocket for {} ....", getExchange());
+
+        if (this.userSession == null || !this.userSession.isOpen()) {
+            prepareConnection();
+
+            try {
+                var container = ContainerProvider.getWebSocketContainer();
+                container.connectToServer(this, new URI(getUri()));
+
+                // throws if connection is unsuccesful
+                log.info("Connected to {}", getExchange());
+                return true;
+            } catch (Exception e) {
+                log.error("Unable to connect to {}, waiting {} seconds to try again", getExchange(),
+                        reconnectWaitTimeSeconds);
+
+                var executor = Executors.newSingleThreadScheduledExecutor();
+                executor.schedule(() -> {
+                    connect();
+                }, reconnectWaitTimeSeconds, TimeUnit.SECONDS);
             }
+        }
 
-            if (this.userSession == null || !this.userSession.isOpen()) {
-                prepareConnection();
-
-                try {
-                    var container = ContainerProvider.getWebSocketContainer();
-                    container.connectToServer(this, new URI(getUri()));
-                } catch (Exception e) {
-                    var waitTime = Math.round(Math.pow(2, reconnectAttemptCount)) * 1000;
-                    log.error("Unable to connect to {}, waiting {} seconds to try again", getExchange(),
-                            waitTime / 1000);
-                    log.error(e.getMessage(), e.getStackTrace().toString());
-                    try {
-                        // implement exponential backoff up to 2^18 seconds ()
-                        Thread.sleep(waitTime);
-                    } catch (Exception e2) {
-                    }
-
-                }
-                connected = true;
-            }
-        } while (!connected);
-
-        log.info("Connected to {}", getExchange());
-        return true;
+        return false;
     }
 
     protected long getTimeout() {
