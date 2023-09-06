@@ -45,7 +45,10 @@ public abstract class AbstractClientEndpoint {
     protected List<String> exchanges;
 
     public static final Gson gson = new Gson();
-    private static final long DEFAULT_TIMEOUT_IN_SECONDS = 120; // timeout in seconds
+
+    @ConfigProperty(name = "default_message_timeout", defaultValue = "30")
+    private static long DEFAULT_TIMEOUT_IN_SECONDS; // timeout in seconds
+
     protected final ObjectMapper objectMapper = new ObjectMapper();
 
     protected Session userSession = null;
@@ -68,7 +71,8 @@ public abstract class AbstractClientEndpoint {
         this.userSession = userSession;
         var executor = Executors.newSingleThreadScheduledExecutor();
         executor.scheduleAtFixedRate(() -> {
-            if (subscribeTrade && this.userSession != null && this.userSession.isOpen() && System.currentTimeMillis() - lastTradeTime > getTimeout() * 1000) {
+            if (subscribeTrade && this.userSession != null && this.userSession.isOpen()
+                    && System.currentTimeMillis() - lastTradeTime > getTimeout() * 1000) {
 
                 log.info("No trade received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
 
@@ -76,7 +80,8 @@ public abstract class AbstractClientEndpoint {
                         new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "No data received in a while"));
             }
 
-            if (subscribeTicker && !httpTicker() && this.userSession != null && this.userSession.isOpen() && System.currentTimeMillis() - lastTickerTime > getTimeout() * 1000) {
+            if (subscribeTicker && !httpTicker() && this.userSession != null && this.userSession.isOpen()
+                    && System.currentTimeMillis() - lastTickerTime > getTimeout() * 1000) {
                 log.info("No ticker received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
 
                 onClose(userSession, new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "Timeout"));
