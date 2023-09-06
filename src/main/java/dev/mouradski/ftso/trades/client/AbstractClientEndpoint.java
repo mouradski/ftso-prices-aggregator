@@ -12,6 +12,8 @@ import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.websocket.*;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.io.*;
@@ -48,7 +50,9 @@ public abstract class AbstractClientEndpoint {
 
     @Inject
     @ConfigProperty(name = "default_message_timeout", defaultValue = "30")
-    private long DEFAULT_TIMEOUT_IN_SECONDS; // timeout in seconds
+    Long DEFAULT_TIMEOUT_IN_SECONDS;
+
+    private Long timeout;
 
     protected final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -64,6 +68,10 @@ public abstract class AbstractClientEndpoint {
     protected boolean subscribeTicker;
 
     protected AbstractClientEndpoint() {
+    }
+
+    public void setTimeout(long timeout) {
+        this.timeout = timeout;
     }
 
     @OnOpen
@@ -260,7 +268,7 @@ public abstract class AbstractClientEndpoint {
         }
     }
 
-    protected synchronized boolean connect() {
+    public synchronized boolean connect() {
         var reconnectWaitTimeSeconds = 10;
 
         log.info("Opening websocket for {} ....", getExchange());
@@ -270,8 +278,11 @@ public abstract class AbstractClientEndpoint {
 
             try {
                 var container = ContainerProvider.getWebSocketContainer();
-                // throws if connection is unsuccesful
-                container.connectToServer(this, new URI(getUri()));
+
+                Config config = ConfigProvider.getConfig();
+                Optional<String> uriProperty = config.getOptionalValue(getExchange() + ".ws.uri", String.class);
+
+                container.connectToServer(this, new URI(uriProperty.orElse(getUri())));
 
                 log.info("Connected to {}", getExchange());
                 return true;
@@ -280,9 +291,7 @@ public abstract class AbstractClientEndpoint {
                         reconnectWaitTimeSeconds);
 
                 var executor = Executors.newSingleThreadScheduledExecutor();
-                executor.schedule(() -> {
-                    connect();
-                }, reconnectWaitTimeSeconds, TimeUnit.SECONDS);
+                executor.schedule(this::connect, reconnectWaitTimeSeconds, TimeUnit.SECONDS);
             }
         }
 
@@ -290,7 +299,7 @@ public abstract class AbstractClientEndpoint {
     }
 
     protected long getTimeout() {
-        return DEFAULT_TIMEOUT_IN_SECONDS;
+        return timeout == null ? DEFAULT_TIMEOUT_IN_SECONDS : timeout;
     }
 
     protected List<String> getAssets() {
@@ -323,5 +332,29 @@ public abstract class AbstractClientEndpoint {
 
     protected Long currentTimestamp() {
         return Instant.now().toEpochMilli();
+    }
+
+    public void setAssets(List<String> assets) {
+        this.assets = assets;
+    }
+
+    public void setExchanges(List<String> exchanges) {
+        this.exchanges = exchanges;
+    }
+
+    public void setSubscribeTrade(boolean subscribeTrade) {
+        this.subscribeTrade = subscribeTrade;
+    }
+
+    public void setSubscribeTicker(boolean subscribeTicker) {
+        this.subscribeTicker = subscribeTicker;
+    }
+
+    public void setTradeService(TradeService tradeService) {
+        this.tradeService = tradeService;
+    }
+
+    public void setTickerService(TickerService tickerService) {
+        this.tickerService = tickerService;
     }
 }

@@ -30,6 +30,7 @@ public abstract class WsServer<T> {
 
     @OnError
     public void onError(Session session, Throwable throwable) {
+        System.out.println("");
     }
 
     public void broadcast(T message) {
