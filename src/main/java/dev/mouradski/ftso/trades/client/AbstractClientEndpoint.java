@@ -46,8 +46,9 @@ public abstract class AbstractClientEndpoint {
 
     public static final Gson gson = new Gson();
 
+    @Inject
     @ConfigProperty(name = "default_message_timeout", defaultValue = "30")
-    private static long DEFAULT_TIMEOUT_IN_SECONDS; // timeout in seconds
+    private long DEFAULT_TIMEOUT_IN_SECONDS; // timeout in seconds
 
     protected final ObjectMapper objectMapper = new ObjectMapper();
 
