@@ -74,7 +74,7 @@ public abstract class AbstractClientEndpoint {
     @ConfigProperty(name = "subscribe.ticker")
     protected boolean subscribeTicker;
 
-    private volatile int reconnectionAttemps = 0;
+    private volatile int reconnectionAttempts = 0;
 
     protected AbstractClientEndpoint() {
     }
@@ -314,10 +314,11 @@ public abstract class AbstractClientEndpoint {
 
                 container.connectToServer(this, new URI(uriProperty.orElse(getUri())));
 
+                this.reconnectionAttempts = 0;
                 log.info("Connected to {}", getExchange());
                 return true;
             } catch (Exception e) {
-                var reconnectWaitTimeSeconds = getExponentialBackoffTimeSeconds(++reconnectionAttemps);
+                var reconnectWaitTimeSeconds = getExponentialBackoffTimeSeconds(++reconnectionAttempts);
                 log.error("Unable to connect to {}, waiting {} seconds to try again", getExchange(),
                         reconnectWaitTimeSeconds);
 
