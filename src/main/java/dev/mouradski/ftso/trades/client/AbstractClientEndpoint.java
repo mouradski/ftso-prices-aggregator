@@ -77,6 +77,11 @@ public abstract class AbstractClientEndpoint {
     private volatile int reconnectionAttempts = 0;
 
     protected AbstractClientEndpoint() {
+        Thread shutdownHook = new Thread(() -> {
+            log.info("Shutting down {} client", getExchange());
+            this.shutdown = true;
+        });
+        Runtime.getRuntime().addShutdownHook(shutdownHook);
     }
 
     public void setTimeout(long timeout) {
