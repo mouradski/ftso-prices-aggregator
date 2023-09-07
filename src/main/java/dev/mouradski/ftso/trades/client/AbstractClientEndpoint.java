@@ -24,6 +24,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPInputStream;
@@ -63,6 +65,9 @@ public abstract class AbstractClientEndpoint {
     private long lastTradeTime = System.currentTimeMillis();
     private long lastTickerTime = System.currentTimeMillis();
 
+    private ScheduledExecutorService timeoutExecutor = Executors.newScheduledThreadPool(2);
+    private ScheduledFuture<?> timeoutFuture;
+
     @ConfigProperty(name = "subscribe.trade")
     protected boolean subscribeTrade;
 
@@ -80,32 +85,12 @@ public abstract class AbstractClientEndpoint {
     public void onOpen(Session userSession) {
         userSession.setMaxTextMessageBufferSize(1024 * 1024 * 10);
         this.userSession = userSession;
-        var executor = Executors.newSingleThreadScheduledExecutor();
-        executor.scheduleAtFixedRate(() -> {
-            if (subscribeTrade && this.userSession != null && this.userSession.isOpen()
-                    && System.currentTimeMillis() - lastTradeTime > getTimeout() * 1000) {
-
-                log.info("No trade received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
-
-                onClose(userSession,
-                        new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "No data received in a while"));
-            }
-
-            if (subscribeTicker && !httpTicker() && this.userSession != null && this.userSession.isOpen()
-                    && System.currentTimeMillis() - lastTickerTime > getTimeout() * 1000) {
-                log.info("No ticker received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
-
-                onClose(userSession, new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "Timeout"));
-            }
-
-        }, getTimeout(), getTimeout(), TimeUnit.SECONDS);
 
         subscribe();
     }
 
     @OnClose
     public void onClose(Session userSession, CloseReason reason) {
-
         if (shutdown) {
             return;
         }
@@ -134,10 +119,37 @@ public abstract class AbstractClientEndpoint {
                 }
             }
 
+            if (timeoutFuture != null) {
+                timeoutFuture.cancel(true);
+            }
+            if (timeoutFuture.isCancelled()) {
+                timeoutFuture = timeoutExecutor.schedule(this::checkMessageReceivedTimeout, getTimeout(),
+                        TimeUnit.SECONDS);
+            }
+
         } catch (Exception e) {
             log.debug("Caught exception receiving msg from {}, msg : {}", getExchange(), message, e);
         }
 
+    }
+
+    private void checkMessageReceivedTimeout() {
+        if (subscribeTrade && this.userSession != null && this.userSession.isOpen()
+                && System.currentTimeMillis() - lastTradeTime > getTimeout() * 1000) {
+
+            log.info("No trade received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
+
+            onClose(userSession,
+                    new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "No data received in a while"));
+        }
+
+        if (subscribeTicker && !httpTicker() && this.userSession != null && this.userSession.isOpen()
+                && System.currentTimeMillis() - lastTickerTime > getTimeout() * 1000) {
+            log.info("No ticker received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
+
+            onClose(userSession,
+                    new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "No data received in a while"));
+        }
     }
 
     private void pushTrade(Trade trade) {
@@ -269,6 +281,9 @@ public abstract class AbstractClientEndpoint {
 
     @PostConstruct
     protected void start() {
+        timeoutFuture = timeoutExecutor.schedule(this::checkMessageReceivedTimeout, getTimeout(),
+                TimeUnit.SECONDS);
+
         if (exchanges == null || exchanges.contains(getExchange())) {
             this.connect();
         }
@@ -278,7 +293,12 @@ public abstract class AbstractClientEndpoint {
         shutdown = true;
         this.userSession.close();
     }
+
     public synchronized boolean connect() {
+        if (shutdown) {
+            return false;
+        }
+
         var reconnectWaitTimeSeconds = 10;
 
         log.info("Opening websocket for {} ....", getExchange());
