@@ -74,6 +74,8 @@ public abstract class AbstractClientEndpoint {
     @ConfigProperty(name = "subscribe.ticker")
     protected boolean subscribeTicker;
 
+    private volatile int reconnectionAttemps = 0;
+
     protected AbstractClientEndpoint() {
     }
 
@@ -299,11 +301,9 @@ public abstract class AbstractClientEndpoint {
             return false;
         }
 
-        var reconnectWaitTimeSeconds = 10;
-
-        log.info("Opening websocket for {} ....", getExchange());
-
         if (this.userSession == null || !this.userSession.isOpen()) {
+            log.info("Connecting to {} ....", getExchange());
+
             prepareConnection();
 
             try {
@@ -317,6 +317,7 @@ public abstract class AbstractClientEndpoint {
                 log.info("Connected to {}", getExchange());
                 return true;
             } catch (Exception e) {
+                var reconnectWaitTimeSeconds = getExponentialBackoffTimeSeconds(++reconnectionAttemps);
                 log.error("Unable to connect to {}, waiting {} seconds to try again", getExchange(),
                         reconnectWaitTimeSeconds);
 
@@ -386,5 +387,23 @@ public abstract class AbstractClientEndpoint {
 
     public void setTickerService(TickerService tickerService) {
         this.tickerService = tickerService;
+    }
+
+    /*
+     * t = f(x) = round(1.3^x)
+     * gives values 1,1,2,2,3,4,5,6,8,11,14,18,23,30,39,51
+     * for the first 16 attempts
+     * Return a max of 60 seconds
+     */
+    private int getExponentialBackoffTimeSeconds(int attempt) {
+        if (attempt < 0) {
+            attempt = 1;
+        }
+
+        double BASE = 1.3;
+
+        int result = Math.round((float) Math.pow(BASE, (double) attempt));
+
+        return result > 60 ? 60 : result;
     }
 }
