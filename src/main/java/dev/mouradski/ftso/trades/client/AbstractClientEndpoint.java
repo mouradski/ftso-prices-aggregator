@@ -78,7 +78,7 @@ public abstract class AbstractClientEndpoint {
 
     protected AbstractClientEndpoint() {
         Thread shutdownHook = new Thread(() -> {
-            log.info("Shutting down {} client", getExchange());
+            log.info("Shutting down {}", getExchange());
             this.shutdown = true;
         });
         Runtime.getRuntime().addShutdownHook(shutdownHook);
