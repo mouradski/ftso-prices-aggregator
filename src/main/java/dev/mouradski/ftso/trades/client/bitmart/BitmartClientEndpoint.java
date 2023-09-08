@@ -15,6 +15,7 @@ import jakarta.websocket.ClientEndpoint;
 import jakarta.websocket.OnMessage;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -29,6 +30,8 @@ import java.util.zip.Inflater;
 @Slf4j
 @Startup
 public class BitmartClientEndpoint extends AbstractClientEndpoint {
+
+    private HttpClient client = HttpClient.newHttpClient();
 
     private List<String> supportedSymbols = new ArrayList<>();
 
@@ -52,37 +55,35 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
 
     }
 
-    @Override
-    protected void subscribeTicker() {
-        var pairs = new ArrayList<String>();
+    @Scheduled(every = "3s")
+    public void getTickers() {
+        this.lastTickerTime = System.currentTimeMillis();
+        this.lastTickerTime = System.currentTimeMillis();
 
-        getAssets(true).forEach(base -> Arrays.asList("USDT").forEach(quote -> {
-            if (supportedSymbols.contains(base + "_" + quote)) {
-                pairs.add("\"spot/ticker:" + base + "_" + quote + "\"");
+        if (subscribeTicker && exchanges.contains(getExchange())) {
+            var request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api-cloud.bitmart.com/spot/quotation/v3/tickers"))
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
+
+            try {
+
+                var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+                var tickers = gson.fromJson(response.body(), TickerResponse.class);
+
+                tickers.getData().forEach(ticker -> {
+                    var pair = SymbolHelper.getPair(ticker[0]);
+
+                    if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                        pushTicker(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(Double.valueOf(ticker[1])).timestamp(currentTimestamp()).build());
+                    }
+                });
+
+            } catch (IOException | InterruptedException e) {
             }
-        }));
-
-        this.sendMessage("{\"op\":\"subscribe\",\"args\":[PAIRS]}".replace("PAIRS",
-                String.join(",", pairs)));
-
-    }
-
-    @Override
-    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
-        if (!message.contains("open_24h")) {
-            return Optional.empty();
         }
-
-        var tickerResponse = objectMapper.readValue(message, TickerResponse.class);
-
-        var tickers = new ArrayList<Ticker>();
-
-        for (var ticker : tickerResponse.getData()) {
-            var pair = SymbolHelper.getPair(ticker.getSymbol());
-            tickers.add(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(ticker.getLastPrice()).timestamp(currentTimestamp()).build());
-        }
-
-        return Optional.of(tickers);
     }
 
     @Override

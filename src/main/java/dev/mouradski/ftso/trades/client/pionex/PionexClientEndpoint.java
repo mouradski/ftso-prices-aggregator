@@ -94,6 +94,7 @@ public class PionexClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(every = "2s")
     public void getTickers() {
+        this.lastTickerTime = System.currentTimeMillis();
         if (subscribeTicker && exchanges.contains(getExchange())) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.pionex.com/api/v1/market/tickers"))

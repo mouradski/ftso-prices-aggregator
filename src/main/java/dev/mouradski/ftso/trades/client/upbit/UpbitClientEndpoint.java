@@ -31,6 +31,8 @@ public class UpbitClientEndpoint extends AbstractClientEndpoint {
         var pairs = new ArrayList<String>();
 
         getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> pairs.add("\"" + quote + "-" + base + "\"")));
+        //Arrays.asList("BTC", "ETH").forEach(base -> Arrays.asList("USDT").forEach(quote -> pairs.add("\"" + quote + "-" + base + "\"")));
+
         this.sendMessage("[{\"ticket\":\"trades\"},{\"type\":\"trade\",\"codes\":[SYMBOL]}]".replace("SYMBOL", String.join(",", pairs)));
 
 
@@ -42,7 +44,8 @@ public class UpbitClientEndpoint extends AbstractClientEndpoint {
         var pairs = new ArrayList<String>();
 
         getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> pairs.add("\"" + quote + "-" + base + "\"")));
-        this.sendMessage("[{\"ticket\":\"trades\"},{\"type\":\"ticker\",\"codes\":[SYMBOL]}]".replace("SYMBOL", String.join(",", pairs)));
+        //Arrays.asList("BTC", "ETH").forEach(base -> Arrays.asList("USDT").forEach(quote -> pairs.add("\"" + quote + "-" + base + "\"")));
+        this.sendMessage("[{\"ticket\":\"tickers\"},{\"type\":\"ticker\",\"codes\":[SYMBOL]}]".replace("SYMBOL", String.join(",", pairs)));
 
 
     }

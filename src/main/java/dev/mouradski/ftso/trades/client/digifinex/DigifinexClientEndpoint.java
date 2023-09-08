@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 @Startup
 public class DigifinexClientEndpoint extends AbstractClientEndpoint {
 
+    private HttpClient client = HttpClient.newHttpClient();
     @Override
     protected String getUri() {
         return "wss://openapi.digifinex.com/ws/v1/";
@@ -53,50 +54,34 @@ public class DigifinexClientEndpoint extends AbstractClientEndpoint {
         });
     }
 
-    @Override
-    protected void subscribeTicker() {
-        var markets = getAvailableMarkets();
+    @Scheduled(every = "3s")
+    public void getTickers() {
+        this.lastTickerTime = System.currentTimeMillis();
+        this.lastTickerTime = System.currentTimeMillis();
 
-        var subscriptionMsgTemplate = "{\"method\":\"ticker.subscribe\", \"params\":[PAIRS], \"id\":ID}";
+        if (subscribeTicker && exchanges.contains(getExchange())) {
+            var request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://openapi.digifinex.com/v3/ticker"))
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
 
-        getAssets().stream().map(String::toUpperCase).forEach(base -> {
+            try {
+                var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-            if (markets.contains(base + "_USD")) {
-                this.sendMessage(subscriptionMsgTemplate.replace("ID", incAndGetIdAsString()).replace("PAIRS",
-                        "\"" + base + "_USD\""));
+                var tickerResponse = gson.fromJson(response.body(), TickerApiResponse.class);
+
+                tickerResponse.getTicker().forEach(ticker -> {
+                    var pair = SymbolHelper.getPair(ticker.getSymbol());
+
+                    if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                        pushTicker(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(ticker.getLast()).timestamp(currentTimestamp()).build());
+                    }
+                });
+
+            } catch (IOException | InterruptedException e) {
             }
-
-            if (!base.equals("USDT") && markets.contains(base + "_USDT")) {
-                this.sendMessage(subscriptionMsgTemplate.replace("ID", incAndGetIdAsString()).replace("PAIRS",
-                        "\"" + base + "_USDT\""));
-            }
-
-            if (!base.equals("USDC") && markets.contains(base + "_USDC")) {
-                this.sendMessage(subscriptionMsgTemplate.replace("ID", incAndGetIdAsString()).replace("PAIRS",
-                        "\"" + base + "_USDC\""));
-            }
-        });
-    }
-
-    @Override
-    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
-
-        if (!message.contains("ticker.update")) {
-            return Optional.empty();
         }
-
-        var tickerResponse = objectMapper.readValue(message, TickerResponse.class);
-
-        var tickers = new ArrayList<Ticker>();
-
-        tickerResponse.getParams().forEach(tickerData -> {
-            var pair = SymbolHelper.getPair(tickerData.getSymbol());
-
-            tickers.add(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(tickerData.getLast()).timestamp(currentTimestamp()).build());
-
-        });
-
-        return Optional.of(tickers);
     }
 
     @Override

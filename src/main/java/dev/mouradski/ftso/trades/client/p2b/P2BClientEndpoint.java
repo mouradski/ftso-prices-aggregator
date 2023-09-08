@@ -12,12 +12,23 @@ import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 
-import java.util.*;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 @ApplicationScoped
 @ClientEndpoint
 @Startup
 public class P2BClientEndpoint extends AbstractClientEndpoint {
+
+    private HttpClient client = HttpClient.newHttpClient();
+
     @Override
     protected String getUri() {
         return "wss://apiws.p2pb2b.com";
@@ -34,29 +45,34 @@ public class P2BClientEndpoint extends AbstractClientEndpoint {
         this.sendMessage(subscribeTemplate.replace("SYMBOLS", String.join(",", symbols)).replace("ID", incAndGetIdAsString()));
     }
 
-    @Override
-    protected void subscribeTicker() {
-        var subscribeTemplate = "{\"method\":\"price.subscribe\",\"params\":[SYMBOLS],\"id\":ID}";
 
-        var symbols = new ArrayList<String>();
+    @Scheduled(every = "3s")
+    public void getTickers() {
+        this.lastTickerTime = System.currentTimeMillis();
 
-        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> symbols.add("\"" + base + "_" + quote + "\"")));
+        if (subscribeTicker && exchanges.contains(getExchange())) {
+            var request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.p2pb2b.com/api/v2/public/tickers"))
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
 
-        this.sendMessage(subscribeTemplate.replace("SYMBOLS", String.join(",", symbols)).replace("ID", incAndGetIdAsString()));
-    }
+            try {
+                var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-    @Override
-    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
-        if (!message.contains("price.update")) {
-            return Optional.empty();
+                var tickerResponse = gson.fromJson(response.body(), TickerApiResponse.class);
+
+                tickerResponse.getResult().forEach((key, value) -> {
+                    var pair = SymbolHelper.getPair(key);
+
+                    if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                        pushTicker(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(value.getTicker().getLast()).timestamp(currentTimestamp()).build());
+                    }
+                });
+
+            } catch (IOException | InterruptedException e) {
+            }
         }
-
-        var priceUpdate = objectMapper.readValue(message, PriceUpdate.class);
-
-        var pair = SymbolHelper.getPair(priceUpdate.getParams()[0]);
-        var lastPrice = Double.valueOf(priceUpdate.getParams()[1]);
-
-        return Optional.of(Collections.singletonList(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(lastPrice).timestamp(currentTimestamp()).build()));
     }
 
     @Override

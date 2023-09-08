@@ -46,6 +46,7 @@ public class BybitClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(every = "3s")
     public void getTickers() {
+        this.lastTickerTime = System.currentTimeMillis();
         if (subscribeTicker && exchanges.contains(getExchange())) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.bybit.com/v5/market/tickers?category=spot"))
