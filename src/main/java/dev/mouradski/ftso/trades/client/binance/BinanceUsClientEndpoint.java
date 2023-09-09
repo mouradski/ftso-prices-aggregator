@@ -1,10 +1,12 @@
 package dev.mouradski.ftso.trades.client.binance;
 
+import io.quarkus.runtime.Startup;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 
 @ApplicationScoped
 @ClientEndpoint
+@Startup
 public class BinanceUsClientEndpoint extends BinanceClientEndpoint {
 
     @Override
