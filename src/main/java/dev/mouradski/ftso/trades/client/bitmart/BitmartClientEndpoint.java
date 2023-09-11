@@ -50,10 +50,26 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
                         pairs.add("\"spot/trade:" + base + "_" + quote + "\"");
                     }
                 }));
+        if (pairs.size() < 20) {
+            this.sendMessage("{\"op\":\"subscribe\",\"args\":[PAIRS]}".replace("PAIRS",
+                    String.join(",", pairs)));
 
-        this.sendMessage("{\"op\":\"subscribe\",\"args\":[PAIRS]}".replace("PAIRS",
-                String.join(",", pairs)));
-
+        } else {// break subscription into smaller chunks
+            var waitASecondThersASubscriptionLimitOf100SymbolsPer10Seconds = pairs.size() > 100;
+            var subscribedPairsAmount = 0;
+            for (List<String> pairChunkStrings : chunks(pairs, 10)) {
+                this.sendMessage("{\"op\":\"subscribe\",\"args\":[PAIRS]}".replace("PAIRS",
+                        String.join(",", pairChunkStrings)));
+                subscribedPairsAmount += pairChunkStrings.size();
+                if (waitASecondThersASubscriptionLimitOf100SymbolsPer10Seconds && subscribedPairsAmount >= 100) {
+                    try {
+                        Thread.sleep(10 * 1000);
+                        subscribedPairsAmount = 0;
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+        }
     }
 
     @Scheduled(every = "3s")
@@ -77,8 +93,10 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
                 tickers.getData().forEach(ticker -> {
                     var pair = SymbolHelper.getPair(ticker[0]);
 
-                    if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
-                        pushTicker(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(Double.valueOf(ticker[1])).timestamp(currentTimestamp()).build());
+                    if (getAssets(true).contains(pair.getLeft())
+                            && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                        pushTicker(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
+                                .lastPrice(Double.valueOf(ticker[1])).timestamp(currentTimestamp()).build());
                     }
                 });
 
@@ -163,5 +181,15 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
 
         } catch (Exception ignored) {
         }
+    }
+
+    private static <T> List<List<T>> chunks(List<T> list, final int L) {
+        List<List<T>> parts = new ArrayList<List<T>>();
+        final int N = list.size();
+        for (int i = 0; i < N; i += L) {
+            parts.add(new ArrayList<T>(
+                    list.subList(i, Math.min(N, i + L))));
+        }
+        return parts;
     }
 }
