@@ -1,6 +1,5 @@
 package dev.mouradski.ftso.trades.client.crypto;
 
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.model.Ticker;
@@ -24,19 +23,28 @@ public class CryptoComClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribeTrade() {
-        getAssets().stream().filter(v -> !v.equals("usdt")).map(String::toUpperCase).forEach(base -> {
-            this.sendMessage("{\"id\": " + incAndGetId() + ",\"method\": \"subscribe\",\"params\": {\"channels\": [\"trade." + base + "_USDT\"]},\"nonce\": " + new Date().getTime() + "}");
-            this.sendMessage("{\"id\": " + incAndGetId() + ",\"method\": \"subscribe\",\"params\": {\"channels\": [\"trade." + base + "_USD\"]},\"nonce\": " + new Date().getTime() + "}");
-        });
-
+        getAssets().stream().map(String::toUpperCase)
+                .forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> {
+                    this.sendMessage("{\"id\": " + incAndGetId()
+                            + ",\"method\": \"subscribe\",\"params\": {\"channels\": [\"trade." + base
+                            + "_" + quote + "\"]},\"nonce\": " + new Date().getTime() + "}");
+                    this.sendMessage("{\"id\": " + incAndGetId()
+                            + ",\"method\": \"subscribe\",\"params\": {\"channels\": [\"trade." + base
+                            + "_" + quote + "\"]},\"nonce\": " + new Date().getTime() + "}");
+                }));
     }
 
     @Override
     protected void subscribeTicker() {
-        getAssets().stream().filter(v -> !v.equals("usdt")).map(String::toUpperCase).forEach(base -> {
-            this.sendMessage("{\"id\": " + incAndGetId() + ",\"method\": \"subscribe\",\"params\": {\"channels\": [\"ticker." + base + "_USDT\"]},\"nonce\": " + new Date().getTime() + "}");
-            this.sendMessage("{\"id\": " + incAndGetId() + ",\"method\": \"subscribe\",\"params\": {\"channels\": [\"ticker." + base + "_USD\"]},\"nonce\": " + new Date().getTime() + "}");
-        });
+        getAssets().stream().map(String::toUpperCase)
+                .forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> {
+                    this.sendMessage("{\"id\": " + incAndGetId()
+                            + ",\"method\": \"subscribe\",\"params\": {\"channels\": [\"ticker." + base
+                            + "_" + quote + "\"]},\"nonce\": " + new Date().getTime() + "}");
+                    this.sendMessage("{\"id\": " + incAndGetId()
+                            + ",\"method\": \"subscribe\",\"params\": {\"channels\": [\"ticker." + base
+                            + "_" + quote + "\"]},\"nonce\": " + new Date().getTime() + "}");
+                }));
     }
 
     @Override
@@ -49,9 +57,9 @@ public class CryptoComClientEndpoint extends AbstractClientEndpoint {
 
         var pair = SymbolHelper.getPair(tickerResponse.getResult().getSubscription().replace("ticker.", ""));
 
-
-
-        return Optional.of(Collections.singletonList(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(tickerResponse.getResult().getData().get(0).getA()).timestamp(currentTimestamp()).build()));
+        return Optional.of(Collections.singletonList(Ticker.builder().exchange(getExchange()).base(pair.getLeft())
+                .quote(pair.getRight()).lastPrice(tickerResponse.getResult().getData().get(0).getA())
+                .timestamp(currentTimestamp()).build()));
     }
 
     @Override
@@ -73,7 +81,8 @@ public class CryptoComClientEndpoint extends AbstractClientEndpoint {
         var quote = response.getResult().getSubscription().replace("trade.", "").split("_")[1];
 
         response.getResult().getData().forEach(cryptoTrade -> {
-            trades.add(Trade.builder().exchange(getExchange()).base(base).quote(quote).price(cryptoTrade.getP()).amount(cryptoTrade.getQ()).timestamp(currentTimestamp()).build());
+            trades.add(Trade.builder().exchange(getExchange()).base(base).quote(quote).price(cryptoTrade.getP())
+                    .amount(cryptoTrade.getQ()).timestamp(currentTimestamp()).build());
         });
 
         return Optional.of(trades);
