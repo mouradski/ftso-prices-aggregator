@@ -145,12 +145,9 @@ public abstract class AbstractClientEndpoint {
         timeoutFuture.cancel(false);
 
         if (timeoutFuture.isCancelled() || timeoutFuture.isDone()) {
-            log.info("scheduled");
             timeoutFuture = timeoutExecutor.scheduleAtFixedRate(this::checkMessageReceivedTimeout, getTimeout(),
                     getTimeout(),
                     TimeUnit.SECONDS);
-        } else {
-            log.warn("NOT scheduled");
         }
     }
 
