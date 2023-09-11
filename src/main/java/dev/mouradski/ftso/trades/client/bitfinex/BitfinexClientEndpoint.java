@@ -28,17 +28,21 @@ public class BitfinexClientEndpoint extends AbstractClientEndpoint {
     @Override
     protected void subscribeTrade() {
         getAssets().stream().map(String::toUpperCase)
-                .forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> this
-                        .sendMessage("{\"event\":\"subscribe\", \"channel\":\"trades\",\"symbol\":\"tSYMBOLQUOTE\"}"
-                                .replace("SYMBOL", base).replace("QUOTE", quote))));
+                .forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> {
+                    this
+                            .sendMessage("{\"event\":\"subscribe\", \"channel\":\"trades\",\"symbol\":\"tSYMBOLQUOTE\"}"
+                                    .replace("SYMBOL", base).replace("QUOTE", "USDT".equals(quote) ? "UST" : quote));
+                }));
     }
 
     @Override
     protected void subscribeTicker() {
         getAssets().stream().map(String::toUpperCase)
-                .forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> this
-                        .sendMessage("{\"event\":\"subscribe\", \"channel\":\"ticker\",\"symbol\":\"tSYMBOLQUOTE\"}"
-                                .replace("SYMBOL", base).replace("QUOTE", quote))));
+                .forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> {
+                    this
+                            .sendMessage("{\"event\":\"subscribe\", \"channel\":\"ticker\",\"symbol\":\"tSYMBOLQUOTE\"}"
+                                    .replace("SYMBOL", base).replace("QUOTE", "USDT".equals(quote) ? "UST" : quote));
+                }));
     }
 
     @Override
@@ -58,11 +62,14 @@ public class BitfinexClientEndpoint extends AbstractClientEndpoint {
             return Optional.empty();
         }
 
+        var quote = pair.getRight();
+
         var tickerData = jsonArray.getJSONArray(1);
 
         double lastPrice = tickerData.getDouble(6);
 
-        return Optional.of(Collections.singletonList(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(lastPrice).timestamp(currentTimestamp()).build()));
+        return Optional.of(Collections.singletonList(Ticker.builder().exchange(getExchange()).base(pair.getLeft())
+                .quote(quote).lastPrice(lastPrice).timestamp(currentTimestamp()).build()));
     }
 
     @Override
@@ -83,15 +90,18 @@ public class BitfinexClientEndpoint extends AbstractClientEndpoint {
 
         var pair = channelIds.get(channelId);
 
-        return Optional.of(Collections.singletonList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
-                .price(tradeData.get(3)).amount(Math.abs(tradeData.get(2))).timestamp(currentTimestamp())
-                .build()));
+        var quote = pair.getRight();
+
+        return Optional.of(Collections
+                .singletonList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(quote)
+                        .price(tradeData.get(3)).amount(Math.abs(tradeData.get(2))).timestamp(currentTimestamp())
+                        .build()));
     }
 
     @Override
     protected void decodeMetadata(String message) {
         if (message.contains("subscribed")) {
-            var symbolId = message.split("\"pair\":\"")[1].split("\"")[0].replace("t", "");
+            var symbolId = message.split("\"pair\":\"")[1].split("\"")[0].replace("t", "").replace("UST", "USDT");
             var channelId = Double.valueOf(message.split("\"chanId\":")[1].split(",")[0]);
             var pair = SymbolHelper.getPair(symbolId);
             this.channelIds.put(channelId, pair);
