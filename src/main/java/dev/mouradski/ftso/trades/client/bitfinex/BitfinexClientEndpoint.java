@@ -29,8 +29,8 @@ public class BitfinexClientEndpoint extends AbstractClientEndpoint {
     protected void subscribeTrade() {
         getAssets().stream().map(String::toUpperCase)
                 .forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> {
-                    var symbol = "t" + base + ("USDT".equals(quote) ? "UST" : quote);
-                    var symbol2 = "t" + base + ":" + ("USDT".equals(quote) ? "UST" : quote);
+                    var symbol = "t" + base + ("USDT".equals(quote) ? "UST" : ("USDC".equals(quote) ? "UDC" : quote));
+                    var symbol2 = "t" + base + ("USDT".equals(quote) ? "UST" : ("USDC".equals(quote) ? "UDC" : quote));
                     this
                             .sendMessage(
                                     "{\"event\":\"subscribe\", \"channel\":\"trades\",\"symbol\":\"" + symbol + "\"}");
@@ -44,12 +44,12 @@ public class BitfinexClientEndpoint extends AbstractClientEndpoint {
     protected void subscribeTicker() {
         getAssets().stream().map(String::toUpperCase)
                 .forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> {
-                    var symbol = "t" + base + ("USDT".equals(quote) ? "UST" : quote);
-                    var symbol2 = "t" + base + ":" + ("USDT".equals(quote) ? "UST" : quote);
+                    var symbol = "t" + base + ("USDT".equals(quote) ? "UST" : ("USDC".equals(quote) ? "UDC" : quote));
+                    var symbol2 = "t" + base + ("USDT".equals(quote) ? "UST" : ("USDC".equals(quote) ? "UDC" : quote));
                     this
                             .sendMessage(
                                     "{\"event\":\"subscribe\", \"channel\":\"ticker\",\"symbol\":\"" + symbol + "\"}");
-                                    this
+                    this
                             .sendMessage(
                                     "{\"event\":\"subscribe\", \"channel\":\"ticker\",\"symbol\":\"" + symbol2 + "\"}");
                 }));
@@ -112,6 +112,7 @@ public class BitfinexClientEndpoint extends AbstractClientEndpoint {
     protected void decodeMetadata(String message) {
         if (message.contains("subscribed")) {
             var symbolId = message.split("\"pair\":\"")[1].split("\"")[0].replace("t", "").replace("UST", "USDT")
+                    .replace("UDC", "USDC")
                     .replace(":", "");
             var channelId = Double.valueOf(message.split("\"chanId\":")[1].split(",")[0]);
             var pair = SymbolHelper.getPair(symbolId);
