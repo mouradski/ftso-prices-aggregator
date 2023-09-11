@@ -62,8 +62,8 @@ public abstract class AbstractClientEndpoint {
 
     protected Session userSession = null;
     protected AtomicInteger counter = new AtomicInteger();
-    private long lastTradeTime = System.currentTimeMillis();
-    private long lastTickerTime = System.currentTimeMillis();
+    protected long lastTradeTime = System.currentTimeMillis();
+    protected long lastTickerTime = System.currentTimeMillis();
 
     private ScheduledExecutorService timeoutExecutor = Executors.newScheduledThreadPool(2);
     private ScheduledFuture<?> timeoutFuture;
@@ -114,6 +114,7 @@ public abstract class AbstractClientEndpoint {
 
     @OnMessage
     public void onMessage(String message) throws JsonProcessingException {
+
         try {
             this.decodeMetadata(message);
 

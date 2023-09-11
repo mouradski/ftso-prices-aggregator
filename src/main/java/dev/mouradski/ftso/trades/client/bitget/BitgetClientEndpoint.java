@@ -19,6 +19,8 @@ import java.util.Optional;
 @Startup
 public class BitgetClientEndpoint extends AbstractClientEndpoint {
 
+    private boolean subscribed;
+
     @Override
     protected String getUri() {
         return "wss://ws.bitget.com/spot/v1/stream";
@@ -26,13 +28,39 @@ public class BitgetClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribeTrade() {
-        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> this.sendMessage("{\"op\": \"subscribe\",\"args\": [{\"instType\": \"sp\",\"channel\": \"trade\",\"instId\": \"PAIR\"}]}".replace("PAIR", base + quote))));
+        subscribeTradeTickers();
     }
 
     @Override
     protected void subscribeTicker() {
-        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> this.sendMessage("{\"op\": \"subscribe\",\"args\": [{\"instType\": \"sp\",\"channel\": \"ticker\",\"instId\": \"PAIR\"}]}".replace("PAIR", base + quote))));
+        subscribeTradeTickers();
     }
+    private void subscribeTradeTickers() {
+        if (subscribed) {
+            return;
+        }
+        subscribed = true;
+
+        var args = new ArrayList<String>();
+
+
+        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> {
+            if (subscribeTrade) {
+                args.add("{\"instType\": \"sp\",\"channel\": \"trade\",\"instId\": \"PAIR\"}".replace("PAIR", base + quote));
+            }
+
+            if (subscribeTicker) {
+                args.add("{\"instType\": \"sp\",\"channel\": \"ticker\",\"instId\": \"PAIR\"}".replace("PAIR", base + quote));
+            }
+
+        }));
+
+
+
+        this.sendMessage("{\"op\": \"subscribe\",\"args\": [ARGS]}".replace("ARGS", String.join(",", args)));
+    }
+
+
 
     @Override
     protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
@@ -80,7 +108,7 @@ public class BitgetClientEndpoint extends AbstractClientEndpoint {
         return Optional.of(trades);
     }
 
-    @Scheduled(every="30s")
+    @Scheduled(every = "30s")
     public void ping() {
         this.sendMessage("ping");
     }

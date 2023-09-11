@@ -56,6 +56,7 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(every = "5s")
     public void getTickers() {
+        this.lastTickerTime = System.currentTimeMillis();
         if (subscribeTicker && exchanges.contains(getExchange())) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.mexc.com/api/v3/ticker/price"))

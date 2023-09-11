@@ -38,8 +38,7 @@ public class ToobitClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
-
-        if (!message.contains("realtimeInterval")) {
+        if (!message.contains("realtimes")) {
             return Optional.empty();
         }
 
@@ -59,7 +58,7 @@ public class ToobitClientEndpoint extends AbstractClientEndpoint {
     @Override
     protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
 
-        if (!message.contains("symbolName")) {
+        if (!message.contains("symbolName") || message.contains("realtimes")) {
             return Optional.empty();
         }
 

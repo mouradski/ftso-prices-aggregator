@@ -2,20 +2,29 @@ package dev.mouradski.ftso.trades.client.btse;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
+import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @ApplicationScoped
 @ClientEndpoint
 @Startup
 public class BtseClientEndpoint extends AbstractClientEndpoint {
+    private HttpClient client = HttpClient.newHttpClient();
 
     @Override
     protected String getUri() {
@@ -71,5 +80,35 @@ public class BtseClientEndpoint extends AbstractClientEndpoint {
         });
 
         return Optional.of(trades);
+    }
+
+    @Scheduled(every = "3s")
+    public void getTickers() {
+        this.lastTickerTime = System.currentTimeMillis();
+        this.lastTickerTime = System.currentTimeMillis();
+
+        if (subscribeTicker && exchanges.contains(getExchange())) {
+            var request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.btse.com/spot/v2/market_summary"))
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
+
+            try {
+                var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+                Map<String, Map> tickerResponse = gson.fromJson(response.body(), Map.class);
+
+                tickerResponse.entrySet().forEach(e -> {
+                    var pair = SymbolHelper.getPair(e.getKey());
+
+                    if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                        pushTicker(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(Double.valueOf(e.getValue().get("last").toString())).timestamp(currentTimestamp()).build());
+                    }
+                });
+
+            } catch (IOException | InterruptedException e) {
+            }
+        }
     }
 }

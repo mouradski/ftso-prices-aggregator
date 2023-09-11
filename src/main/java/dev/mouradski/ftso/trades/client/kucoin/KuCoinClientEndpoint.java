@@ -25,11 +25,15 @@ import java.util.Optional;
 @Startup
 public class KuCoinClientEndpoint extends AbstractClientEndpoint {
 
+    private HttpClient client = HttpClient.newHttpClient();
     private String token;
     private String instance;
 
     @Override
     protected Optional<List<Trade>> mapTrade(String message) throws JsonProcessingException {
+        if (!message.contains("match")) {
+            return Optional.empty();
+        }
         var kucoinTrade = this.objectMapper.readValue(message, KucoinTrade.class);
 
         if (kucoinTrade.getData() == null) {
@@ -75,30 +79,40 @@ public class KuCoinClientEndpoint extends AbstractClientEndpoint {
         }
     }
 
+    @Scheduled(every = "3s")
+    public void getTickers() {
+        this.lastTickerTime = System.currentTimeMillis();
+
+        if (subscribeTicker && exchanges.contains(getExchange())) {
+            var request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.kucoin.com/api/v1/market/allTickers"))
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
+
+            try {
+                var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+                var tickerResponse = gson.fromJson(response.body(), TickerApiResponse.class);
+
+                tickerResponse.getData().getTicker().forEach(ticker -> {
+                    var pair = SymbolHelper.getPair(ticker.getSymbol());
+
+                    if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                        pushTicker(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(ticker.getLast()).timestamp(currentTimestamp()).build());
+                    }
+                });
+
+            } catch (IOException | InterruptedException e) {
+            }
+        }
+    }
+
     @Override
     protected void subscribeTrade() {
         getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> {
             subscribeToTrades(base.toUpperCase() + "-" + quote);
         }));
-    }
-
-    @Override
-    protected void subscribeTicker() {
-        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> {
-            subscribeToTicker(base.toUpperCase() + "-" + quote);
-        }));
-    }
-
-    @Override
-    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
-        if (!message.contains("/market/ticker")) {
-            return Optional.empty();
-        }
-        var tickerMessage = objectMapper.readValue(message, TickerMessage.class);
-
-        var pair = SymbolHelper.getPair(tickerMessage.getTopic().split(":")[1]);
-
-        return Optional.of(Collections.singletonList(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(tickerMessage.getData().getPrice()).timestamp(currentTimestamp()).build()));
     }
 
     @Override
@@ -109,11 +123,6 @@ public class KuCoinClientEndpoint extends AbstractClientEndpoint {
 
     private void subscribeToTrades(String symbol) {
         var subscribeMessage = "{\"type\":\"subscribe\",\"topic\":\"/market/match:" + symbol + "\",\"privateChannel\":false,\"response\":true}";
-        this.sendMessage(subscribeMessage);
-    }
-
-    private void subscribeToTicker(String symbol) {
-        var subscribeMessage = "{\"type\":\"subscribe\",\"topic\":\"/market/ticker:" + symbol + "\",\"privateChannel\":false,\"response\":true}";
         this.sendMessage(subscribeMessage);
     }
 
