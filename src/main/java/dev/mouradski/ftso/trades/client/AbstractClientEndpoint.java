@@ -360,6 +360,16 @@ public abstract class AbstractClientEndpoint {
                 : Constants.USD_USDT_USDC;
     }
 
+    protected List<String> getAllStablecoinQuotes(boolean upperCase) {
+        return upperCase ? Constants.USDT_USDC_BUSD.stream().map(String::toUpperCase).toList()
+                : Constants.USDT_USDC_BUSD;
+    }
+
+    protected List<String> getAllStablecoinQuotesExceptBusd(boolean upperCase) {
+        return upperCase ? Constants.USDT_USDC.stream().map(String::toUpperCase).toList()
+                : Constants.USDT_USDC;
+    }
+
     protected Integer incAndGetId() {
         return counter.incrementAndGet();
     }
