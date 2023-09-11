@@ -11,8 +11,6 @@ import jakarta.websocket.ClientEndpoint;
 
 import java.util.*;
 
-import static dev.mouradski.ftso.trades.utils.Constants.USDT;
-
 @ApplicationScoped
 @ClientEndpoint
 @Startup
@@ -28,40 +26,47 @@ public class BitrueClientEndpoint extends AbstractClientEndpoint {
 
         var tradeMessage = gson.fromJson(message, TradeMessage.class);
 
-        if (tradeMessage.getChannel() == null || tradeMessage.getTick() == null || tradeMessage.getTick().getData() == null) {
+        if (tradeMessage.getChannel() == null || tradeMessage.getTick() == null
+                || tradeMessage.getTick().getData() == null) {
             return Optional.empty();
         }
 
+        var pair = SymbolHelper.getPair(tradeMessage.getChannel().replace("market_", "").replace("_trade_ticker", ""));
+        var base = pair.getLeft();
+        var quote = pair.getRight();
         var trades = new ArrayList<Trade>();
 
-
-        var pair = parseSymbol(tradeMessage.getChannel());
-        var quote = "USDT";
-
-        tradeMessage.getTick().getData().stream().sorted(Comparator.comparing(BitrueTrade::getTs)).forEach(trade ->
-                trades.add(Trade.builder().exchange(getExchange()).price(trade.getPrice()).amount(trade.getVol()).quote(quote).base(pair).timestamp(currentTimestamp()).build()));
+        tradeMessage.getTick().getData().stream().sorted(Comparator.comparing(BitrueTrade::getTs))
+                .forEach(trade -> trades.add(Trade.builder().exchange(getExchange()).price(trade.getPrice())
+                        .amount(trade.getVol()).quote(quote).base(base).timestamp(currentTimestamp()).build()));
 
         return Optional.of(trades);
     }
 
-    private String parseSymbol(String channel) {
-        var parts = channel.split("_");
-
-        if (parts.length < 2) {
-            throw new IllegalArgumentException("Invalid channel format");
-        }
-
-        return parts[1].replace("usdt", "").toUpperCase();
-    }
+    /*
+     * private String[] parseSymbol(String channel) {
+     * var parts = channel.toUpperCase().split("_");
+     * 
+     * if (parts.length < 2) {
+     * throw new IllegalArgumentException("Invalid channel format");
+     * }
+     * 
+     * return parts;
+     * }
+     */
 
     @Override
     protected void subscribeTrade() {
-        getAssets().stream().filter(v -> !v.contains("usd")).forEach(base -> this.sendMessage("{\"event\":\"sub\",\"params\":{\"cb_id\":\"CB_ID\",\"channel\":\"market_CB_ID_trade_ticker\"}}".replaceAll("CB_ID", base + USDT)));
+        getAssets().stream().forEach(base -> getAllStablecoinQuotesExceptBusd(false).forEach(quote -> this.sendMessage(
+                "{\"event\":\"sub\",\"params\":{\"cb_id\":\"CB_ID\",\"channel\":\"market_CB_ID_trade_ticker\"}}"
+                        .replaceAll("CB_ID", base + quote))));
     }
 
     @Override
     protected void subscribeTicker() {
-        getAssets().stream().filter(v -> !v.contains("usd")).forEach(base -> this.sendMessage("{\"event\":\"sub\",\"params\":{\"cb_id\":\"CB_ID\",\"channel\":\"market_CB_ID_ticker\"}}".replaceAll("CB_ID", base + USDT)));
+        getAssets().stream().forEach(base -> getAllStablecoinQuotesExceptBusd(false).forEach(quote -> this.sendMessage(
+                "{\"event\":\"sub\",\"params\":{\"cb_id\":\"CB_ID\",\"channel\":\"market_CB_ID_ticker\"}}"
+                        .replaceAll("CB_ID", base + quote))));
     }
 
     @Override
@@ -72,16 +77,18 @@ public class BitrueClientEndpoint extends AbstractClientEndpoint {
 
         var tickerResponse = objectMapper.readValue(message, TickerResponse.class);
 
-        var pair = SymbolHelper.getPair(tickerResponse.getChannel().replace("market_", "").replace("_ticker", ""));
+        var pair = SymbolHelper
+                .getPair(tickerResponse.getChannel().replace("market_", "").replace("_trade_ticker", ""));
 
-        return Optional.of(Collections.singletonList(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(tickerResponse.getTick().getClose()).timestamp(currentTimestamp()).build()));
+        return Optional.of(Collections
+                .singletonList(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
+                        .lastPrice(tickerResponse.getTick().getClose()).timestamp(currentTimestamp()).build()));
     }
 
     @Override
     protected String getExchange() {
         return "bitrue";
     }
-
 
     @Override
     protected long getTimeout() {
