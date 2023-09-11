@@ -41,11 +41,12 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
     protected void subscribeTrade() {
         var pairs = new ArrayList<String>();
 
-        getAssets(true).forEach(base -> Arrays.asList("USDT").forEach(quote -> {
-            if (supportedSymbols.contains(base + "_" + quote)) {
-                pairs.add("\"spot/trade:" + base + "_" + quote + "\"");
-            }
-        }));
+        getAssets(true).stream().map(String::toUpperCase)
+                .forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> {
+                    if (supportedSymbols.contains(base + "_" + quote)) {
+                        pairs.add("\"spot/trade:" + base + "_" + quote + "\"");
+                    }
+                }));
 
         this.sendMessage("{\"op\":\"subscribe\",\"args\":[PAIRS]}".replace("PAIRS",
                 String.join(",", pairs)));
@@ -56,11 +57,12 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
     protected void subscribeTicker() {
         var pairs = new ArrayList<String>();
 
-        getAssets(true).forEach(base -> Arrays.asList("USDT").forEach(quote -> {
-            if (supportedSymbols.contains(base + "_" + quote)) {
-                pairs.add("\"spot/ticker:" + base + "_" + quote + "\"");
-            }
-        }));
+        getAssets(true).stream().map(String::toUpperCase)
+                .forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> {
+                    if (supportedSymbols.contains(base + "_" + quote)) {
+                        pairs.add("\"spot/ticker:" + base + "_" + quote + "\"");
+                    }
+                }));
 
         this.sendMessage("{\"op\":\"subscribe\",\"args\":[PAIRS]}".replace("PAIRS",
                 String.join(",", pairs)));
@@ -79,7 +81,8 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
 
         for (var ticker : tickerResponse.getData()) {
             var pair = SymbolHelper.getPair(ticker.getSymbol());
-            tickers.add(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(ticker.getLastPrice()).timestamp(currentTimestamp()).build());
+            tickers.add(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
+                    .lastPrice(ticker.getLastPrice()).timestamp(currentTimestamp()).build());
         }
 
         return Optional.of(tickers);
@@ -140,7 +143,7 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
         return Optional.of(trades);
     }
 
-    @Scheduled(every="15s")
+    @Scheduled(every = "15s")
     public void ping() {
         this.sendMessage("ping");
     }
