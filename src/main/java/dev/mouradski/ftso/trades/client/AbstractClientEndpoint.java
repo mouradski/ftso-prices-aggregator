@@ -35,6 +35,7 @@ import static dev.mouradski.ftso.trades.utils.Constants.SYMBOLS;
 
 @Slf4j
 public abstract class AbstractClientEndpoint {
+    public boolean enabled = false;
 
     @Inject
     TradeService tradeService;
@@ -65,7 +66,7 @@ public abstract class AbstractClientEndpoint {
     protected long lastTradeTime = System.currentTimeMillis();
     protected long lastTickerTime = System.currentTimeMillis();
 
-    private ScheduledExecutorService timeoutExecutor = Executors.newScheduledThreadPool(2);
+    private ScheduledExecutorService timeoutExecutor = Executors.newSingleThreadScheduledExecutor();
     private ScheduledFuture<?> timeoutFuture;
 
     @ConfigProperty(name = "subscribe.trade")
@@ -78,8 +79,10 @@ public abstract class AbstractClientEndpoint {
 
     protected AbstractClientEndpoint() {
         Thread shutdownHook = new Thread(() -> {
-            log.info("Shutting down {}", getExchange());
-            this.shutdown = true;
+            if (this.enabled) {
+                log.info("Shutting down {}", getExchange());
+                this.shutdown = true;
+            }
         });
         Runtime.getRuntime().addShutdownHook(shutdownHook);
     }
@@ -92,7 +95,7 @@ public abstract class AbstractClientEndpoint {
     public void onOpen(Session userSession) {
         userSession.setMaxTextMessageBufferSize(1024 * 1024 * 10);
         this.userSession = userSession;
-
+        scheduleTimeoutFutureExecution();
         subscribe();
     }
 
@@ -104,8 +107,8 @@ public abstract class AbstractClientEndpoint {
 
         log.info("Closing websocket for {}, Reason : {}", getExchange(), reason.getReasonPhrase());
         try {
-            Thread.sleep(2000);
             this.userSession = null;
+            Thread.sleep(100);
         } catch (Exception e) {
         }
 
@@ -127,13 +130,7 @@ public abstract class AbstractClientEndpoint {
                 }
             }
 
-            if (timeoutFuture != null) {
-                timeoutFuture.cancel(true);
-            }
-            if (timeoutFuture.isCancelled()) {
-                timeoutFuture = timeoutExecutor.schedule(this::checkMessageReceivedTimeout, getTimeout(),
-                        TimeUnit.SECONDS);
-            }
+            scheduleTimeoutFutureExecution();
 
         } catch (Exception e) {
             log.debug("Caught exception receiving msg from {}, msg : {}", getExchange(), message, e);
@@ -141,23 +138,41 @@ public abstract class AbstractClientEndpoint {
 
     }
 
+    private void scheduleTimeoutFutureExecution() {
+        if (timeoutFuture == null) {
+            return;
+        }
+        timeoutFuture.cancel(false);
+
+        if (timeoutFuture.isCancelled() || timeoutFuture.isDone()) {
+            log.info("scheduled");
+            timeoutFuture = timeoutExecutor.scheduleAtFixedRate(this::checkMessageReceivedTimeout, getTimeout(),
+                    getTimeout(),
+                    TimeUnit.SECONDS);
+        } else {
+            log.warn("NOT scheduled");
+        }
+    }
+
     private void checkMessageReceivedTimeout() {
+        var shouldReconnectFlag = false;
         if (subscribeTrade && this.userSession != null && this.userSession.isOpen()
-                && System.currentTimeMillis() - lastTradeTime > getTimeout() * 1000) {
+                && (System.currentTimeMillis() - lastTradeTime) > (getTimeout() * 1000)) {
 
             log.info("No trade received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
+            shouldReconnectFlag = true;
 
-            onClose(userSession,
-                    new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "No data received in a while"));
         }
 
         if (subscribeTicker && !httpTicker() && this.userSession != null && this.userSession.isOpen()
-                && System.currentTimeMillis() - lastTickerTime > getTimeout() * 1000) {
+                && (System.currentTimeMillis() - lastTickerTime) > (getTimeout() * 1000)) {
             log.info("No ticker received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
 
+            shouldReconnectFlag = true;
+        }
+        if (shouldReconnectFlag)
             onClose(userSession,
                     new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "No data received in a while"));
-        }
     }
 
     private void pushTrade(Trade trade) {
@@ -289,10 +304,13 @@ public abstract class AbstractClientEndpoint {
 
     @PostConstruct
     protected void start() {
-        timeoutFuture = timeoutExecutor.schedule(this::checkMessageReceivedTimeout, getTimeout(),
-                TimeUnit.SECONDS);
-
         if (exchanges == null || exchanges.contains(getExchange())) {
+            this.enabled = true;
+
+            timeoutFuture = timeoutExecutor.scheduleAtFixedRate(this::checkMessageReceivedTimeout, getTimeout(),
+                    getTimeout(),
+                    TimeUnit.SECONDS);
+
             this.connect();
         }
     }
