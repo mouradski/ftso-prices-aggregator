@@ -2,6 +2,7 @@ package dev.mouradski.ftso.trades.client.bingx;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
@@ -48,6 +49,20 @@ public class BingxClientEndpoint extends AbstractClientEndpoint {
 
         return Optional.of(Collections.singletonList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
                 .price(Double.valueOf(tradeResponse.getData().getPrice())).amount(Double.valueOf(tradeResponse.getData().getAmount())).timestamp(currentTimestamp()).build()));
+    }
+
+    @Override
+    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
+        if (!message.contains("@trade")) {
+            return Optional.empty();
+        }
+
+        var tradeResponse = this.objectMapper.readValue(message, TradeResponse.class);
+
+        var pair = SymbolHelper.getPair(tradeResponse.getData().getSymbol());
+
+        return Optional.of(Collections.singletonList(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
+                .lastPrice(Double.valueOf(tradeResponse.getData().getPrice())).timestamp(currentTimestamp()).build()));
     }
 
     @Override

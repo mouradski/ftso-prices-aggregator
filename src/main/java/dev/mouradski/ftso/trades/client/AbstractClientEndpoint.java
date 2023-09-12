@@ -322,7 +322,12 @@ public abstract class AbstractClientEndpoint {
             return false;
         }
 
+        if (getUri() == null) {
+            return true;
+        }
+
         if (this.userSession == null || !this.userSession.isOpen()) {
+
             log.info("Connecting to {} ....", getExchange());
 
             prepareConnection();

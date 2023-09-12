@@ -25,15 +25,9 @@ import java.nio.charset.StandardCharsets;
 public class BittrexClientEndpoint extends AbstractClientEndpoint {
 
     private HttpClient client = HttpClient.newHttpClient();
-    private String token;
     @Override
     protected String getUri() {
-        try {
-            return "wss://socket-v3.bittrex.com/signalr/connect?clientProtocol=1.5&transport=webSockets&connectionToken=TOKEN&connectionData=DATA&tid=10"
-                    .replace("TOKEN",  URLEncoder.encode(token, StandardCharsets.UTF_8.toString())).replace("DATA", URLEncoder.encode("[{\"name\":\"c3\"}]", StandardCharsets.UTF_8.toString()));
-        } catch (UnsupportedEncodingException e) {
-            return null;
-        }
+        return null;
     }
 
     @Override
