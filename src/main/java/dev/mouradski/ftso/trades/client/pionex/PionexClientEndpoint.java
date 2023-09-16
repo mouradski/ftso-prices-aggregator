@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 @Startup
 public class PionexClientEndpoint extends AbstractClientEndpoint {
 
-    private HttpClient client = HttpClient.newHttpClient();
     protected Set<String> supportedSymbols;
 
     @Override

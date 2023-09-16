@@ -17,12 +17,14 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.zip.Inflater;
 
 @ApplicationScoped
@@ -31,7 +33,6 @@ import java.util.zip.Inflater;
 @Startup
 public class BitmartClientEndpoint extends AbstractClientEndpoint {
 
-    private HttpClient client = HttpClient.newHttpClient();
 
     private List<String> supportedSymbols = new ArrayList<>();
 
@@ -167,7 +168,6 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void prepareConnection() {
-        HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api-cloud.bitmart.com/spot/v1/symbols"))
                 .build();

@@ -12,7 +12,6 @@ import jakarta.websocket.ClientEndpoint;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.*;
@@ -22,8 +21,6 @@ import java.util.stream.Collectors;
 @ClientEndpoint
 @Startup
 public class GeminiClientEndpoint extends AbstractClientEndpoint {
-
-    private HttpClient client = HttpClient.newHttpClient();
 
     private Set<String> symbols = new HashSet<>();
 

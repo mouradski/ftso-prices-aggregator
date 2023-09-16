@@ -25,7 +25,6 @@ import java.util.Optional;
 @Startup
 public class KuCoinClientEndpoint extends AbstractClientEndpoint {
 
-    private HttpClient client = HttpClient.newHttpClient();
     private String token;
     private String instance;
 

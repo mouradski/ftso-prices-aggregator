@@ -1,7 +1,6 @@
 package dev.mouradski.ftso.trades.client.bittrex;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
