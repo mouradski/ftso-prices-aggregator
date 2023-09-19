@@ -14,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
@@ -123,7 +122,6 @@ public class GateIOClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void prepareConnection() {
-        HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.gateio.ws/api/v4/spot/currency_pairs"))
                 .header("Content-Type", "application/json")

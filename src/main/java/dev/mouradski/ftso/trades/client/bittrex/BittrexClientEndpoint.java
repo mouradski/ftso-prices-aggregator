@@ -10,13 +10,9 @@ import jakarta.websocket.ClientEndpoint;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URLEncoder;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 
 @ApplicationScoped
 @ClientEndpoint
@@ -24,7 +20,6 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 public class BittrexClientEndpoint extends AbstractClientEndpoint {
 
-    private HttpClient client = HttpClient.newHttpClient();
     @Override
     protected String getUri() {
         return null;

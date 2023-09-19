@@ -13,7 +13,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Collections;
@@ -25,7 +24,7 @@ import java.util.Optional;
 @ClientEndpoint
 @Startup
 public class BybitClientEndpoint extends AbstractClientEndpoint {
-    private HttpClient client = HttpClient.newHttpClient();
+
     @Override
     protected String getUri() {
         return "wss://stream.bybit.com/spot/quote/ws/v2";

@@ -12,7 +12,6 @@ import jakarta.websocket.ClientEndpoint;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.*;
@@ -21,8 +20,6 @@ import java.util.*;
 @ClientEndpoint
 @Startup
 public class CoinexClientEndpoint extends AbstractClientEndpoint {
-
-    private HttpClient client = HttpClient.newHttpClient();
 
     @Override
     protected String getUri() {

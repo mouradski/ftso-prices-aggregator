@@ -18,6 +18,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.io.*;
 import java.net.URI;
+import java.net.http.HttpClient;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -53,7 +54,9 @@ public abstract class AbstractClientEndpoint {
 
     @Inject
     @ConfigProperty(name = "default_message_timeout", defaultValue = "30")
-    Long DEFAULT_TIMEOUT_IN_SECONDS;
+    Long defaultTimeoutInSeconds;
+
+    protected HttpClient client = HttpClient.newHttpClient();
 
     private Long timeout;
 
@@ -357,7 +360,7 @@ public abstract class AbstractClientEndpoint {
     }
 
     protected long getTimeout() {
-        return timeout == null ? DEFAULT_TIMEOUT_IN_SECONDS : timeout;
+        return timeout == null ? defaultTimeoutInSeconds : timeout;
     }
 
     protected List<String> getAssets() {

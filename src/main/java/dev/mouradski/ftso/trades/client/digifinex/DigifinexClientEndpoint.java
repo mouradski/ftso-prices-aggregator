@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 @Startup
 public class DigifinexClientEndpoint extends AbstractClientEndpoint {
 
-    private HttpClient client = HttpClient.newHttpClient();
     @Override
     protected String getUri() {
         return "wss://openapi.digifinex.com/ws/v1/";
