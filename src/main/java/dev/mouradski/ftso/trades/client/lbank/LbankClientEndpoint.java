@@ -74,7 +74,7 @@ public class LbankClientEndpoint extends AbstractClientEndpoint {
 
         var pair = SymbolHelper.getPair(tradeWrapper.getPair());
 
-        return Optional.of(Collections.singletonList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(tradeWrapper.getTrade().getPrice()).amount(tradeWrapper.getTrade().getAmount()).timestamp(currentTimestamp()).build()));
+        return Optional.of(Collections.singletonList(Trade.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).price(tradeWrapper.getTrade().getPrice()).amount(tradeWrapper.getTrade().getVolume()).timestamp(currentTimestamp()).build()));
     }
 
     @Scheduled(every="30s")
