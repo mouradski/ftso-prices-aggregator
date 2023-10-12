@@ -304,7 +304,7 @@ public abstract class AbstractClientEndpoint {
 
     @PostConstruct
     protected void start() {
-        if (exchanges == null || exchanges.contains(getExchange())) {
+        if (exchanges == null || exchanges.contains("all") || exchanges.contains(getExchange())) {
             this.enabled = true;
 
             timeoutFuture = timeoutExecutor.scheduleAtFixedRate(this::checkMessageReceivedTimeout, getTimeout(),
