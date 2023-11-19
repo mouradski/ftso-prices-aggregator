@@ -1,6 +1,7 @@
 package dev.mouradski.ftso.trades.client.bittrex;
 
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.client.HttpTickers;
 import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
@@ -18,7 +19,7 @@ import java.net.http.HttpResponse;
 @ClientEndpoint
 @Startup
 @Slf4j
-public class BittrexClientEndpoint extends AbstractClientEndpoint {
+public class BittrexClientEndpoint extends AbstractClientEndpoint implements HttpTickers {
 
     @Override
     protected String getUri() {
@@ -30,8 +31,8 @@ public class BittrexClientEndpoint extends AbstractClientEndpoint {
         return "bittrex";
     }
 
-    @Scheduled(every = "5s")
-    public void getTickers() {
+    @Override
+    public void updateTickers() {
         this.lastTickerTime = System.currentTimeMillis();
         this.lastTradeTime = System.currentTimeMillis();
 

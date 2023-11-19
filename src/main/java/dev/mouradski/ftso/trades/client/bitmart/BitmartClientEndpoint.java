@@ -2,6 +2,7 @@ package dev.mouradski.ftso.trades.client.bitmart;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.client.HttpTickers;
 import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
@@ -31,7 +32,7 @@ import java.util.zip.Inflater;
 @ClientEndpoint
 @Slf4j
 @Startup
-public class BitmartClientEndpoint extends AbstractClientEndpoint {
+public class BitmartClientEndpoint extends AbstractClientEndpoint implements HttpTickers {
 
 
     private List<String> supportedSymbols = new ArrayList<>();
@@ -73,8 +74,8 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
         }
     }
 
-    @Scheduled(every = "3s")
-    public void getTickers() {
+    @Override
+    public void updateTickers() {
         this.lastTickerTime = System.currentTimeMillis();
         this.lastTickerTime = System.currentTimeMillis();
 

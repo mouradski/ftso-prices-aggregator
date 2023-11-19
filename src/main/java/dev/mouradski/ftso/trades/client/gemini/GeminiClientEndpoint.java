@@ -2,6 +2,7 @@ package dev.mouradski.ftso.trades.client.gemini;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.client.HttpTickers;
 import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
 @ApplicationScoped
 @ClientEndpoint
 @Startup
-public class GeminiClientEndpoint extends AbstractClientEndpoint {
+public class GeminiClientEndpoint extends AbstractClientEndpoint implements HttpTickers {
 
     private Set<String> symbols = new HashSet<>();
 
@@ -88,8 +89,8 @@ public class GeminiClientEndpoint extends AbstractClientEndpoint {
         return Optional.of(trades);
     }
 
-    @Scheduled(every = "5s")
-    public void getTickers() {
+    @Override
+    public void updateTickers() {
         this.lastTickerTime = System.currentTimeMillis();
         this.lastTickerTime = System.currentTimeMillis();
 

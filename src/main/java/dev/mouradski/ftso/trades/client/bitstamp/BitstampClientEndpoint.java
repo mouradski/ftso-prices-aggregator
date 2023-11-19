@@ -3,6 +3,7 @@ package dev.mouradski.ftso.trades.client.bitstamp;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.JsonParser;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.client.HttpTickers;
 import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
@@ -21,7 +22,7 @@ import java.util.Optional;
 @ApplicationScoped
 @ClientEndpoint
 @Startup
-public class BitstampClientEndpoint extends AbstractClientEndpoint {
+public class BitstampClientEndpoint extends AbstractClientEndpoint implements HttpTickers {
 
     @Override
     protected String getUri() {
@@ -66,9 +67,8 @@ public class BitstampClientEndpoint extends AbstractClientEndpoint {
         }
     }
 
-
-    @Scheduled(every = "3s")
-    public void getTickers() {
+    @Override
+    public void updateTickers() {
         this.lastTickerTime = System.currentTimeMillis();
         this.lastTickerTime = System.currentTimeMillis();
 

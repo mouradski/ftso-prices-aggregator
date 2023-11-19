@@ -2,6 +2,7 @@ package dev.mouradski.ftso.trades.client.pionex;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.client.HttpTickers;
 import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
@@ -25,7 +26,7 @@ import java.util.stream.Collectors;
 @ClientEndpoint
 @Slf4j
 @Startup
-public class PionexClientEndpoint extends AbstractClientEndpoint {
+public class PionexClientEndpoint extends AbstractClientEndpoint implements HttpTickers {
 
     protected Set<String> supportedSymbols;
 
@@ -91,8 +92,8 @@ public class PionexClientEndpoint extends AbstractClientEndpoint {
         return true;
     }
 
-    @Scheduled(every = "2s")
-    public void getTickers() {
+    @Override
+    public void updateTickers() {
         this.lastTickerTime = System.currentTimeMillis();
         if (subscribeTicker && exchanges.contains(getExchange())) {
             var request = HttpRequest.newBuilder()

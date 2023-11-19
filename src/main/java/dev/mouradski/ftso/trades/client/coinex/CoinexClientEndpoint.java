@@ -2,6 +2,7 @@ package dev.mouradski.ftso.trades.client.coinex;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.client.HttpTickers;
 import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
@@ -19,7 +20,7 @@ import java.util.*;
 @ApplicationScoped
 @ClientEndpoint
 @Startup
-public class CoinexClientEndpoint extends AbstractClientEndpoint {
+public class CoinexClientEndpoint extends AbstractClientEndpoint implements HttpTickers {
 
     @Override
     protected String getUri() {
@@ -42,8 +43,8 @@ public class CoinexClientEndpoint extends AbstractClientEndpoint {
         return true;
     }
 
-    @Scheduled(every = "3s")
-    public void getTickers() {
+    @Override
+    public void updateTickers() {
         this.lastTickerTime = System.currentTimeMillis();
         if (subscribeTicker && exchanges.contains(getExchange())) {
             var request = HttpRequest.newBuilder()

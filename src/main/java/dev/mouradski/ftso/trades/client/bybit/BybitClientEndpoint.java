@@ -2,6 +2,7 @@ package dev.mouradski.ftso.trades.client.bybit;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.client.HttpTickers;
 import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
@@ -23,7 +24,7 @@ import java.util.Optional;
 @ApplicationScoped
 @ClientEndpoint
 @Startup
-public class BybitClientEndpoint extends AbstractClientEndpoint {
+public class BybitClientEndpoint extends AbstractClientEndpoint implements HttpTickers {
 
     @Override
     protected String getUri() {
@@ -43,8 +44,8 @@ public class BybitClientEndpoint extends AbstractClientEndpoint {
         return true;
     }
 
-    @Scheduled(every = "3s")
-    public void getTickers() {
+    @Override
+    public void updateTickers() {
         this.lastTickerTime = System.currentTimeMillis();
         if (subscribeTicker && exchanges.contains(getExchange())) {
             var request = HttpRequest.newBuilder()

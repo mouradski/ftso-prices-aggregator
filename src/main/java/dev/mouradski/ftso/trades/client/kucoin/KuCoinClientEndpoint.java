@@ -2,6 +2,7 @@ package dev.mouradski.ftso.trades.client.kucoin;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.client.HttpTickers;
 import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
@@ -23,7 +24,7 @@ import java.util.Optional;
 @ApplicationScoped
 @ClientEndpoint
 @Startup
-public class KuCoinClientEndpoint extends AbstractClientEndpoint {
+public class KuCoinClientEndpoint extends AbstractClientEndpoint implements HttpTickers {
 
     private String token;
     private String instance;
@@ -78,8 +79,8 @@ public class KuCoinClientEndpoint extends AbstractClientEndpoint {
         }
     }
 
-    @Scheduled(every = "3s")
-    public void getTickers() {
+    @Override
+    public void updateTickers() {
         this.lastTickerTime = System.currentTimeMillis();
 
         if (subscribeTicker && exchanges.contains(getExchange())) {
