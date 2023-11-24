@@ -88,7 +88,7 @@ public class GeminiClientEndpoint extends AbstractClientEndpoint {
         return Optional.of(trades);
     }
 
-    @Scheduled(every = "5s")
+    @Scheduled(every = "3s")
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();
         this.lastTickerTime = System.currentTimeMillis();
