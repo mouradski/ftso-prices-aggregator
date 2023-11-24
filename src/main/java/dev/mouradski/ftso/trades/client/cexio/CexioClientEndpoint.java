@@ -28,7 +28,7 @@ public class CexioClientEndpoint extends AbstractClientEndpoint {
         return "cexio";
     }
 
-    @Scheduled(every = "5s")
+    @Scheduled(every = "3s")
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();
         if (subscribeTicker && exchanges.contains(getExchange())) {
