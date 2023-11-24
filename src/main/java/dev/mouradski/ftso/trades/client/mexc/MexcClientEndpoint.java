@@ -52,7 +52,7 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
         return true;
     }
 
-    @Scheduled(every = "5s")
+    @Scheduled(every = "3s")
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();
         if (subscribeTicker && exchanges.contains(getExchange())) {
