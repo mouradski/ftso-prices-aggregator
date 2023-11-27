@@ -2,6 +2,7 @@ package dev.mouradski.ftso.trades.client.bitrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.client.HttpTickers;
 import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
@@ -9,12 +10,16 @@ import io.quarkus.runtime.Startup;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.*;
 
 @ApplicationScoped
 @ClientEndpoint
 @Startup
-public class BitrueClientEndpoint extends AbstractClientEndpoint {
+public class BitrueClientEndpoint extends AbstractClientEndpoint implements HttpTickers {
 
     @Override
     protected String getUri() {
@@ -43,46 +48,11 @@ public class BitrueClientEndpoint extends AbstractClientEndpoint {
         return Optional.of(trades);
     }
 
-    /*
-     * private String[] parseSymbol(String channel) {
-     * var parts = channel.toUpperCase().split("_");
-     * 
-     * if (parts.length < 2) {
-     * throw new IllegalArgumentException("Invalid channel format");
-     * }
-     * 
-     * return parts;
-     * }
-     */
-
     @Override
     protected void subscribeTrade() {
         getAssets().stream().forEach(base -> getAllStablecoinQuotesExceptBusd(false).forEach(quote -> this.sendMessage(
                 "{\"event\":\"sub\",\"params\":{\"cb_id\":\"CB_ID\",\"channel\":\"market_CB_ID_trade_ticker\"}}"
                         .replaceAll("CB_ID", base + quote))));
-    }
-
-    @Override
-    protected void subscribeTicker() {
-        getAssets().stream().forEach(base -> getAllStablecoinQuotesExceptBusd(false).forEach(quote -> this.sendMessage(
-                "{\"event\":\"sub\",\"params\":{\"cb_id\":\"CB_ID\",\"channel\":\"market_CB_ID_ticker\"}}"
-                        .replaceAll("CB_ID", base + quote))));
-    }
-
-    @Override
-    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
-        if (!message.contains("close")) {
-            return Optional.empty();
-        }
-
-        var tickerResponse = objectMapper.readValue(message, TickerResponse.class);
-
-        var pair = SymbolHelper
-                .getPair(tickerResponse.getChannel().replace("market_", "").replace("_trade_ticker", ""));
-
-        return Optional.of(Collections
-                .singletonList(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
-                        .lastPrice(tickerResponse.getTick().getClose()).timestamp(currentTimestamp()).build()));
     }
 
     @Override
@@ -104,5 +74,39 @@ public class BitrueClientEndpoint extends AbstractClientEndpoint {
         }
 
         return false;
+    }
+
+    @Override
+    public void updateTickers() {
+        this.lastTickerTime = System.currentTimeMillis();
+        this.lastTickerTime = System.currentTimeMillis();
+
+        if (subscribeTicker && exchanges.contains(getExchange())) {
+            var request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://openapi.bitrue.com/api/v1/ticker/24hr"))
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
+
+            try {
+
+                var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+                var tickers = gson.fromJson(response.body(), CryptoItem[].class);
+
+
+                for (var ticker : tickers) {
+                    var pair = SymbolHelper.getPair(ticker.getSymbol());
+
+                    if (getAssets(true).contains(pair.getLeft())
+                            && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                        pushTicker(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
+                                .lastPrice(ticker.getLastPrice()).timestamp(currentTimestamp()).build());
+                    }
+                }
+
+            } catch (IOException | InterruptedException e) {
+            }
+        }
     }
 }
