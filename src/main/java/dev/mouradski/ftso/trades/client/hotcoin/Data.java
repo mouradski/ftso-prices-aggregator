@@ -1,4 +1,4 @@
-package dev.mouradski.ftso.trades.client.latoken;
+package dev.mouradski.ftso.trades.client.hotcoin;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
@@ -10,5 +10,5 @@ import lombok.Setter;
 public class Data {
     private String symbol;
 
-    private Double lastPrice;
+    private Double last;
 }

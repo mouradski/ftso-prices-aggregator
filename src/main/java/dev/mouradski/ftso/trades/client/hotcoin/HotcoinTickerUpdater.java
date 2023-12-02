@@ -1,4 +1,4 @@
-package dev.mouradski.ftso.trades.client.latoken;
+package dev.mouradski.ftso.trades.client.hotcoin;
 
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.trades.client.HttpTickers;
@@ -15,37 +15,7 @@ import java.util.Arrays;
 
 @ApplicationScoped
 @Startup
-public class LatokenTickerUpdater extends AbstractClientEndpoint implements HttpTickers {
-
-    @Override
-    public void updateTickers() {
-        this.lastTickerTime = System.currentTimeMillis();
-        if (subscribeTicker && exchanges.contains(getExchange())) {
-            var request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.latoken.com/v2/ticker"))
-                    .header("Content-Type", "application/json")
-                    .GET()
-                    .build();
-
-            try {
-                var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-                var tickerResponse = gson.fromJson(response.body(), Data[].class);
-
-                Arrays.stream(tickerResponse).forEach(data -> {
-                    var pair = SymbolHelper.getPair(data.getSymbol());
-
-                    if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
-                        var ticker = Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(data.getLastPrice()).timestamp(currentTimestamp()).build();
-                        pushTicker(ticker);
-                    }
-                });
-
-            } catch (IOException | InterruptedException e) {
-                //TODO
-            }
-        }
-    }
+public class HotcoinTickerUpdater  extends AbstractClientEndpoint implements HttpTickers  {
 
     @Override
     protected String getUri() {
@@ -54,6 +24,36 @@ public class LatokenTickerUpdater extends AbstractClientEndpoint implements Http
 
     @Override
     protected String getExchange() {
-        return "latoken";
+        return "hotcoin";
+    }
+
+    @Override
+    public void updateTickers() {
+        this.lastTickerTime = System.currentTimeMillis();
+        if (subscribeTicker) {
+            var request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.hotcoinfin.com/v1/market/ticker"))
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
+
+            try {
+                var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+                var tickerResponse = gson.fromJson(response.body(),Tickers.class);
+
+                Arrays.stream(tickerResponse.getTicker()).forEach(data -> {
+                    var pair = SymbolHelper.getPair(data.getSymbol());
+
+                    if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                        var ticker = Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(data.getLast()).timestamp(currentTimestamp()).build();
+                        pushTicker(ticker);
+                    }
+                });
+
+            } catch (IOException | InterruptedException e) {
+                //TODO
+            }
+        }
     }
 }
