@@ -28,6 +28,6 @@ public class HttpTickersUpdaterService {
                 } catch(Exception ignored) {
                 }
             }
-        });
+        );
     }
 }
