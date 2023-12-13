@@ -21,13 +21,12 @@ public class HttpTickersUpdaterService {
 
     public void update() {
         httpTickers.forEach(httpTicker -> {
-            
-            executorService.submit(httpTicker -> {
+            executorService.submit(() -> {
                 try {
-                httpTicker.updateTickers();
-                } catch(Exception ignored) {
+                    httpTicker.updateTickers();
+                } catch (Exception ignored) {
                 }
-            }
-        );
+            });
+        });
     }
 }
