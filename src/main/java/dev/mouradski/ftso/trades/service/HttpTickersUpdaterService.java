@@ -21,7 +21,10 @@ public class HttpTickersUpdaterService {
 
     public void update() {
         httpTickers.forEach(httpTicker -> {
+            try {
             executorService.submit(httpTicker::updateTickers);
+            } catch (Exception ignored) {
+            }
         });
     }
 }
