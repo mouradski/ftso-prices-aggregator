@@ -24,7 +24,7 @@ public class HttpTickersUpdaterService {
             
             executorService.submit(() -> {
                 try {
-                httpTicker.updateTickers);
+                httpTicker.updateTickers();
                 } catch(Exception ignored) {
                 }
             }
