@@ -2,6 +2,8 @@ package dev.mouradski.ftso.trades.client.xt;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.trades.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.trades.client.HttpTickers;
+import dev.mouradski.ftso.trades.client.bybit.TickerResponse;
 import dev.mouradski.ftso.trades.model.Ticker;
 import dev.mouradski.ftso.trades.model.Trade;
 import dev.mouradski.ftso.trades.utils.SymbolHelper;
@@ -10,6 +12,10 @@ import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,7 +24,7 @@ import java.util.Optional;
 @ApplicationScoped
 @ClientEndpoint
 @Startup
-public class XtClientEndpoint extends AbstractClientEndpoint {
+public class XtClientEndpoint extends AbstractClientEndpoint implements HttpTickers {
 
     @Override
     protected String getUri() {
@@ -39,33 +45,32 @@ public class XtClientEndpoint extends AbstractClientEndpoint {
     }
 
     @Override
-    protected void subscribeTicker() {
-        this.sendMessage("{     \"method\": \"subscribe\",  \"params\": [\"tickers\"]}");
-    }
+    public void updateTickers() {
+        this.lastTickerTime = System.currentTimeMillis();
+        if (subscribeTicker && exchanges.contains(getExchange())) {
+            var request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://sapi.xt.com/v4/public/ticker"))
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
 
-    @Override
-    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
-        if (!message.contains("tickers")) {
-            return Optional.empty();
-        }
+            try {
+                var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        var tickers = new ArrayList<Ticker>();
+                var apiResponse = gson.fromJson(response.body(), ApiResponse.class);
 
+                apiResponse.getResult().forEach(ticker -> {
+                    var pair = SymbolHelper.getPair(ticker.getS());
 
-        var tickerEvent = this.objectMapper.readValue(message, TickerEvent.class);
+                    if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                        pushTicker(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(Double.valueOf(ticker.getC())).timestamp(currentTimestamp()).build());
+                    }
+                });
 
-
-
-        tickerEvent.getData().forEach(ticker -> {
-            var pair = SymbolHelper.getPair(ticker.getSymbol());
-
-            if (getAssets(false).contains(pair.getLeft().toLowerCase()) && getAllQuotes(false).contains(pair.getRight().toLowerCase())) {
-                tickers.add(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(Double.valueOf(ticker.getClose())).timestamp(currentTimestamp()).build());
+            } catch (IOException | InterruptedException e) {
+                //TODO
             }
-        });
-
-        return Optional.of(tickers);
-
+        }
     }
 
     @Override
