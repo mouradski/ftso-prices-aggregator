@@ -108,7 +108,10 @@ public abstract class AbstractClientEndpoint {
             return;
         }
 
-        log.info("Closing websocket for {}, Reason : {}", getExchange(), reason.getReasonPhrase());
+        if (subscribeTrade) {
+            log.info("Closing websocket for {}, Reason : {}", getExchange(), reason.getReasonPhrase());
+        }
+
         try {
             this.userSession = null;
             Thread.sleep(100);
@@ -159,7 +162,9 @@ public abstract class AbstractClientEndpoint {
         if (subscribeTrade && this.userSession != null && this.userSession.isOpen()
                 && (System.currentTimeMillis() - lastTradeTime) > (getTimeout() * 1000)) {
 
-            log.info("No trade received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
+            if (subscribeTrade) {
+                log.info("No trade received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
+            }
             shouldReconnectFlag = true;
 
         }
@@ -307,11 +312,13 @@ public abstract class AbstractClientEndpoint {
         if (exchanges == null || exchanges.contains("all") || exchanges.contains(getExchange())) {
             this.enabled = true;
 
-            timeoutFuture = timeoutExecutor.scheduleAtFixedRate(this::checkMessageReceivedTimeout, getTimeout(),
-                    getTimeout(),
-                    TimeUnit.SECONDS);
+            if (subscribeTrade || (subscribeTicker && !httpTicker())) {
+                timeoutFuture = timeoutExecutor.scheduleAtFixedRate(this::checkMessageReceivedTimeout, getTimeout(),
+                        getTimeout(),
+                        TimeUnit.SECONDS);
 
-            this.connect();
+                this.connect();
+            }
         }
     }
 
