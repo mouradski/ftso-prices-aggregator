@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @ApplicationScoped
 @ClientEndpoint
@@ -87,7 +88,7 @@ public class BtseClientEndpoint extends AbstractClientEndpoint {
 
         if (subscribeTicker && exchanges.contains(getExchange())) {
             var request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.btse.com/spot/v2/market_summary"))
+                    .uri(URI.create("https://api.btse.com/spot/api/v3.2/market_summary"))
                     .header("Content-Type", "application/json")
                     .GET()
                     .build();
@@ -95,13 +96,13 @@ public class BtseClientEndpoint extends AbstractClientEndpoint {
             try {
                 var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-                Map<String, Map> tickerResponse = gson.fromJson(response.body(), Map.class);
+                var tickerResponse = gson.fromJson(response.body(), TickerData[].class);
 
-                tickerResponse.entrySet().forEach(e -> {
-                    var pair = SymbolHelper.getPair(e.getKey());
+                Stream.of(tickerResponse).forEach(e -> {
+                    var pair = SymbolHelper.getPair(e.getSymbol());
 
                     if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
-                        pushTicker(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(Double.valueOf(e.getValue().get("last").toString())).timestamp(currentTimestamp()).build());
+                        pushTicker(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(e.getLast()).timestamp(currentTimestamp()).build());
                     }
                 });
 
