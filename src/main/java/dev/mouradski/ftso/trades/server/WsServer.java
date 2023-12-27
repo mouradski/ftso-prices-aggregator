@@ -12,20 +12,18 @@ import java.util.Set;
 
 @Slf4j
 public abstract class WsServer<T> {
-    private Session session;
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @OnOpen
     public void onOpen(Session session) {
         log.info("Client connected to {} channel", session.getRequestURI());
-        this.session = session;
-        this.getListeners().add(this);
+        this.getSessions().add(session);
     }
 
     @OnClose
     public void onClose(Session session) {
         log.info("Client disconnected from {} channel", session.getRequestURI());
-        getListeners().remove(this);
+        getSessions().remove(this);
     }
 
     @OnError
@@ -36,8 +34,12 @@ public abstract class WsServer<T> {
     public void broadcast(T message) {
         try {
             var messageAsString = objectMapper.writeValueAsString(message);
-            getListeners().forEach(listener -> {
-                listener.sendMessage(messageAsString);
+            getSessions().forEach(listener -> {
+                try {
+                    listener.getAsyncRemote().sendText(messageAsString);
+                } catch (Exception e) {
+                    log.error("Caught exception while sending message to Session " + listener.getId(), e.getMessage(), e);
+                }
             });
         } catch (IOException e) {
             log.error("Caught exception while broadcasting {} : {}", message.getClass().getSimpleName(), message, e);
@@ -46,21 +48,14 @@ public abstract class WsServer<T> {
 
 
     public void disconnect() {
-        getListeners().forEach(listener -> {
+        getSessions().forEach(listener -> {
             try {
-                listener.session.close();
+                listener.close();
             } catch (IOException ignored) {
             }
         });
     }
 
-    void sendMessage(String message) {
-        try {
-            this.session.getAsyncRemote().sendText(message);
-        } catch (Exception e) {
-            log.error("Caught exception while sending message to Session " + this.session.getId(), e.getMessage(), e);
-        }
-    }
 
-    protected abstract Set<WsServer<T>> getListeners();
+    protected abstract Set<Session> getSessions();
 }
