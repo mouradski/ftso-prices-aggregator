@@ -102,7 +102,8 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint implements Htt
                     }
                 });
 
-            } catch (IOException | InterruptedException e) {
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }

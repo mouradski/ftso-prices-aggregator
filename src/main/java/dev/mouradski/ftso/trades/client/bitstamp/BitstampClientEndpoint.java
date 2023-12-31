@@ -92,7 +92,8 @@ public class BitstampClientEndpoint extends AbstractClientEndpoint implements Ht
                 }
 
 
-            } catch (IOException | InterruptedException e) {
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }

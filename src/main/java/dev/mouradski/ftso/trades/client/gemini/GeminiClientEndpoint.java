@@ -121,7 +121,8 @@ public class GeminiClientEndpoint extends AbstractClientEndpoint implements Http
                             }
 
 
-                        } catch (IOException | InterruptedException e) {
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
                     }
                 });

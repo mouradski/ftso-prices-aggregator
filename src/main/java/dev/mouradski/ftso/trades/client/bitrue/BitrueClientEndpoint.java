@@ -105,7 +105,8 @@ public class BitrueClientEndpoint extends AbstractClientEndpoint implements Http
                     }
                 }
 
-            } catch (IOException | InterruptedException e) {
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }

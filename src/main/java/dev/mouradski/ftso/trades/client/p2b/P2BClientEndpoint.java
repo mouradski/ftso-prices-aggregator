@@ -68,7 +68,8 @@ public class P2BClientEndpoint extends AbstractClientEndpoint implements HttpTic
                     }
                 });
 
-            } catch (IOException | InterruptedException e) {
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }

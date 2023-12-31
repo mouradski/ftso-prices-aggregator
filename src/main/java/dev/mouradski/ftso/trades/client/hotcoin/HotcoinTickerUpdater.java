@@ -51,8 +51,8 @@ public class HotcoinTickerUpdater  extends AbstractClientEndpoint implements Htt
                     }
                 });
 
-            } catch (IOException | InterruptedException e) {
-                //TODO
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }

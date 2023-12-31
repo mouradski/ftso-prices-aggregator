@@ -67,8 +67,8 @@ public class BybitClientEndpoint extends AbstractClientEndpoint implements HttpT
                     }
                 });
 
-            } catch (IOException | InterruptedException e) {
-                //TODO
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }

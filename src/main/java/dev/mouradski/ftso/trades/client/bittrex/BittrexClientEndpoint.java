@@ -56,7 +56,8 @@ public class BittrexClientEndpoint extends AbstractClientEndpoint implements Htt
                     }
                 }
 
-            } catch (IOException | InterruptedException e) {
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }

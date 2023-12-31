@@ -52,7 +52,8 @@ public class CexioClientEndpoint extends AbstractClientEndpoint implements HttpT
                     }
                 });
 
-            } catch (IOException | InterruptedException e) {
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }

@@ -108,7 +108,7 @@ public abstract class AbstractClientEndpoint {
             return;
         }
 
-        log.info("Closing websocket for {}, Reason : {}", getExchange(), reason.getReasonPhrase());
+       // log.info("Closing websocket for {}, Reason : {}", getExchange(), reason.getReasonPhrase());
         try {
             this.userSession = null;
             Thread.sleep(100);
@@ -159,14 +159,14 @@ public abstract class AbstractClientEndpoint {
         if (subscribeTrade && this.userSession != null && this.userSession.isOpen()
                 && (System.currentTimeMillis() - lastTradeTime) > (getTimeout() * 1000)) {
 
-            log.info("No trade received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
+           // log.info("No trade received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
             shouldReconnectFlag = true;
 
         }
 
         if (subscribeTicker && !httpTicker() && this.userSession != null && this.userSession.isOpen()
                 && (System.currentTimeMillis() - lastTickerTime) > (getTimeout() * 1000)) {
-            log.info("No ticker received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
+           // log.info("No ticker received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
 
             shouldReconnectFlag = true;
         }
@@ -331,7 +331,7 @@ public abstract class AbstractClientEndpoint {
 
         if (this.userSession == null || !this.userSession.isOpen()) {
 
-            log.info("Connecting to {} ....", getExchange());
+           // log.info("Connecting to {} ....", getExchange());
 
             prepareConnection();
 
@@ -348,8 +348,8 @@ public abstract class AbstractClientEndpoint {
                 return true;
             } catch (Exception e) {
                 var reconnectWaitTimeSeconds = getExponentialBackoffTimeSeconds(++reconnectionAttempts);
-                log.error("Unable to connect to {}, waiting {} seconds to try again", getExchange(),
-                        reconnectWaitTimeSeconds);
+               // log.error("Unable to connect to {}, waiting {} seconds to try again", getExchange(),
+                        //reconnectWaitTimeSeconds);
 
                 var executor = Executors.newSingleThreadScheduledExecutor();
                 executor.schedule(this::connect, reconnectWaitTimeSeconds, TimeUnit.SECONDS);

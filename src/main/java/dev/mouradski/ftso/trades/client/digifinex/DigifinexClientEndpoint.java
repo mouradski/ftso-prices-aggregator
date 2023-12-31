@@ -79,7 +79,8 @@ public class DigifinexClientEndpoint extends AbstractClientEndpoint implements H
                     }
                 });
 
-            } catch (IOException | InterruptedException e) {
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }

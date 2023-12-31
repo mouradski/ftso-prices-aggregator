@@ -67,8 +67,8 @@ public class XtClientEndpoint extends AbstractClientEndpoint implements HttpTick
                     }
                 });
 
-            } catch (IOException | InterruptedException e) {
-                //TODO
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }

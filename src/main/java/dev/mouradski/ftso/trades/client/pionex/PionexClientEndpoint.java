@@ -115,8 +115,8 @@ public class PionexClientEndpoint extends AbstractClientEndpoint implements Http
                     }
                 });
 
-            } catch (IOException | InterruptedException e) {
-                //TODO
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
