@@ -29,7 +29,7 @@ public class PointpayRestEndpointClient extends AbstractClientEndpoint {
 
         if (exchanges.contains(getExchange())) {
             var request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.p2pb2b.com/api/v2/public/tickers"))
+                    .uri(URI.create("https://api.pointpay.io/api/v1/public/tickers"))
                     .header("Content-Type", "application/json")
                     .GET()
                     .build();
