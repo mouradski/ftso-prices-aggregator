@@ -29,10 +29,15 @@ public class OrangexClientEndpoint extends AbstractClientEndpoint  {
 
     @Override
     protected void subscribeTicker() {
-        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> this.sendMessage("{\"jsonrpc\" : \"2.0\",   \"id\" : 1,   \"method\" : \"/public/subscribe\",   \"params\" : {     \"channels\":[       \"ticker.BASE-QUOTE.raw\"]   } }".replace("BASE", base).replace("QUOTE", quote))));
+        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> this.sendMessage("{\"jsonrpc\" : \"2.0\",   \"id\" : ID,   \"method\" : \"/public/subscribe\",   \"params\" : {     \"channels\":[       \"ticker.BASE-QUOTE.raw\"]   } }".replace("BASE", base).replace("QUOTE", quote).replace("ID", incAndGetIdAsString()))));
     }
 
     protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
+
+        if (message.toLowerCase().contains("ping")) {
+            System.out.println(message);
+        }
+
         if (!message.contains("last_price")) {
             return Optional.empty();
         }
@@ -46,8 +51,9 @@ public class OrangexClientEndpoint extends AbstractClientEndpoint  {
         return Optional.of(Arrays.asList(ticker));
     }
 
-    @Scheduled(every = "30s")
+    @Scheduled(every = "15s")
     public void ping() {
-        sendMessage("{ \"jsonrpc\":\"2.0\",\"ID\": 1, \"method\": \"/public/ping\", \"params\":{} }".replace("ID", incAndGetIdAsString()));
+        var pingMsg = "{ \"jsonrpc\":\"2.0\",\"id\": ID, \"method\": \"/public/ping\", \"params\":{} }".replace("ID", incAndGetIdAsString());
+        sendMessage(pingMsg);
     }
 }
