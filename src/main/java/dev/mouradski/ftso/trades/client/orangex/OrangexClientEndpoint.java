@@ -33,11 +33,7 @@ public class OrangexClientEndpoint extends AbstractClientEndpoint  {
     }
 
     protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
-
-        if (message.toLowerCase().contains("ping")) {
-            System.out.println(message);
-        }
-
+        
         if (!message.contains("last_price")) {
             return Optional.empty();
         }
