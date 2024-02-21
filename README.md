@@ -1,4 +1,4 @@
-# FTSO-WS-PRICES
+# FTSO-PRICES-AGGREGATOR
 
 A digital asset price aggregator, the app centralizes real-time prices retrieval from over 39 exchanges using Websocket APIs and distributes them via websocket in a single, simple format.
 
