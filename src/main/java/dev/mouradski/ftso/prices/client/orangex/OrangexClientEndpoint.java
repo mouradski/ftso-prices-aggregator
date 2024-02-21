@@ -29,7 +29,7 @@ public class OrangexClientEndpoint extends AbstractClientEndpoint  {
 
     @Override
     protected void subscribeTicker() {
-        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> this.sendMessage("{\"jsonrpc\" : \"2.0\",   \"id\" : ID,   \"method\" : \"/public/subscribe\",   \"params\" : {     \"channels\":[       \"ticker.BASE-QUOTE.raw\"]   } }".replace("BASE", base).replace("QUOTE", quote).replace("ID", incAndGetIdAsString())));
+        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> this.sendMessage("{\"jsonrpc\" : \"2.0\",   \"id\" : ID,   \"method\" : \"/public/subscribe\",   \"params\" : {     \"channels\":[       \"ticker.BASE-QUOTE.raw\"]   } }".replace("BASE", base).replace("QUOTE", quote).replace("ID", incAndGetIdAsString()))));
     }
 
     protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {

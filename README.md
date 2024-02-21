@@ -1,6 +1,6 @@
 # FTSO-WS-PRICES
 
-A digital asset price aggregator, the app centralizes real-time trade retrieval from over 31 exchanges using Websocket APIs and distributes them via websocket in a single, simple format.
+A digital asset price aggregator, the app centralizes real-time prices retrieval from over 39 exchanges using Websocket APIs and distributes them via websocket in a single, simple format.
 
 Collect the prices of the following assets in real time: "xrp", "btc", "eth", "ltc", "algo", "xlm", "ada", "matic", "
 sol", "fil", "flr", "sgb", "doge", "xdc", "arb", "avax", "bnb", "usdc", "busd", "usdt", "dgb", "bch"
@@ -16,7 +16,7 @@ exchanges)
 
 ```sh
 ASSETS=xrp,btc,eth,algo,xlm,ada,matic,sol,fil,ltc,flr,sgb,doge,xdc,arb,avax,bnb,usdc,busd,usdt,dgb,bch
-EXCHANGES=binance,binanceus,bitfinex,bitrue,bitstamp,bybit,coinbase,crypto,digifinex,fmfw,gateio,hitbtc,huobi,kraken,kucoin,lbank,mexc,okex,upbit,btcex,bitmart,bitget,coinex,xt,whitebit,toobit,pionex,btse,gemini,bitforex,bingx,p2b,digifinex,kucoin,gemini,cexio,bitmake,hotcoin,coinw,deepcoin,pointpay,orangex
+EXCHANGES=binance,binanceus,bitfinex,bitrue,bitstamp,bybit,coinbase,crypto,digifinex,fmfw,gateio,hitbtc,huobi,kraken,kucoin,lbank,mexc,okex,upbit,btcex,bitmart,bitget,coinex,xt,whitebit,toobit,pionex,btse,gemini,bitforex,bingx,p2b,digifinex,kucoin,gemini,cexio,bitmake,hotcoin,coinw,deepcoin,pointpay,orangex,biconomy
 ```
 
 Run container
@@ -27,12 +27,7 @@ docker-compose up
 
 ## Connect to WS
 
-ws://localhost:8985/trade
 ws://localhost:8985/ticker
-## Demo
 
-wscat --connect ws://51.15.221.166:8986/trade
-
-wscat --connect ws://51.15.221.166:8986/ticker
 
 
