@@ -7,6 +7,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class SymbolData {
-    private List<String> symbols;
+class SpotTicker {
+    public List<TickerData> data;
+    public String table;
 }

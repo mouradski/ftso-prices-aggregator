@@ -1,5 +1,6 @@
 package dev.mouradski.ftso.prices.client.bitmart;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
@@ -20,6 +21,10 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.zip.Inflater;
 
 @ApplicationScoped
@@ -30,39 +35,7 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected String getUri() {
-        return null;
-    }
-
-    @Scheduled(every = "2s")
-    public void getTickers() {
-        this.lastTickerTime = System.currentTimeMillis();
-
-        if (exchanges.contains(getExchange())) {
-            var request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api-cloud.bitmart.com/spot/quotation/v3/tickers"))
-                    .header("Content-Type", "application/json")
-                    .GET()
-                    .build();
-
-            try {
-
-                var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-                var tickers = gson.fromJson(response.body(), TickerResponse.class);
-
-                tickers.getData().forEach(ticker -> {
-                    var pair = SymbolHelper.getPair(ticker[0]);
-
-                    if (getAssets(true).contains(pair.getLeft())
-                            && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
-                        pushTicker(Ticker.builder().source(Source.REST).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
-                                .lastPrice(Double.valueOf(ticker[1])).timestamp(currentTimestamp()).build());
-                    }
-                });
-
-            } catch (IOException | InterruptedException ignored) {
-            }
-        }
+        return "wss://ws-manager-compress.bitmart.com/api?protocol=1.1";
     }
 
     @Override
@@ -94,6 +67,34 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
         } catch (Exception e) {
             log.error("Caught exception receiving msg from {}, msg : {}", getExchange(), message, e);
         }
+    }
+
+    @Override
+    protected void subscribeTicker() {
+        getAssets(true).forEach(base -> {
+            getAllQuotesExceptBusd(true).forEach(quote -> {
+
+                sendMessage("{\"op\": \"subscribe\", \"args\": [\"spot/ticker:BASE_QUOTE\"]}".replace("BASE", base).replace("QUOTE", quote));
+            });
+        });
+    }
+
+    @Override
+    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
+        if (!message.contains("spot/ticker")) {
+            return Optional.empty();
+        }
+
+        var spotTicker = objectMapper.readValue(message, SpotTicker.class);
+
+        var tickers = new ArrayList<Ticker>();
+
+        spotTicker.getData().forEach(tickerData -> {
+            var pair = SymbolHelper.getPair(tickerData.getSymbol());
+            tickers.add(Ticker.builder().source(Source.WS).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(Double.parseDouble(tickerData.getLastPrice())).timestamp(currentTimestamp()).build());
+        });
+
+        return Optional.of(tickers);
     }
 
     @Scheduled(every = "15s")
