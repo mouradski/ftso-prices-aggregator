@@ -42,7 +42,17 @@ public class UpbitClientEndpoint extends AbstractClientEndpoint {
 
         var pair = SymbolHelper.getPair(tickerData.getCode());
 
-        return Optional.of(Collections.singletonList(Ticker.builder().source(Source.WS).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(tickerData.getLastPrice()).timestamp(currentTimestamp()).build()));
+        var ticker = Ticker.builder().source(Source.WS).exchange(getExchange()).lastPrice(tickerData.getLastPrice()).timestamp(currentTimestamp()).build();
+
+        if (pair.getLeft().startsWith("USD") && !pair.getRight().startsWith("USD")) {
+            ticker.setBase(pair.getRight());
+            ticker.setQuote(pair.getLeft());
+        } else {
+            ticker.setBase(pair.getLeft());
+            ticker.setQuote(pair.getRight());
+        }
+
+        return Optional.of(Collections.singletonList(ticker));
     }
 
     @Override
