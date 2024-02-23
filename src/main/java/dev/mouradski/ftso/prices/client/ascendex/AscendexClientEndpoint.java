@@ -51,4 +51,14 @@ public class AscendexClientEndpoint extends AbstractClientEndpoint {
 
         return Optional.of(Collections.singletonList(ticker));
     }
+
+    @Override
+    protected boolean pong(String message) {
+        if (message.contains("\"ping\"")) {
+            sendMessage("{ \"op\": \"pong\" }");
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
