@@ -37,7 +37,7 @@ public class BitrueClientEndpoint extends AbstractClientEndpoint {
         var tickerResponse = objectMapper.readValue(message, TickerResponse.class);
 
         var pair = SymbolHelper
-                .getPair(tickerResponse.getChannel().replace("market_", "").replace("_trade_ticker", ""));
+                .getPair(tickerResponse.getChannel().replace("market_", "").replace("_ticker", ""));
 
         return Optional.of(Collections
                 .singletonList(Ticker.builder().source(Source.WS).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
