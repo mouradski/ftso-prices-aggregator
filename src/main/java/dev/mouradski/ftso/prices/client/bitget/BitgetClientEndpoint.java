@@ -2,6 +2,7 @@ package dev.mouradski.ftso.prices.client.bitget;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
@@ -62,7 +63,7 @@ public class BitgetClientEndpoint extends AbstractClientEndpoint {
         var pair = SymbolHelper.getPair(tickerResponse.getArg().getInstId());
 
         for (var ticker : tickerResponse.getData()) {
-            tickers.add(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(ticker.getLast()).timestamp(currentTimestamp()).build());
+            tickers.add(Ticker.builder().source(Source.WS).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(ticker.getLast()).timestamp(currentTimestamp()).build());
         }
 
         return Optional.of(tickers);

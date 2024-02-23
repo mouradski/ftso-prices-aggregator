@@ -2,6 +2,7 @@ package dev.mouradski.ftso.prices.client.tapbit;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
@@ -59,7 +60,7 @@ public class TapbitClientEndpoint extends AbstractClientEndpoint {
 
         tickerDataWrapper.getData().forEach(data -> {
             var pair = SymbolHelper.getPair(data.getSymbol());
-            tickers.add(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(Double.parseDouble(data.getLastPrice())).timestamp(currentTimestamp()).build());
+            tickers.add(Ticker.builder().source(Source.WS).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(Double.parseDouble(data.getLastPrice())).timestamp(currentTimestamp()).build());
         });
 
         return Optional.of(tickers);

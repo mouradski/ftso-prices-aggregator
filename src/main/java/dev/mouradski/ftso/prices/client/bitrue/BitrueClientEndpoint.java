@@ -2,6 +2,7 @@ package dev.mouradski.ftso.prices.client.bitrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
@@ -39,7 +40,7 @@ public class BitrueClientEndpoint extends AbstractClientEndpoint {
                 .getPair(tickerResponse.getChannel().replace("market_", "").replace("_trade_ticker", ""));
 
         return Optional.of(Collections
-                .singletonList(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
+                .singletonList(Ticker.builder().source(Source.WS).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
                         .lastPrice(tickerResponse.getTick().getClose()).timestamp(currentTimestamp()).build()));
     }
 

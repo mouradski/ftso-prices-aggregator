@@ -2,6 +2,7 @@ package dev.mouradski.ftso.prices.client.mexc;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
@@ -14,9 +15,6 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
 
 @ApplicationScoped
 @ClientEndpoint
@@ -31,11 +29,6 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
     @Override
     protected void subscribeTicker() {
         getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> this.sendMessage("{\"op\":\"sub.ticker\", \"symbol\":\"SYMBOL_QUOTE\"}".replace("SYMBOL", base).replace("QUOTE", quote))));
-    }
-
-    @Override
-    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
-        return super.mapTicker(message);
     }
 
     @Override
@@ -67,7 +60,7 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
                     var pair = SymbolHelper.getPair(ticker.getSymbol());
 
                     if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
-                        pushTicker(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(ticker.getPrice()).timestamp(currentTimestamp()).build());
+                        pushTicker(Ticker.builder().source(Source.REST).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(ticker.getPrice()).timestamp(currentTimestamp()).build());
                     }
                 });
 

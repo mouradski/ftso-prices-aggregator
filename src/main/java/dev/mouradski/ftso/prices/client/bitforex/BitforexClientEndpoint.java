@@ -2,6 +2,7 @@ package dev.mouradski.ftso.prices.client.bitforex;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
@@ -43,7 +44,7 @@ public class BitforexClientEndpoint extends AbstractClientEndpoint {
 
         var pair = SymbolHelper.getPair(tickerEvent.getParam().getBusinessType().replace("coin-", ""));
 
-        return Optional.of(Collections.singletonList(Ticker.builder().exchange(getExchange()).base(pair.getRight()).quote(pair.getLeft()).lastPrice(tickerEvent.getData().getLast()).timestamp(currentTimestamp()).build()));
+        return Optional.of(Collections.singletonList(Ticker.builder().source(Source.WS).exchange(getExchange()).base(pair.getRight()).quote(pair.getLeft()).lastPrice(tickerEvent.getData().getLast()).timestamp(currentTimestamp()).build()));
     }
 
     @Override

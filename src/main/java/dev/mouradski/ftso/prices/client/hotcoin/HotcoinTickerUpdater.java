@@ -1,6 +1,7 @@
 package dev.mouradski.ftso.prices.client.hotcoin;
 
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
@@ -47,7 +48,7 @@ public class HotcoinTickerUpdater extends AbstractClientEndpoint {
                     var pair = SymbolHelper.getPair(data.getSymbol());
 
                     if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
-                        var ticker = Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(data.getLast()).timestamp(currentTimestamp()).build();
+                        var ticker = Ticker.builder().source(Source.REST).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(data.getLast()).timestamp(currentTimestamp()).build();
                         pushTicker(ticker);
                     }
                 });

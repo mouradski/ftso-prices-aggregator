@@ -2,6 +2,7 @@ package dev.mouradski.ftso.prices.client.binance;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
@@ -30,7 +31,7 @@ public class BinanceClientEndpoint extends AbstractClientEndpoint {
 
         Pair<String, String> pair = SymbolHelper.getPair(binanceTicker.getData().getS());
 
-        return Optional.of(Collections.singletonList(Ticker.builder().timestamp(currentTimestamp()).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
+        return Optional.of(Collections.singletonList(Ticker.builder().source(Source.WS).timestamp(currentTimestamp()).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
                 .lastPrice(binanceTicker.getData().getC()).build()));
     }
 

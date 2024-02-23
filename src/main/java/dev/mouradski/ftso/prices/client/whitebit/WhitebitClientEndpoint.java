@@ -2,6 +2,7 @@ package dev.mouradski.ftso.prices.client.whitebit;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
@@ -60,7 +61,7 @@ public class WhitebitClientEndpoint extends AbstractClientEndpoint {
 
         var pair = SymbolHelper.getPair(priceUpdate.getSymbol());
 
-        return Optional.of(Collections.singletonList(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(priceUpdate.getLastPrice()).timestamp(currentTimestamp()).build()));
+        return Optional.of(Collections.singletonList(Ticker.builder().source(Source.WS).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(priceUpdate.getLastPrice()).timestamp(currentTimestamp()).build()));
     }
 
     @Override

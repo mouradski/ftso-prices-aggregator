@@ -1,6 +1,7 @@
 package dev.mouradski.ftso.prices.client.digifinex;
 
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
@@ -10,11 +11,8 @@ import jakarta.websocket.ClientEndpoint;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 @ClientEndpoint
@@ -47,7 +45,7 @@ public class DigifinexClientEndpoint extends AbstractClientEndpoint {
                     var pair = SymbolHelper.getPair(ticker.getSymbol());
 
                     if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
-                        pushTicker(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(ticker.getLast()).timestamp(currentTimestamp()).build());
+                        pushTicker(Ticker.builder().source(Source.REST).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(ticker.getLast()).timestamp(currentTimestamp()).build());
                     }
                 });
 
@@ -65,28 +63,4 @@ public class DigifinexClientEndpoint extends AbstractClientEndpoint {
     public void ping() {
         this.sendMessage("{\"method\":\"server.ping\", \"param\":[], \"id\":" + incAndGetIdAsString() + "}");
     }
-
-    private Set<String> getAvailableMarkets() {
-        var client = HttpClient.newHttpClient();
-
-        var request = HttpRequest.newBuilder()
-                .uri(URI.create("https://openapi.digifinex.com/v3/markets"))
-                .header("Content-Type", "application/json")
-                .GET()
-                .build();
-
-        try {
-            var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-            var marketData = gson.fromJson(response.body(), MarketData.class);
-
-            return marketData.getData().stream().map(MarketInfo::getMarket).map(String::toUpperCase)
-                    .collect(Collectors.toSet());
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        return new HashSet<>();
-    }
-
 }

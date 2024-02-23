@@ -1,6 +1,7 @@
 package dev.mouradski.ftso.prices.client.bitmart;
 
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.netty.buffer.ByteBuf;
@@ -55,7 +56,7 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
 
                     if (getAssets(true).contains(pair.getLeft())
                             && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
-                        pushTicker(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
+                        pushTicker(Ticker.builder().source(Source.REST).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
                                 .lastPrice(Double.valueOf(ticker[1])).timestamp(currentTimestamp()).build());
                     }
                 });

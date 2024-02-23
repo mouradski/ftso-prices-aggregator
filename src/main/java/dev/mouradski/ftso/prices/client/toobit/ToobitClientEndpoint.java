@@ -2,6 +2,7 @@ package dev.mouradski.ftso.prices.client.toobit;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
@@ -42,7 +43,7 @@ public class ToobitClientEndpoint extends AbstractClientEndpoint {
         var pair = SymbolHelper.getPair(tickerData.getSymbol());
 
 
-        return Optional.of(Collections.singletonList(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(tickerData.getData().get(0).getC()).timestamp(currentTimestamp()).build()));
+        return Optional.of(Collections.singletonList(Ticker.builder().source(Source.WS).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(tickerData.getData().get(0).getC()).timestamp(currentTimestamp()).build()));
     }
 
     @Override

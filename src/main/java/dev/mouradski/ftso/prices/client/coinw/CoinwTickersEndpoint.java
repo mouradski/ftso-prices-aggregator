@@ -1,6 +1,7 @@
 package dev.mouradski.ftso.prices.client.coinw;
 
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.scheduler.Scheduled;
@@ -33,7 +34,7 @@ public class CoinwTickersEndpoint extends AbstractClientEndpoint {
                     var pair = SymbolHelper.getPair(e.getKey());
 
                     if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
-                        pushTicker(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(Double.valueOf(e.getValue().getLast())).timestamp(currentTimestamp()).build());
+                        pushTicker(Ticker.builder().source(Source.REST).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(Double.valueOf(e.getValue().getLast())).timestamp(currentTimestamp()).build());
                     }
                 });
 

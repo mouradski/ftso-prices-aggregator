@@ -2,6 +2,7 @@ package dev.mouradski.ftso.prices.client.bequant;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import io.quarkus.runtime.Startup;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -47,7 +48,7 @@ public class BequantClientEndpoint extends AbstractClientEndpoint {
         var tickers = new ArrayList<Ticker>();
 
         cryptoRate.getData().entrySet().forEach(e -> {
-            tickers.add(Ticker.builder().exchange(getExchange()).base(e.getKey()).quote(quote).lastPrice(Double.parseDouble(e.getValue().getR())).timestamp(currentTimestamp()).build());
+            tickers.add(Ticker.builder().source(Source.WS).exchange(getExchange()).base(e.getKey()).quote(quote).lastPrice(Double.parseDouble(e.getValue().getR())).timestamp(currentTimestamp()).build());
         });
 
         return Optional.of(tickers);

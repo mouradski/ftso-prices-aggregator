@@ -2,6 +2,7 @@ package dev.mouradski.ftso.prices.client.bingx;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
@@ -46,7 +47,7 @@ public class BingxClientEndpoint extends AbstractClientEndpoint {
 
         var pair = SymbolHelper.getPair(lastPriceResponse.getData().getSymbol());
 
-        return Optional.of(Collections.singletonList(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
+        return Optional.of(Collections.singletonList(Ticker.builder().source(Source.WS).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
                 .lastPrice(Double.valueOf(lastPriceResponse.getData().getLastPrice())).timestamp(currentTimestamp()).build()));
     }
 

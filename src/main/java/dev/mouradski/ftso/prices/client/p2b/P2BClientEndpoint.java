@@ -2,6 +2,7 @@ package dev.mouradski.ftso.prices.client.p2b;
 
 
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
@@ -44,7 +45,7 @@ public class P2BClientEndpoint extends AbstractClientEndpoint {
                     var pair = SymbolHelper.getPair(key);
 
                     if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
-                        pushTicker(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(value.getTicker().getLast()).timestamp(currentTimestamp()).build());
+                        pushTicker(Ticker.builder().source(Source.REST).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(value.getTicker().getLast()).timestamp(currentTimestamp()).build());
                     }
                 });
 

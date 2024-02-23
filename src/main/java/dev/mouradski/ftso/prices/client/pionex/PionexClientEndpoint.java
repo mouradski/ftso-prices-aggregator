@@ -1,6 +1,7 @@
 package dev.mouradski.ftso.prices.client.pionex;
 
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
@@ -70,7 +71,7 @@ public class PionexClientEndpoint extends AbstractClientEndpoint {
                     var pair = SymbolHelper.getPair(ticker.getSymbol());
 
                     if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
-                        pushTicker(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(ticker.getClose()).timestamp(currentTimestamp()).build());
+                        pushTicker(Ticker.builder().source(Source.REST).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(ticker.getClose()).timestamp(currentTimestamp()).build());
                     }
                 });
 

@@ -2,6 +2,7 @@ package dev.mouradski.ftso.prices.client.bitvenus;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
@@ -48,7 +49,7 @@ public class BitvenusClientEndpoint extends AbstractClientEndpoint {
         var tickers = new ArrayList<Ticker>();
 
         for (var data : tickerResponse.getData()) {
-            tickers.add(Ticker.builder().base(pair.getLeft()).quote(pair.getRight()).exchange(getExchange()).lastPrice(Double.parseDouble(data.getC())).timestamp(currentTimestamp()).build());
+            tickers.add(Ticker.builder().source(Source.WS).base(pair.getLeft()).quote(pair.getRight()).exchange(getExchange()).lastPrice(Double.parseDouble(data.getC())).timestamp(currentTimestamp()).build());
         }
 
         return Optional.of(tickers);

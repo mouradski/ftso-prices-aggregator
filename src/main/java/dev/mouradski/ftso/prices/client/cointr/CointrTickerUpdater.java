@@ -1,6 +1,7 @@
 package dev.mouradski.ftso.prices.client.cointr;
 
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
@@ -47,7 +48,7 @@ public class CointrTickerUpdater extends AbstractClientEndpoint {
                     var pair = SymbolHelper.getPair(data.getInstId());
 
                     if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
-                        var ticker = Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(Double.parseDouble(data.getLastPx())).timestamp(currentTimestamp()).build();
+                        var ticker = Ticker.builder().source(Source.REST).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(Double.parseDouble(data.getLastPx())).timestamp(currentTimestamp()).build();
                         pushTicker(ticker);
                     }
                 });

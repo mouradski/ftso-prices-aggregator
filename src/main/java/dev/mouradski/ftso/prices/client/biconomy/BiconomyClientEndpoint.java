@@ -2,6 +2,7 @@ package dev.mouradski.ftso.prices.client.biconomy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
@@ -55,7 +56,7 @@ public class BiconomyClientEndpoint extends AbstractClientEndpoint {
 
         var pair = SymbolHelper.getPair(priceUpdate.getParams()[0]);
         var price = Double.parseDouble(priceUpdate.getParams()[1]);
-        var ticker = Ticker.builder().base(pair.getLeft()).quote(pair.getRight()).exchange(getExchange()).lastPrice(price).timestamp(currentTimestamp()).build();
+        var ticker = Ticker.builder().source(Source.WS).base(pair.getLeft()).quote(pair.getRight()).exchange(getExchange()).lastPrice(price).timestamp(currentTimestamp()).build();
 
         return Optional.of(Collections.singletonList(ticker));
     }

@@ -14,4 +14,5 @@ public class Ticker {
     private String base;
     private String quote;
     private Long timestamp;
+    private Source source;
 }

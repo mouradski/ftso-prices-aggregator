@@ -2,6 +2,7 @@ package dev.mouradski.ftso.prices.client.orangex;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
@@ -10,6 +11,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,9 +43,9 @@ public class OrangexClientEndpoint extends AbstractClientEndpoint  {
 
         var pair = SymbolHelper.getPair(tickerData.getParams().getData().getInstrumentName());
 
-        var ticker = Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(Double.parseDouble(tickerData.getParams().getData().getLastPrice())).timestamp(currentTimestamp()).build();
+        var ticker = Ticker.builder().source(Source.WS).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(Double.parseDouble(tickerData.getParams().getData().getLastPrice())).timestamp(currentTimestamp()).build();
 
-        return Optional.of(Arrays.asList(ticker));
+        return Optional.of(Collections.singletonList(ticker));
     }
 
     @Scheduled(every = "30s")

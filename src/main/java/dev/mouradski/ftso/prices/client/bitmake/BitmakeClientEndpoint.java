@@ -2,6 +2,7 @@ package dev.mouradski.ftso.prices.client.bitmake;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
@@ -50,7 +51,7 @@ public class BitmakeClientEndpoint extends AbstractClientEndpoint {
         var tickers = new ArrayList<Ticker>();
 
         tickerPayload.getD().forEach(ticker -> {
-            tickers.add(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).timestamp(currentTimestamp()).lastPrice(ticker.getL()).build());
+            tickers.add(Ticker.builder().source(Source.WS).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).timestamp(currentTimestamp()).lastPrice(ticker.getL()).build());
         });
 
         return Optional.of(tickers);

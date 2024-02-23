@@ -2,6 +2,7 @@ package dev.mouradski.ftso.prices.client.huobi;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
@@ -46,7 +47,7 @@ public class HuobiClientEndpoint extends AbstractClientEndpoint {
 
         var par = SymbolHelper.getPair(symbolId);
 
-        return Optional.of(Collections.singletonList(Ticker.builder().exchange(getExchange()).base(par.getLeft()).quote(par.getRight()).lastPrice(tickerMessage.getTick().getLastPrice()).timestamp(currentTimestamp()).build()));
+        return Optional.of(Collections.singletonList(Ticker.builder().source(Source.WS).exchange(getExchange()).base(par.getLeft()).quote(par.getRight()).lastPrice(tickerMessage.getTick().getLastPrice()).timestamp(currentTimestamp()).build()));
     }
 
     @Override

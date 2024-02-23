@@ -2,6 +2,7 @@ package dev.mouradski.ftso.prices.client.fmfw;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
@@ -44,7 +45,7 @@ public class FmfwClientEndpoint extends AbstractClientEndpoint {
 
         tickerResponse.getData().entrySet().forEach(data -> {
             var pair = SymbolHelper.getPair(data.getKey());
-            tickers.add(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(data.getValue().getClosePrice()).timestamp(currentTimestamp()).build());
+            tickers.add(Ticker.builder().source(Source.WS).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(data.getValue().getClosePrice()).timestamp(currentTimestamp()).build());
         });
 
         return Optional.of(tickers);

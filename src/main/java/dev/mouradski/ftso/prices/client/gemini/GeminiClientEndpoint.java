@@ -1,6 +1,7 @@
 package dev.mouradski.ftso.prices.client.gemini;
 
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
@@ -91,7 +92,7 @@ public class GeminiClientEndpoint extends AbstractClientEndpoint {
                             if (tickerResponse.getSymbol() != null) {
                                 var pair = SymbolHelper.getPair(tickerResponse.getSymbol());
 
-                                pushTicker(Ticker.builder().exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(tickerResponse.getClose()).timestamp(currentTimestamp()).build());
+                                pushTicker(Ticker.builder().source(Source.REST).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(tickerResponse.getClose()).timestamp(currentTimestamp()).build());
                             }
 
 
