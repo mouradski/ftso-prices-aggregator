@@ -47,11 +47,6 @@ public class PionexClientEndpoint extends AbstractClientEndpoint {
         return false;
     }
 
-    @Override
-    protected boolean httpTicker() {
-        return true;
-    }
-
     @Scheduled(every = "2s")
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();

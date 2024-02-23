@@ -36,11 +36,6 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
         return "mexc";
     }
 
-    @Override
-    protected boolean httpTicker() {
-        return true;
-    }
-
     @Scheduled(every = "2s")
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();

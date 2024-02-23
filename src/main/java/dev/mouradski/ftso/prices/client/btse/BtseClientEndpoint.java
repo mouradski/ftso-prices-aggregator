@@ -22,7 +22,7 @@ public class BtseClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected String getUri() {
-        return "wss://ws.btse.com/ws/spot";
+        return null;
     }
 
     @Override
@@ -42,7 +42,6 @@ public class BtseClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(every = "2s")
     public void getTickers() {
-        this.lastTickerTime = System.currentTimeMillis();
         this.lastTickerTime = System.currentTimeMillis();
 
         if (exchanges.contains(getExchange())) {

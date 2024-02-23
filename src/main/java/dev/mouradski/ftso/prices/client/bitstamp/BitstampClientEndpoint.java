@@ -21,7 +21,7 @@ public class BitstampClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected String getUri() {
-        return "wss://ws.bitstamp.net";
+        return null;
     }
 
     @Override
@@ -31,7 +31,6 @@ public class BitstampClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(every = "2s")
     public void getTickers() {
-        this.lastTickerTime = System.currentTimeMillis();
         this.lastTickerTime = System.currentTimeMillis();
 
         if (exchanges.contains(getExchange())) {

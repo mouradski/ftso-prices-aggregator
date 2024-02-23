@@ -74,10 +74,4 @@ public class XtClientEndpoint extends AbstractClientEndpoint {
     public void ping() {
         this.sendMessage("ping");
     }
-
-
-    @Override
-    protected boolean httpTicker() {
-        return true;
-    }
 }

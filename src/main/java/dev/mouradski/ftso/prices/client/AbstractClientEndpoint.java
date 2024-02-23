@@ -61,7 +61,7 @@ public abstract class AbstractClientEndpoint {
 
     protected Session userSession = null;
     protected AtomicInteger counter = new AtomicInteger();
-    protected long lastTradeTime = System.currentTimeMillis();
+
     protected long lastTickerTime = System.currentTimeMillis();
 
     private ScheduledExecutorService timeoutExecutor = Executors.newSingleThreadScheduledExecutor();
@@ -139,7 +139,7 @@ public abstract class AbstractClientEndpoint {
     private void checkMessageReceivedTimeout() {
         var shouldReconnectFlag = false;
 
-        if (!httpTicker() && this.userSession != null && this.userSession.isOpen()
+        if (this.getUri() != null && this.userSession != null && this.userSession.isOpen()
                 && (System.currentTimeMillis() - lastTickerTime) > (getTimeout() * 1000)) {
             log.info("No ticker received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
 
@@ -220,10 +220,6 @@ public abstract class AbstractClientEndpoint {
     protected void prepareConnection() {
     }
 
-    protected boolean httpTicker() {
-        return false;
-    }
-
     protected void sendMessage(String message) {
         if (userSession != null && this.userSession.isOpen()) {
             try {
@@ -258,7 +254,7 @@ public abstract class AbstractClientEndpoint {
         if (exchanges == null || exchanges.contains("all") || exchanges.contains(getExchange())) {
             this.enabled = true;
 
-            if (!httpTicker()) {
+            if (this.getUri() != null) {
                 timeoutFuture = timeoutExecutor.scheduleAtFixedRate(this::checkMessageReceivedTimeout, getTimeout(),
                         getTimeout(),
                         TimeUnit.SECONDS);

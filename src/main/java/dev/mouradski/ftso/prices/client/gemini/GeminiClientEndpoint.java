@@ -15,7 +15,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 @ClientEndpoint
@@ -26,11 +25,7 @@ public class GeminiClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected String getUri() {
-        return "wss://api.gemini.com/v1/multimarketdata?symbols=" + getMarkets() + "&trades=true&top_of_book=true";
-    }
-
-    private String getMarkets() {
-        return getAssets(true).stream().map(v -> v + "USDT").collect(Collectors.joining(","));
+        return null;
     }
 
     @Override
@@ -66,7 +61,6 @@ public class GeminiClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(every = "2s")
     public void getTickers() {
-        this.lastTickerTime = System.currentTimeMillis();
         this.lastTickerTime = System.currentTimeMillis();
 
         if (exchanges.contains(getExchange())) {

@@ -24,11 +24,6 @@ public class CoinexClientEndpoint extends AbstractClientEndpoint {
         return "wss://socket.coinex.com";
     }
 
-    @Override
-    protected boolean httpTicker() {
-        return true;
-    }
-
     @Scheduled(every = "2s")
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();

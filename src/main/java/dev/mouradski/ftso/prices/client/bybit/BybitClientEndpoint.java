@@ -25,12 +25,7 @@ public class BybitClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected String getUri() {
-        return "wss://stream.bybit.com/spot/quote/ws/v2";
-    }
-
-    @Override
-    protected boolean httpTicker() {
-        return true;
+        return null;
     }
 
     @Scheduled(every = "2s")

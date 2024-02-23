@@ -30,12 +30,11 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected String getUri() {
-        return "wss://ws-manager-compress.bitmart.com/api?protocol=1.1";
+        return null;
     }
 
     @Scheduled(every = "2s")
     public void getTickers() {
-        this.lastTickerTime = System.currentTimeMillis();
         this.lastTickerTime = System.currentTimeMillis();
 
         if (exchanges.contains(getExchange())) {
