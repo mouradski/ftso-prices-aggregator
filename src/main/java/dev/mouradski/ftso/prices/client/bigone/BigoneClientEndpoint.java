@@ -6,6 +6,8 @@ import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
 import io.quarkus.scheduler.Scheduled;
+import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 
@@ -42,11 +44,11 @@ public class BigoneClientEndpoint extends AbstractClientEndpoint {
             try {
                 var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-                var marketsData = objectMapper.readValue(response.body(), MarketDataResponse.class).getData();
+                var marketsData = gson.fromJson(response.body(), MarketDataResponse.class).getData();
 
 
                 for (var ticker : marketsData) {
-                    var pair = SymbolHelper.getPair(ticker.getAssetPairName());
+                    var pair = SymbolHelper.getPair(ticker.getAsset_pair_name());
                     if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
                         pushTicker(Ticker.builder().source(Source.REST).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(Double.parseDouble(ticker.getClose())).timestamp(currentTimestamp()).build());
                     }
@@ -54,6 +56,26 @@ public class BigoneClientEndpoint extends AbstractClientEndpoint {
 
             } catch (IOException | InterruptedException ignored) {
             }
+
+            Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
+                    .onItem().transform(response -> gson.fromJson(response.body(), MarketDataResponse.class))
+                    .onItem().transformToMulti(marketDataResponse -> Multi.createFrom().item(marketDataResponse))
+                    .subscribe().with(tickerData -> {
+                        tickerData.getData().forEach(tickerDetail -> {
+                            var pair = SymbolHelper.getPair(tickerDetail.getAsset_pair_name());
+                            if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                                pushTicker(Ticker.builder()
+                                        .source(Source.REST)
+                                        .exchange(getExchange())
+                                        .base(pair.getLeft())
+                                        .quote(pair.getRight())
+                                        .lastPrice(Double.parseDouble(tickerDetail.getClose()))
+                                        .timestamp(currentTimestamp())
+                                        .build());
+                            }
+                        });
+
+                    }, failure -> {});
         }
     }
 }

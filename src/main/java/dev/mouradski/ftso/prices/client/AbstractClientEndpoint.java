@@ -48,7 +48,7 @@ public abstract class AbstractClientEndpoint {
     public static final Gson gson = new Gson();
 
     @Inject
-    @ConfigProperty(name = "default_message_timeout", defaultValue = "30")
+    @ConfigProperty(name = "default_message_timeout", defaultValue = "120")
     Long defaultTimeoutInSeconds;
 
     protected HttpClient client = HttpClient.newHttpClient();
@@ -69,6 +69,9 @@ public abstract class AbstractClientEndpoint {
     private volatile int reconnectionAttempts = 0;
 
     protected AbstractClientEndpoint() {
+        if (getUri() == null) {
+            prepareConnection();
+        }
         Thread shutdownHook = new Thread(() -> {
             if (this.enabled) {
                 log.info("Shutting down {}", getExchange());
@@ -95,6 +98,8 @@ public abstract class AbstractClientEndpoint {
         if (shutdown) {
             return;
         }
+
+        log.info("Closing websocket for {}, Reason : {}", getExchange(), reason.getReasonPhrase());
 
         try {
             this.userSession = null;
@@ -250,7 +255,7 @@ public abstract class AbstractClientEndpoint {
     protected abstract String getExchange();
 
     @PostConstruct
-    protected void start() {
+    public void start() {
         if (exchanges == null || exchanges.contains("all") || exchanges.contains(getExchange())) {
             this.enabled = true;
 
@@ -273,6 +278,7 @@ public abstract class AbstractClientEndpoint {
         if (shutdown) {
             return false;
         }
+
 
         if (getUri() == null) {
             return true;
@@ -352,10 +358,6 @@ public abstract class AbstractClientEndpoint {
 
     protected Long currentTimestamp() {
         return Instant.now().toEpochMilli();
-    }
-
-    public void setAssets(List<String> assets) {
-        this.assets = assets;
     }
 
     public void setExchanges(List<String> exchanges) {

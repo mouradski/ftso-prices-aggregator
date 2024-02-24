@@ -6,10 +6,11 @@ import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
 import io.quarkus.scheduler.Scheduled;
+import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -21,10 +22,10 @@ public class DigifinexClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected String getUri() {
-        return "wss://openapi.digifinex.com/ws/v1/";
+        return null;
     }
 
-    @Scheduled(every = "2s")
+    @Scheduled(every = "1s")
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();
         this.lastTickerTime = System.currentTimeMillis();
@@ -36,21 +37,22 @@ public class DigifinexClientEndpoint extends AbstractClientEndpoint {
                     .GET()
                     .build();
 
-            try {
-                var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-                var tickerResponse = gson.fromJson(response.body(), TickerApiResponse.class);
-
-                tickerResponse.getTicker().forEach(ticker -> {
-                    var pair = SymbolHelper.getPair(ticker.getSymbol());
-
-                    if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
-                        pushTicker(Ticker.builder().source(Source.REST).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(ticker.getLast()).timestamp(currentTimestamp()).build());
-                    }
-                });
-
-            } catch (IOException | InterruptedException e) {
-            }
+            Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
+                    .onItem().transform(response -> gson.fromJson(response.body(), TickerApiResponse.class))
+                    .onItem().transformToMulti(tickerApiResponse -> Multi.createFrom().iterable(tickerApiResponse.getTicker()))
+                    .subscribe().with(ticker -> {
+                        var pair = SymbolHelper.getPair(ticker.getSymbol());
+                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                            pushTicker(Ticker.builder()
+                                    .source(Source.REST)
+                                    .exchange(getExchange())
+                                    .base(pair.getLeft())
+                                    .quote(pair.getRight())
+                                    .lastPrice(ticker.getLast())
+                                    .timestamp(currentTimestamp())
+                                    .build());
+                        }
+                    }, failure -> {});
         }
     }
 

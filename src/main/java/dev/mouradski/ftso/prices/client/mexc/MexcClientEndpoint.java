@@ -1,20 +1,19 @@
 package dev.mouradski.ftso.prices.client.mexc;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
 import io.quarkus.scheduler.Scheduled;
+import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Arrays;
 
 @ApplicationScoped
 @ClientEndpoint
@@ -23,7 +22,7 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected String getUri() {
-        return "wss://wbs.mexc.com/raw/ws";
+        return null;
     }
 
     @Override
@@ -36,7 +35,7 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
         return "mexc";
     }
 
-    @Scheduled(every = "2s")
+    @Scheduled(every = "1s")
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();
         if (exchanges.contains(getExchange())) {
@@ -46,27 +45,22 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
                     .GET()
                     .build();
 
-            try {
-                var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-                var tickerResponse = gson.fromJson(response.body(), PriceTicker[].class);
-
-                Arrays.asList(tickerResponse).forEach(ticker -> {
-                    var pair = SymbolHelper.getPair(ticker.getSymbol());
-
-                    if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
-                        pushTicker(Ticker.builder().source(Source.REST).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(ticker.getPrice()).timestamp(currentTimestamp()).build());
-                    }
-                });
-
-            } catch (IOException | InterruptedException e) {
-                //TODO
-            }
+            Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
+                    .onItem().transform(response -> gson.fromJson(response.body(), PriceTicker[].class))
+                    .onItem().transformToMulti(tickers -> Multi.createFrom().items(tickers))
+                    .subscribe().with(ticker -> {
+                        var pair = SymbolHelper.getPair(ticker.getSymbol());
+                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                            pushTicker(Ticker.builder()
+                                    .source(Source.REST)
+                                    .exchange(getExchange())
+                                    .base(pair.getLeft())
+                                    .quote(pair.getRight())
+                                    .lastPrice(ticker.getPrice())
+                                    .timestamp(currentTimestamp())
+                                    .build());
+                        }
+                    }, failure -> {});
         }
-    }
-
-    @Scheduled(every = "5s")
-    public void ping() {
-        this.sendMessage("ping");
     }
 }

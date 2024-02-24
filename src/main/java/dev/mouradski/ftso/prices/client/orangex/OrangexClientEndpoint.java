@@ -10,7 +10,6 @@ import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -48,7 +47,7 @@ public class OrangexClientEndpoint extends AbstractClientEndpoint  {
         return Optional.of(Collections.singletonList(ticker));
     }
 
-    @Scheduled(every = "30s")
+    @Scheduled(every = "10s")
     public void ping() {
         sendMessage("{ \"jsonrpc\":\"2.0\",\"id\": ID, \"method\": \"/public/ping\", \"params\":{} }".replace("ID", incAndGetIdAsString()));
     }

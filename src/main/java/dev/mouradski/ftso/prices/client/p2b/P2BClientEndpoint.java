@@ -7,10 +7,11 @@ import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
 import io.quarkus.scheduler.Scheduled;
+import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -22,10 +23,10 @@ public class P2BClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected String getUri() {
-        return "wss://apiws.p2pb2b.com";
+        return null;
     }
 
-    @Scheduled(every = "2s")
+    @Scheduled(every = "1s")
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();
 
@@ -36,21 +37,26 @@ public class P2BClientEndpoint extends AbstractClientEndpoint {
                     .GET()
                     .build();
 
-            try {
-                var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
+                    .onItem().transform(response -> gson.fromJson(response.body(), TickerApiResponse.class))
+                    .onItem().transformToUni(tickerResponse -> Uni.createFrom().item(tickerResponse))
+                    .onItem().transformToMulti(tickerResponse -> Multi.createFrom().iterable(tickerResponse.getResult().entrySet()))
+                    .subscribe().with(entry -> {
+                        var key = entry.getKey();
+                        var value = entry.getValue();
+                        var pair = SymbolHelper.getPair(key);
 
-                var tickerResponse = gson.fromJson(response.body(), TickerApiResponse.class);
-
-                tickerResponse.getResult().forEach((key, value) -> {
-                    var pair = SymbolHelper.getPair(key);
-
-                    if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
-                        pushTicker(Ticker.builder().source(Source.REST).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(value.getTicker().getLast()).timestamp(currentTimestamp()).build());
-                    }
-                });
-
-            } catch (IOException | InterruptedException ignored) {
-            }
+                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                            pushTicker(Ticker.builder()
+                                    .source(Source.REST)
+                                    .exchange(getExchange())
+                                    .base(pair.getLeft())
+                                    .quote(pair.getRight())
+                                    .lastPrice(value.getTicker().getLast())
+                                    .timestamp(currentTimestamp())
+                                    .build());
+                        }
+                    }, failure -> {});
         }
     }
 

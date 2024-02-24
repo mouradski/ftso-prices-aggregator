@@ -6,10 +6,10 @@ import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
 import io.quarkus.scheduler.Scheduled;
+import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -21,7 +21,7 @@ import java.util.Set;
 @Startup
 public class GeminiClientEndpoint extends AbstractClientEndpoint {
 
-    private Set<String> symbols = new HashSet<>();
+    private Set<String> symbols;
 
     @Override
     protected String getUri() {
@@ -40,6 +40,7 @@ public class GeminiClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void prepareConnection() {
+        symbols = new HashSet<>();
 
         try {
             var request = HttpRequest.newBuilder()
@@ -72,31 +73,30 @@ public class GeminiClientEndpoint extends AbstractClientEndpoint {
                     var symbol = base + quote;
 
                     if (symbols.contains(symbol)) {
-                        try {
-                            var request = HttpRequest.newBuilder()
-                                    .uri(URI.create("https://api.gemini.com/v2/ticker/" + symbol))
-                                    .header("Content-Type", "application/json")
-                                    .GET()
-                                    .build();
+                        HttpRequest request = HttpRequest.newBuilder()
+                                .uri(URI.create("https://api.gemini.com/v2/ticker/" + symbol))
+                                .header("Content-Type", "application/json")
+                                .GET()
+                                .build();
 
-                            var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-                            var tickerResponse = gson.fromJson(response.body(), GeminiTicker.class);
-
-                            if (tickerResponse.getSymbol() != null) {
-                                var pair = SymbolHelper.getPair(tickerResponse.getSymbol());
-
-                                pushTicker(Ticker.builder().source(Source.REST).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(tickerResponse.getClose()).timestamp(currentTimestamp()).build());
-                            }
-
-
-                        } catch (IOException | InterruptedException ignored) {
-                        }
+                        Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
+                                .onItem().transform(response -> gson.fromJson(response.body(), GeminiTicker.class))
+                                .subscribe().with(tickerResponse -> {
+                                    if (tickerResponse.getSymbol() != null) {
+                                        var pair = SymbolHelper.getPair(tickerResponse.getSymbol());
+                                        pushTicker(Ticker.builder()
+                                                .source(Source.REST)
+                                                .exchange(getExchange())
+                                                .base(pair.getLeft())
+                                                .quote(pair.getRight())
+                                                .lastPrice(tickerResponse.getClose())
+                                                .timestamp(currentTimestamp())
+                                                .build());
+                                    }
+                                }, failure -> {});
                     }
                 });
             });
-
-
         }
     }
 }

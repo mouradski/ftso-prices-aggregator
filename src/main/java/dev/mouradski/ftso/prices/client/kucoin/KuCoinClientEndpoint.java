@@ -6,12 +6,12 @@ import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
 import io.quarkus.scheduler.Scheduled;
+import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Date;
@@ -21,37 +21,12 @@ import java.util.Date;
 @Startup
 public class KuCoinClientEndpoint extends AbstractClientEndpoint {
 
-    private String token;
-    private String instance;
-
     @Override
     protected String getUri() {
-        return instance + "?token=" + token;
+        return null;
     }
 
-    @Override
-    protected void prepareConnection() {
-        var client = HttpClient.newHttpClient();
-
-        var request = HttpRequest.newBuilder()
-                .uri(URI.create("https://api.kucoin.com/api/v1/bullet-public"))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(""))
-                .build();
-
-        try {
-            var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-            var kuCoinTokenResponse = gson.fromJson(response.body(), dev.mouradski.ftso.prices.client.kucoin.KuCoinTokenResponse.class);
-
-            this.token = kuCoinTokenResponse.getData().getToken();
-            this.instance = kuCoinTokenResponse.getData().getInstanceServers().get(0).getEndpoint();
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Scheduled(every = "2s")
+    @Scheduled(every = "1s")
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();
 
@@ -62,21 +37,22 @@ public class KuCoinClientEndpoint extends AbstractClientEndpoint {
                     .GET()
                     .build();
 
-            try {
-                var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-                var tickerResponse = gson.fromJson(response.body(), TickerApiResponse.class);
-
-                tickerResponse.getData().getTicker().forEach(ticker -> {
-                    var pair = SymbolHelper.getPair(ticker.getSymbol());
-
-                    if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
-                        pushTicker(Ticker.builder().source(Source.REST).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(ticker.getLast()).timestamp(currentTimestamp()).build());
-                    }
-                });
-
-            } catch (IOException | InterruptedException e) {
-            }
+            Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
+                    .onItem().transform(response -> gson.fromJson(response.body(), TickerApiResponse.class))
+                    .onItem().transformToMulti(tickerResponse -> Multi.createFrom().iterable(tickerResponse.getData().getTicker()))
+                    .subscribe().with(ticker -> {
+                        var pair = SymbolHelper.getPair(ticker.getSymbol());
+                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                            pushTicker(Ticker.builder()
+                                    .source(Source.REST)
+                                    .exchange(getExchange())
+                                    .base(pair.getLeft())
+                                    .quote(pair.getRight())
+                                    .lastPrice(ticker.getLast())
+                                    .timestamp(currentTimestamp())
+                                    .build());
+                        }
+                    }, failure -> {});
         }
     }
 

@@ -6,6 +6,8 @@ import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
 import io.quarkus.scheduler.Scheduled;
+import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +49,7 @@ public class PionexClientEndpoint extends AbstractClientEndpoint {
         return false;
     }
 
-    @Scheduled(every = "2s")
+    @Scheduled(every = "1s")
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();
         if (exchanges.contains(getExchange())) {
@@ -57,21 +59,22 @@ public class PionexClientEndpoint extends AbstractClientEndpoint {
                     .GET()
                     .build();
 
-            try {
-                var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-                var tickerData = gson.fromJson(response.body(), TickerData.class);
-
-                tickerData.getData().getTickers().forEach(ticker -> {
-                    var pair = SymbolHelper.getPair(ticker.getSymbol());
-
-                    if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
-                        pushTicker(Ticker.builder().source(Source.REST).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(ticker.getClose()).timestamp(currentTimestamp()).build());
-                    }
-                });
-
-            } catch (IOException | InterruptedException ignored) {
-            }
+            Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
+                    .onItem().transform(response -> gson.fromJson(response.body(), TickerData.class))
+                    .onItem().transformToMulti(tickerData -> Multi.createFrom().iterable(tickerData.getData().getTickers()))
+                    .subscribe().with(ticker -> {
+                        var pair = SymbolHelper.getPair(ticker.getSymbol());
+                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                            pushTicker(Ticker.builder()
+                                    .source(Source.REST)
+                                    .exchange(getExchange())
+                                    .base(pair.getLeft())
+                                    .quote(pair.getRight())
+                                    .lastPrice(ticker.getClose())
+                                    .timestamp(currentTimestamp())
+                                    .build());
+                        }
+                    }, failure -> {});
         }
     }
 

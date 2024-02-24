@@ -15,14 +15,9 @@ import jakarta.websocket.ClientEndpoint;
 import jakarta.websocket.OnMessage;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.zip.Inflater;

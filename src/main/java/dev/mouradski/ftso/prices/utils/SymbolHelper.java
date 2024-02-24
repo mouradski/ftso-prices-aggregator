@@ -16,7 +16,7 @@ public class SymbolHelper {
     }
 
     private static String cleanRemotePair(String remotePair) {
-        return remotePair.replace("-", "").replace("_", "").replace("/", "").toUpperCase();
+        return remotePair.replace("-", "").replace("_", "").replace("/", "").replace(":", "").toUpperCase();
     }
 
     private static String getBaseCurrency(String pair) {
