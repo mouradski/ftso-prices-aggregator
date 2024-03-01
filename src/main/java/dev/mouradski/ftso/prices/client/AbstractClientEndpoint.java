@@ -142,6 +142,7 @@ public abstract class AbstractClientEndpoint {
     }
 
     private void checkMessageReceivedTimeout() {
+
         var shouldReconnectFlag = false;
 
         if (this.getUri() != null && this.userSession != null && this.userSession.isOpen()
@@ -153,6 +154,8 @@ public abstract class AbstractClientEndpoint {
         if (shouldReconnectFlag)
             onClose(userSession,
                     new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "No data received in a while"));
+
+
     }
 
     protected void pushTicker(Ticker ticker) {
