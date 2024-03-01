@@ -25,7 +25,7 @@ public class BydfiRestEndpointClient extends AbstractClientEndpoint {
         return "bydfi";
     }
 
-    @Scheduled(every = "1s")
+    @Scheduled(every = "2s")
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();
 
