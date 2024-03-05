@@ -16,7 +16,7 @@ import java.net.http.HttpResponse;
 
 @ApplicationScoped
 @Startup
-public class LatokenClientEndpoint extends AbstractClientEndpoint {
+public class LatokenTickerUpdater extends AbstractClientEndpoint {
     @Override
     protected String getUri() {
         return null;
