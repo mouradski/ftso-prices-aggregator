@@ -23,7 +23,7 @@ public class BitgetClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected String getUri() {
-        return "wss://ws.bitget.com/spot/v1/stream";
+        return "wss://ws.bitget.com/v2/ws/public";
     }
 
     @Override
@@ -38,11 +38,9 @@ public class BitgetClientEndpoint extends AbstractClientEndpoint {
 
         var args = new ArrayList<String>();
 
-
         getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> {
-            args.add("{\"instType\": \"sp\",\"channel\": \"ticker\",\"instId\": \"PAIR\"}".replace("PAIR", base + quote));
+            args.add("{\"instType\": \"SPOT\",\"channel\": \"ticker\",\"instId\": \"PAIR\"}".replace("PAIR", base + quote));
         }));
-
 
 
         this.sendMessage("{\"op\": \"subscribe\",\"args\": [ARGS]}".replace("ARGS", String.join(",", args)));
@@ -56,14 +54,15 @@ public class BitgetClientEndpoint extends AbstractClientEndpoint {
             return Optional.empty();
         }
 
-        var tickerResponse = objectMapper.readValue(message, TickerResponse.class);
+        var tickerMessage = objectMapper.readValue(message, TickerMessage.class);
 
         var tickers = new ArrayList<Ticker>();
 
-        var pair = SymbolHelper.getPair(tickerResponse.getArg().getInstId());
 
-        for (var ticker : tickerResponse.getData()) {
-            tickers.add(Ticker.builder().source(Source.WS).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(ticker.getLast()).timestamp(currentTimestamp()).build());
+
+        for (var ticker : tickerMessage.getData()) {
+            var pair = SymbolHelper.getPair(ticker.getInstId());
+            tickers.add(Ticker.builder().source(Source.WS).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(Double.valueOf(ticker.getLastPr())).timestamp(currentTimestamp()).build());
         }
 
         return Optional.of(tickers);
