@@ -117,10 +117,9 @@ public abstract class AbstractClientEndpoint {
             this.decodeMetadata(message);
 
             if (!this.pong(message)) {
+                scheduleTimeoutFutureExecution();
                 this.mapTicker(message).ifPresent(tickerList -> tickerList.forEach(this::pushTicker));
             }
-
-            scheduleTimeoutFutureExecution();
 
         } catch (Exception e) {
             log.debug("Caught exception receiving msg from {}, msg : {}", getExchange(), message, e);
@@ -222,7 +221,8 @@ public abstract class AbstractClientEndpoint {
     }
 
     protected boolean pong(String message) {
-        return false;
+        var lcMessage = message.toLowerCase();
+        return lcMessage.length() < 100 && (lcMessage.contains("ping") || lcMessage.contains("pong"));
     }
 
     protected void prepareConnection() {
