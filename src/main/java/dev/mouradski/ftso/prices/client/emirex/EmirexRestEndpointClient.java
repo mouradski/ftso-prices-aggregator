@@ -56,7 +56,7 @@ public class EmirexRestEndpointClient extends AbstractClientEndpoint {
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();
 
-        if (exchanges.contains(getExchange())) {
+        if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
 
             getAssets(true).forEach(base -> {
 
@@ -85,8 +85,7 @@ public class EmirexRestEndpointClient extends AbstractClientEndpoint {
                                                 .timestamp(currentTimestamp())
                                                 .build());
                                     }
-                                }, failure -> {
-                                });
+                                }, this::catchRestError);
                     }
                 });
             });

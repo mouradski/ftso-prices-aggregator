@@ -44,7 +44,7 @@ public class BtseClientEndpoint extends AbstractClientEndpoint {
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();
 
-        if (exchanges.contains(getExchange())) {
+        if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.btse.com/spot/api/v3.2/market_summary"))
                     .header("Content-Type", "application/json")
@@ -66,7 +66,7 @@ public class BtseClientEndpoint extends AbstractClientEndpoint {
                                     .timestamp(currentTimestamp())
                                     .build());
                         }
-                    }, failure -> {});
+                    }, this::catchRestError);
         }
     }
 }

@@ -28,7 +28,7 @@ public class CoinexClientEndpoint extends AbstractClientEndpoint {
     @Scheduled(every = "2s")
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();
-        if (exchanges.contains(getExchange())) {
+        if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.coinex.com/v1/market/ticker/all"))
                     .header("Content-Type", "application/json")
@@ -50,7 +50,7 @@ public class CoinexClientEndpoint extends AbstractClientEndpoint {
                                     .timestamp(currentTimestamp())
                                     .build());
                         }
-                    }, failure -> failure.printStackTrace());
+                    }, this::catchRestError);
         }
     }
 

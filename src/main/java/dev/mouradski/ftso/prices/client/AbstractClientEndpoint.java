@@ -10,6 +10,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.websocket.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.concurrent.EventCountCircuitBreaker;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -52,6 +53,8 @@ public abstract class AbstractClientEndpoint {
     Long defaultTimeoutInSeconds;
 
     protected HttpClient client = HttpClient.newHttpClient();
+
+    protected EventCountCircuitBreaker restCircuitBreaker = new EventCountCircuitBreaker(5, 10, TimeUnit.SECONDS);
 
     private Long timeout;
 
@@ -362,6 +365,16 @@ public abstract class AbstractClientEndpoint {
     protected Long currentTimestamp() {
         return Instant.now().toEpochMilli();
     }
+
+    protected void catchRestError(Throwable throwable) {
+        log.error("Error fetching tickets from {}", getExchange(), throwable);
+        this.restCircuitBreaker.incrementAndCheckState();
+    }
+
+    protected boolean isCircuitClosed() {
+        return restCircuitBreaker.checkState();
+    }
+
 
     public void setExchanges(List<String> exchanges) {
         this.exchanges = exchanges;

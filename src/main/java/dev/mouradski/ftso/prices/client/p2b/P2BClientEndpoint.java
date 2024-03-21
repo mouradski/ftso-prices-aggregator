@@ -30,7 +30,7 @@ public class P2BClientEndpoint extends AbstractClientEndpoint {
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();
 
-        if (exchanges.contains(getExchange())) {
+        if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.p2pb2b.com/api/v2/public/tickers"))
                     .header("Content-Type", "application/json")
@@ -56,7 +56,7 @@ public class P2BClientEndpoint extends AbstractClientEndpoint {
                                     .timestamp(currentTimestamp())
                                     .build());
                         }
-                    }, failure -> {});
+                    }, this::catchRestError);
         }
     }
 

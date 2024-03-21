@@ -34,7 +34,7 @@ public class BitstampClientEndpoint extends AbstractClientEndpoint {
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();
 
-        if (exchanges.contains(getExchange())) {
+        if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://www.bitstamp.net/api/v2/ticker/"))
                     .header("Content-Type", "application/json")
@@ -56,7 +56,7 @@ public class BitstampClientEndpoint extends AbstractClientEndpoint {
                                     .timestamp(currentTimestamp())
                                     .build());
                         }
-                    }, failure -> {});
+                    }, this::catchRestError);
         }
     }
 }

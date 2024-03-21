@@ -29,7 +29,7 @@ public class PointpayRestEndpointClient extends AbstractClientEndpoint {
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();
 
-        if (exchanges.contains(getExchange())) {
+        if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.pointpay.io/api/v1/public/tickers"))
                     .header("Content-Type", "application/json")
@@ -51,7 +51,7 @@ public class PointpayRestEndpointClient extends AbstractClientEndpoint {
                                     .timestamp(currentTimestamp())
                                     .build());
                         }
-                    }, failure -> {});
+                    }, this::catchRestError);
         }
     }
 }

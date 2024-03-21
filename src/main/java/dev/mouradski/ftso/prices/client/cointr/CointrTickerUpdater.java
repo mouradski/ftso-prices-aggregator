@@ -32,7 +32,7 @@ public class CointrTickerUpdater extends AbstractClientEndpoint {
     public void fetchTickers() {
         this.lastTickerTime = System.currentTimeMillis();
 
-        if (exchanges.contains(getExchange())) {
+        if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.cointr.pro/v1/spot/market/tickers"))
                     .header("Content-Type", "application/json")
@@ -55,8 +55,7 @@ public class CointrTickerUpdater extends AbstractClientEndpoint {
                                     .build();
                             pushTicker(ticker);
                         }
-                    }, failure -> {
-                    });
+                    },this::catchRestError);
         }
     }
 }

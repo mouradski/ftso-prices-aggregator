@@ -40,7 +40,7 @@ public class XtClientEndpoint extends AbstractClientEndpoint {
                 "https://sapi.xt.com/v4/public/ticker";
 
         this.lastTickerTime = System.currentTimeMillis();
-        if (exchanges.contains(getExchange())) {
+        if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
                     .header("Content-Type", "application/json")
@@ -62,8 +62,7 @@ public class XtClientEndpoint extends AbstractClientEndpoint {
                                     .timestamp(currentTimestamp())
                                     .build());
                         }
-                    }, failure -> {
-                    });
+                    }, this::catchRestError);
         }
     }
 

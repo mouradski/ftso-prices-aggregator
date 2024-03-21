@@ -30,7 +30,7 @@ public class DigifinexClientEndpoint extends AbstractClientEndpoint {
         this.lastTickerTime = System.currentTimeMillis();
         this.lastTickerTime = System.currentTimeMillis();
 
-        if (exchanges.contains(getExchange())) {
+        if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://openapi.digifinex.com/v3/ticker"))
                     .header("Content-Type", "application/json")
@@ -52,7 +52,7 @@ public class DigifinexClientEndpoint extends AbstractClientEndpoint {
                                     .timestamp(currentTimestamp())
                                     .build());
                         }
-                    }, failure -> {});
+                    }, this::catchRestError);
         }
     }
 

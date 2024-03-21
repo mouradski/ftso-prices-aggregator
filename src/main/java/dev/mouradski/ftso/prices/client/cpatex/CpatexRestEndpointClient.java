@@ -29,7 +29,7 @@ public class CpatexRestEndpointClient extends AbstractClientEndpoint {
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();
 
-        if (exchanges.contains(getExchange())) {
+        if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.c-patex.com/api/v1/public/tickers"))
                     .header("Content-Type", "application/json")
@@ -51,7 +51,7 @@ public class CpatexRestEndpointClient extends AbstractClientEndpoint {
                                     .timestamp(currentTimestamp())
                                     .build());
                         }
-                    }, failure -> {});
+                    }, this::catchRestError);
         }
     }
 }

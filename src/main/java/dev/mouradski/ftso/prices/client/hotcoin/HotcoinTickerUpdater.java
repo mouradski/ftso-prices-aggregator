@@ -32,7 +32,7 @@ public class HotcoinTickerUpdater extends AbstractClientEndpoint {
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();
 
-        if (exchanges.contains(getExchange())) {
+        if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.hotcoinfin.com/v1/market/ticker"))
                     .header("Content-Type", "application/json")
@@ -55,7 +55,7 @@ public class HotcoinTickerUpdater extends AbstractClientEndpoint {
                                     .build();
                             pushTicker(ticker);
                         }
-                    }, failure -> {});
+                    }, this::catchRestError);
         }
     }
 }

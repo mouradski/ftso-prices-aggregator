@@ -20,7 +20,7 @@ public class DeepcoinTickersEndpoint extends AbstractClientEndpoint {
     @Scheduled(every = "1s")
     public void getTickers() {
 
-        if (!exchanges.contains(getExchange())) {
+        if (!exchanges.contains(getExchange()) || !this.isCircuitClosed()) {
             return;
         }
 
@@ -48,7 +48,7 @@ public class DeepcoinTickersEndpoint extends AbstractClientEndpoint {
                                     .timestamp(currentTimestamp())
                                     .build());
                         }
-                    }, failure -> {});
+                    }, this::catchRestError);
         });
 
 

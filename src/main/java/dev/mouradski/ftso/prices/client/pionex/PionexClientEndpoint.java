@@ -52,7 +52,8 @@ public class PionexClientEndpoint extends AbstractClientEndpoint {
     @Scheduled(every = "1s")
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();
-        if (exchanges.contains(getExchange())) {
+
+        if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.pionex.com/api/v1/market/tickers"))
                     .header("Content-Type", "application/json")
@@ -74,7 +75,7 @@ public class PionexClientEndpoint extends AbstractClientEndpoint {
                                     .timestamp(currentTimestamp())
                                     .build());
                         }
-                    }, failure -> {});
+                    }, this::catchRestError);
         }
     }
 

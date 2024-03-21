@@ -34,7 +34,7 @@ public class BigoneClientEndpoint extends AbstractClientEndpoint {
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();
 
-        if (exchanges.contains(getExchange())) {
+        if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://big.one/api/v3/asset_pairs/tickers"))
                     .header("Content-Type", "application/json")
@@ -75,7 +75,7 @@ public class BigoneClientEndpoint extends AbstractClientEndpoint {
                             }
                         });
 
-                    }, failure -> {});
+                    }, this::catchRestError);
         }
     }
 }

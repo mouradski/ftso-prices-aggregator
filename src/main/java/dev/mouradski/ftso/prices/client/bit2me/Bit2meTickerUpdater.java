@@ -31,7 +31,7 @@ public class Bit2meTickerUpdater extends AbstractClientEndpoint {
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();
 
-        if (exchanges.contains(getExchange())) {
+        if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://gateway.bit2me.com/v1/currency/ticker"))
                     .header("Content-Type", "application/json")
@@ -45,7 +45,7 @@ public class Bit2meTickerUpdater extends AbstractClientEndpoint {
                                     .thenApply(HttpResponse::body)
                                     .thenApply(this::mapRate)
                     )
-                    .subscribe().with(item -> processCurrencyRates(item), Throwable::printStackTrace);
+                    .subscribe().with(item -> processCurrencyRates(item), this::catchRestError);
         }
     }
 
@@ -64,7 +64,7 @@ public class Bit2meTickerUpdater extends AbstractClientEndpoint {
             e.getValue().entrySet().forEach(rates -> {
                 var base = rates.getKey();
                 if (getAssets(true).contains(base) && getAllQuotesExceptBusd(true).contains(quote)) {
-                    var price = rates.getValue();
+                    var price = Double.valueOf(rates.getValue().toString());
 
                     this.pushTicker(Ticker.builder().source(Source.REST).exchange(getExchange()).base(base).quote(quote).lastPrice(price).timestamp(currentTimestamp()).build());
                 }

@@ -29,7 +29,7 @@ public class BybitClientEndpoint extends AbstractClientEndpoint {
     @Scheduled(every = "2s")
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();
-        if (exchanges.contains(getExchange())) {
+        if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.bybit.com/v5/market/tickers?category=spot"))
                     .header("Content-Type", "application/json")
@@ -51,7 +51,7 @@ public class BybitClientEndpoint extends AbstractClientEndpoint {
                                     .timestamp(currentTimestamp())
                                     .build());
                         }
-                    }, failure -> {});
+                    }, this::catchRestError);
         }
     }
 

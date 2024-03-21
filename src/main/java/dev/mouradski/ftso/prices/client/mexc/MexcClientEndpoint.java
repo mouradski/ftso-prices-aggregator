@@ -38,7 +38,8 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
     @Scheduled(every = "1s")
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();
-        if (exchanges.contains(getExchange())) {
+
+        if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.mexc.com/api/v3/ticker/price"))
                     .header("Content-Type", "application/json")
@@ -60,7 +61,7 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
                                     .timestamp(currentTimestamp())
                                     .build());
                         }
-                    }, failure -> {});
+                    }, this::catchRestError);
         }
     }
 }
