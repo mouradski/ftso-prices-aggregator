@@ -60,7 +60,7 @@ public class GeminiClientEndpoint extends AbstractClientEndpoint {
         }
     }
 
-    @Scheduled(every = "2s")
+    @Scheduled(every = "3s")
     public void getTickers() {
         this.lastTickerTime = System.currentTimeMillis();
 

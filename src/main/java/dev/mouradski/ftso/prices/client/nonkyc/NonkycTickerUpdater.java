@@ -18,7 +18,7 @@ import java.util.Arrays;
 @ApplicationScoped
 public class NonkycTickerUpdater extends AbstractClientEndpoint {
 
-    @Scheduled(every = "1s")
+    @Scheduled(every = "3s")
     public void getTickers() {
 
         if (!exchanges.contains(getExchange()) || !this.isCircuitClosed()) {
