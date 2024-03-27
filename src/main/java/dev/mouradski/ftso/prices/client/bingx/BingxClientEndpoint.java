@@ -25,7 +25,7 @@ public class BingxClientEndpoint extends AbstractClientEndpoint {
     @Override
     protected void subscribe() {
         getAssets(true).forEach(base -> {
-            getAllQuotesExceptBusd(true).forEach(quote -> {
+            getAllQuotes(true).forEach(quote -> {
                 this.sendMessage("{ \"id\": \"ID\", \"reqType\": \"sub\", \"dataType\": \"BASE-QUOTE@lastPrice\" }".replace("ID", incAndGetIdAsString()).replace("BASE", base).replace("QUOTE", quote));
             });
         });

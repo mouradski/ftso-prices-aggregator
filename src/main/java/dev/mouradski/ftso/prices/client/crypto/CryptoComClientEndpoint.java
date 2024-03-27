@@ -27,7 +27,7 @@ public class CryptoComClientEndpoint extends AbstractClientEndpoint {
     @Override
     protected void subscribeTicker() {
         getAssets().stream().map(String::toUpperCase)
-                .forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> {
+                .forEach(base -> getAllQuotes(true).forEach(quote -> {
                     this.sendMessage("{\"id\": " + incAndGetId()
                             + ",\"method\": \"subscribe\",\"params\": {\"channels\": [\"ticker." + base
                             + "_" + quote + "\"]},\"nonce\": " + new Date().getTime() + "}");

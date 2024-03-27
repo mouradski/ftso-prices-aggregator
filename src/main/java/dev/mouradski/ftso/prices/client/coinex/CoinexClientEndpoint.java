@@ -40,7 +40,7 @@ public class CoinexClientEndpoint extends AbstractClientEndpoint {
                     .onItem().transformToMulti(tickerResponse -> Multi.createFrom().iterable(tickerResponse.getData().getTicker().entrySet()))
                     .subscribe().with(tickerEntry -> {
                         var pair = SymbolHelper.getPair(tickerEntry.getKey());
-                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {
                             pushTicker(Ticker.builder()
                                     .source(Source.REST)
                                     .exchange(getExchange())

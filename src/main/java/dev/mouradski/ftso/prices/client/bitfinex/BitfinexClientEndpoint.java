@@ -28,7 +28,7 @@ public class BitfinexClientEndpoint extends AbstractClientEndpoint {
     @Override
     protected void subscribeTicker() {
         getAssets().stream().map(String::toUpperCase)
-                .forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> {
+                .forEach(base -> getAllQuotes(true).forEach(quote -> {
                     var symbol = "t" + base + ("USDT".equals(quote) ? "UST" : ("USDC".equals(quote) ? "UDC" : quote));
                     var symbol2 = "t" + base + ("USDT".equals(quote) ? "UST" : ("USDC".equals(quote) ? "UDC" : quote));
                     this

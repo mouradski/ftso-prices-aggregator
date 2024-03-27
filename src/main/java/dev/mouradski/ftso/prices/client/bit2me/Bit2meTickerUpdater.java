@@ -63,10 +63,12 @@ public class Bit2meTickerUpdater extends AbstractClientEndpoint {
             var quote = e.getKey();
             e.getValue().entrySet().forEach(rates -> {
                 var base = rates.getKey();
-                if (getAssets(true).contains(base) && getAllQuotesExceptBusd(true).contains(quote)) {
-                    var price = Double.valueOf(rates.getValue().toString());
-
-                    this.pushTicker(Ticker.builder().source(Source.REST).exchange(getExchange()).base(base).quote(quote).lastPrice(price).timestamp(currentTimestamp()).build());
+                if (getAssets(true).contains(base) && getAllQuotes(true).contains(quote)) {
+                    try {
+                        Double price = Double.valueOf(rates.getValue().toString() + "d");
+                        this.pushTicker(Ticker.builder().source(Source.REST).exchange(getExchange()).base(base).quote(quote).lastPrice(price).timestamp(currentTimestamp()).build());
+                    } catch (Exception ignored) {
+                    }
                 }
             });
         });

@@ -26,7 +26,7 @@ public class LbankClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribeTicker() {
-        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> this.sendMessage("{\"action\":\"subscribe\", \"subscribe\":\"tick\", \"pair\":\"SYMBOL_QUOTE\"}".replaceAll("SYMBOL", base).replace("QUOTE", quote))));
+        getAssets(true).forEach(base -> getAllQuotes(true).forEach(quote -> this.sendMessage("{\"action\":\"subscribe\", \"subscribe\":\"tick\", \"pair\":\"SYMBOL_QUOTE\"}".replaceAll("SYMBOL", base).replace("QUOTE", quote))));
     }
 
     @Override

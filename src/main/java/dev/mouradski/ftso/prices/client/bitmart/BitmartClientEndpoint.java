@@ -67,7 +67,7 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
     @Override
     protected void subscribeTicker() {
         getAssets(true).forEach(base -> {
-            getAllQuotesExceptBusd(true).forEach(quote -> {
+            getAllQuotes(true).forEach(quote -> {
 
                 sendMessage("{\"op\": \"subscribe\", \"args\": [\"spot/ticker:BASE_QUOTE\"]}".replace("BASE", base).replace("QUOTE", quote));
             });

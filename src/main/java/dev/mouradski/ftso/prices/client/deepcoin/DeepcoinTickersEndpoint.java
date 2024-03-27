@@ -38,7 +38,7 @@ public class DeepcoinTickersEndpoint extends AbstractClientEndpoint {
                     .onItem().transformToMulti(tickersResponse -> Multi.createFrom().iterable(tickersResponse.getData()))
                     .subscribe().with(ticker -> {
                         var pair = SymbolHelper.getPair(ticker.getInstId().replace("-SWAP", ""));
-                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {
                             pushTicker(Ticker.builder()
                                     .source(Source.REST)
                                     .exchange("SWAP".equals(ticker.getInstType()) ? (getExchange() + "swap") : getExchange())

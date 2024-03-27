@@ -29,7 +29,7 @@ public class CoinbaseClientEndpoint extends AbstractClientEndpoint {
     protected void subscribeTicker() {
         var pairs = new ArrayList<String>();
 
-        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> pairs.add("\"" + base + "-" + quote + "\"")));
+        getAssets(true).forEach(base -> getAllQuotes(true).forEach(quote -> pairs.add("\"" + base + "-" + quote + "\"")));
         this.sendMessage("{\"type\":\"subscribe\", \"product_ids\":[PAIRS], \"channels\":[\"ticker\"]}".replace("PAIRS", pairs.stream().collect(Collectors.joining(","))));
     }
 

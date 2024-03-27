@@ -44,7 +44,7 @@ public class LatokenTickerUpdater extends AbstractClientEndpoint {
                     .subscribe().with(data -> {
 
                         var pair = SymbolHelper.getPair(data.getSymbol());
-                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {
                             var ticker = Ticker.builder()
                                     .source(Source.REST)
                                     .exchange(getExchange())

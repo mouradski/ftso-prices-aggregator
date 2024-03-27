@@ -17,7 +17,6 @@ public class TickerService {
     Instance<TickerConsumer> tickerConsumer;
 
     public void pushTicker(Ticker ticker) {
-        //System.out.println(ticker);
         tickerServer.broadcast(ticker);
         tickerConsumer.forEach(consumer -> consumer.processTicker(ticker));
     }

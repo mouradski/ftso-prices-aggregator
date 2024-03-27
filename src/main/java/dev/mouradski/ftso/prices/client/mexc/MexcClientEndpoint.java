@@ -27,7 +27,7 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribeTicker() {
-        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> this.sendMessage("{\"op\":\"sub.ticker\", \"symbol\":\"SYMBOL_QUOTE\"}".replace("SYMBOL", base).replace("QUOTE", quote))));
+        getAssets(true).forEach(base -> getAllQuotes(true).forEach(quote -> this.sendMessage("{\"op\":\"sub.ticker\", \"symbol\":\"SYMBOL_QUOTE\"}".replace("SYMBOL", base).replace("QUOTE", quote))));
     }
 
     @Override
@@ -51,7 +51,7 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
                     .onItem().transformToMulti(tickers -> Multi.createFrom().items(tickers))
                     .subscribe().with(ticker -> {
                         var pair = SymbolHelper.getPair(ticker.getSymbol());
-                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {
                             pushTicker(Ticker.builder()
                                     .source(Source.REST)
                                     .exchange(getExchange())

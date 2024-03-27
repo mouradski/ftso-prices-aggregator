@@ -33,7 +33,7 @@ public class PoloniexClientEndpoint extends AbstractClientEndpoint {
     protected void subscribeTicker() {
         var pairs = new ArrayList<>();
         getAssets(true).forEach(base -> {
-            getAllQuotesExceptBusd(true).forEach(quote -> {
+            getAllQuotes(true).forEach(quote -> {
                 pairs.add(base + "_" + quote);
             });
         });

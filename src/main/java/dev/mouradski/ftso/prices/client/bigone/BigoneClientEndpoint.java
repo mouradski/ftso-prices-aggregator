@@ -49,7 +49,7 @@ public class BigoneClientEndpoint extends AbstractClientEndpoint {
 
                 for (var ticker : marketsData) {
                     var pair = SymbolHelper.getPair(ticker.getAsset_pair_name());
-                    if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                    if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {
                         pushTicker(Ticker.builder().source(Source.REST).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(Double.parseDouble(ticker.getClose())).timestamp(currentTimestamp()).build());
                     }
                 }
@@ -63,7 +63,7 @@ public class BigoneClientEndpoint extends AbstractClientEndpoint {
                     .subscribe().with(tickerData -> {
                         tickerData.getData().forEach(tickerDetail -> {
                             var pair = SymbolHelper.getPair(tickerDetail.getAsset_pair_name());
-                            if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                            if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {
                                 pushTicker(Ticker.builder()
                                         .source(Source.REST)
                                         .exchange(getExchange())

@@ -31,7 +31,7 @@ public class BequantClientEndpoint extends AbstractClientEndpoint {
     protected void subscribeTicker() {
         var bases = getAssets(true).stream().map(v -> "\"" + v + "\"").collect(Collectors.joining(","));
 
-        getAllQuotesExceptBusd(true).forEach(quote -> sendMessage("{\"method\": \"subscribe\",\"ch\": \"price/rate/1s\",\"params\": {\"currencies\": [BASES],\"target_currency\": \"QUOTE\"},\"id\": ID}"
+        getAllQuotes(true).forEach(quote -> sendMessage("{\"method\": \"subscribe\",\"ch\": \"price/rate/1s\",\"params\": {\"currencies\": [BASES],\"target_currency\": \"QUOTE\"},\"id\": ID}"
                 .replace("ID", incAndGetIdAsString())
                 .replace("QUOTE", quote).replace("BASES", bases)));
     }

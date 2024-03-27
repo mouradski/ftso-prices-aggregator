@@ -44,7 +44,7 @@ public class CointrTickerUpdater extends AbstractClientEndpoint {
                     .onItem().transformToMulti(tickersResponse -> Multi.createFrom().items(tickersResponse.getData()))
                     .subscribe().with(data -> {
                         var pair = SymbolHelper.getPair(data.getInstId());
-                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {
                             var ticker = Ticker.builder()
                                     .source(Source.REST)
                                     .exchange(getExchange())

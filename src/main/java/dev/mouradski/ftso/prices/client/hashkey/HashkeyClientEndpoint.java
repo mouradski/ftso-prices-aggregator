@@ -31,7 +31,7 @@ public class HashkeyClientEndpoint extends AbstractClientEndpoint {
     @Override
     protected void subscribeTicker() {
         getAssets(true).forEach(base -> {
-            getAllQuotesExceptBusd(true).forEach(quote -> {
+            getAllQuotes(true).forEach(quote -> {
                 sendMessage("{\"symbol\": \"SYMBOL\",\"topic\": \"realtimes\",\"event\": \"sub\",\"params\":{\"binary\": \"False\"},\"id\": ID }".replace("SYMBOL", base + quote).replace("ID", incAndGetIdAsString()));
             });
         });

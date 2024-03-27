@@ -65,7 +65,7 @@ public class PionexClientEndpoint extends AbstractClientEndpoint {
                     .onItem().transformToMulti(tickerData -> Multi.createFrom().iterable(tickerData.getData().getTickers()))
                     .subscribe().with(ticker -> {
                         var pair = SymbolHelper.getPair(ticker.getSymbol());
-                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {
                             pushTicker(Ticker.builder()
                                     .source(Source.REST)
                                     .exchange(getExchange())

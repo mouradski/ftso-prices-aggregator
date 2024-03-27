@@ -32,7 +32,7 @@ public class DeltaClientEndpoint extends AbstractClientEndpoint {
     protected void subscribeTicker() {
 
         getAssets(true).forEach(base -> {
-            getAllQuotesExceptBusd(true).forEach(quote -> {
+            getAllQuotes(true).forEach(quote -> {
                 sendMessage("{\"type\": \"subscribe\",\"payload\": {\"channels\": [{\"name\": \"v2/ticker\",\"symbols\": [\"BASE_QUOTE\"]} ]}}".replace("BASE", base).replace("QUOTE", quote));
             });
         });

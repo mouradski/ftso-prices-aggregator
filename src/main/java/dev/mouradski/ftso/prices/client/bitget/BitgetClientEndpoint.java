@@ -38,7 +38,7 @@ public class BitgetClientEndpoint extends AbstractClientEndpoint {
 
         var args = new ArrayList<String>();
 
-        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> {
+        getAssets(true).forEach(base -> getAllQuotes(true).forEach(quote -> {
             args.add("{\"instType\": \"SPOT\",\"channel\": \"ticker\",\"instId\": \"PAIR\"}".replace("PAIR", base + quote));
         }));
 

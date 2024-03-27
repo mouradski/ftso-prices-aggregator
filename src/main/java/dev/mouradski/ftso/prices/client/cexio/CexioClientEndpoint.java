@@ -45,7 +45,7 @@ public class CexioClientEndpoint extends AbstractClientEndpoint {
                     .onItem().transformToMulti(tickerResponse -> Multi.createFrom().iterable(tickerResponse.getData()))
                     .subscribe().with(ticker -> {
                         var pair = SymbolHelper.getPair(ticker.getPair());
-                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {
                             pushTicker(Ticker.builder()
                                     .source(Source.REST)
                                     .exchange(getExchange())

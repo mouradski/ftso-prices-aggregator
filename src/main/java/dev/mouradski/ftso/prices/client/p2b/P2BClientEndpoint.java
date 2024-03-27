@@ -46,7 +46,7 @@ public class P2BClientEndpoint extends AbstractClientEndpoint {
                         var value = entry.getValue();
                         var pair = SymbolHelper.getPair(key);
 
-                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {
                             pushTicker(Ticker.builder()
                                     .source(Source.REST)
                                     .exchange(getExchange())

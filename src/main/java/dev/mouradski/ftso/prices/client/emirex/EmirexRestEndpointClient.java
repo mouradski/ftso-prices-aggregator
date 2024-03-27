@@ -60,7 +60,7 @@ public class EmirexRestEndpointClient extends AbstractClientEndpoint {
 
             getAssets(true).forEach(base -> {
 
-                getAllQuotesExceptBusd(true).forEach(quote -> {
+                getAllQuotes(true).forEach(quote -> {
 
                     var symbol = base + quote;
 

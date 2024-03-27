@@ -41,7 +41,7 @@ public class PointpayRestEndpointClient extends AbstractClientEndpoint {
                     .onItem().transformToMulti(tickersResponse -> Multi.createFrom().iterable(tickersResponse.getResult().entrySet()))
                     .subscribe().with(tickerEntry -> {
                         var pair = SymbolHelper.getPair(tickerEntry.getKey());
-                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {
                             pushTicker(Ticker.builder()
                                     .source(Source.REST)
                                     .exchange(getExchange())

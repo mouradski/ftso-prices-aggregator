@@ -28,7 +28,7 @@ public class UpbitClientEndpoint extends AbstractClientEndpoint {
     @Override
     protected void subscribeTicker() {
         var pairs = new ArrayList<String>();
-        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> pairs.add("\"" + quote + "-" + base + "\"")));
+        getAssets(true).forEach(base -> getAllQuotes(true).forEach(quote -> pairs.add("\"" + quote + "-" + base + "\"")));
         this.sendMessage("[{\"ticket\":\"tickers\"},{\"type\":\"ticker\",\"codes\":[SYMBOL]}]".replace("SYMBOL", String.join(",", pairs)));
     }
 

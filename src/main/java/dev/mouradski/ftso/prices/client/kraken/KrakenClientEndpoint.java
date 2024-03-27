@@ -50,7 +50,7 @@ public class KrakenClientEndpoint extends AbstractClientEndpoint {
         List<String> paris = new ArrayList<>();
 
         getAssets(true).forEach(
-                base -> getAllQuotesExceptBusd(true).forEach(quote -> paris.add("\"" + base + "/" + quote + "\"")));
+                base -> getAllQuotes(true).forEach(quote -> paris.add("\"" + base + "/" + quote + "\"")));
 
         this.sendMessage("{\"event\":\"subscribe\", \"pair\":[" + paris.stream().collect(Collectors.joining(","))
                 + "], \"subscription\":{\"name\":\"ticker\"}}");

@@ -37,7 +37,7 @@ public class WhitebitClientEndpoint extends AbstractClientEndpoint {
     protected void subscribeTicker() {
         var pairs = new ArrayList<String>();
 
-        getAssets(true).forEach(base -> getAllQuotesExceptBusd(true).forEach(quote -> {
+        getAssets(true).forEach(base -> getAllQuotes(true).forEach(quote -> {
             var pair = base + "_" + quote;
 
             if (supportedSymbols.contains(pair)) {

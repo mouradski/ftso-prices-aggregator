@@ -26,7 +26,7 @@ public class HuobiClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected void subscribeTicker() {
-        getAssets().forEach(symbol -> getAllQuotesExceptBusd(false).forEach(base -> this.sendMessage("{   \"sub\": \"market." + symbol + base + ".ticker\",   \"id\": \"ID\" }".replace("ID", new Date().getTime() + ""))));
+        getAssets().forEach(symbol -> getAllQuotes(false).forEach(base -> this.sendMessage("{   \"sub\": \"market." + symbol + base + ".ticker\",   \"id\": \"ID\" }".replace("ID", new Date().getTime() + ""))));
     }
 
     @Override

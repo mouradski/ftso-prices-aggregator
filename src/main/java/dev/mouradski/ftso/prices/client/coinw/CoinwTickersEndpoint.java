@@ -32,7 +32,7 @@ public class CoinwTickersEndpoint extends AbstractClientEndpoint {
                     .onItem().transformToMulti(tickersResponse -> Multi.createFrom().iterable(tickersResponse.getData().entrySet()))
                     .subscribe().with(entry -> {
                         var pair = SymbolHelper.getPair(entry.getKey());
-                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotesExceptBusd(true).contains(pair.getRight())) {
+                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {
                             pushTicker(Ticker.builder()
                                     .source(Source.REST)
                                     .exchange(getExchange())

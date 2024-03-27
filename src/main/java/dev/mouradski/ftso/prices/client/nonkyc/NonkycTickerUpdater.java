@@ -44,7 +44,7 @@ public class NonkycTickerUpdater extends AbstractClientEndpoint {
                     })
                     .onItem().transformToMulti(tickersResponse -> Multi.createFrom().iterable(Arrays.stream(tickersResponse).toList()))
                     .subscribe().with(ticker -> {
-                        if (getAssets(true).contains(ticker.getBase()) && getAllQuotesExceptBusd(true).contains(ticker.getQuote())) {
+                        if (getAssets(true).contains(ticker.getBase()) && getAllQuotes(true).contains(ticker.getQuote())) {
                             pushTicker(Ticker.builder()
                                     .source(Source.REST)
                                     .exchange(getExchange())

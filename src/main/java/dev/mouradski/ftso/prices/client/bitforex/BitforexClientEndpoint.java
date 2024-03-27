@@ -28,7 +28,7 @@ public class BitforexClientEndpoint extends AbstractClientEndpoint {
     @Override
     protected void subscribeTicker() {
         getAssets(false).forEach(base -> {
-            getAllQuotesExceptBusd(false).forEach(quote -> {
+            getAllQuotes(false).forEach(quote -> {
                 this.sendMessage("[{     \"type\": \"subHq\",     \"event\": \"ticker\",     \"param\": {         \"businessType\": \"coin-QUOTE-BASE\",         \"size\": 20     } }]".replace("BASE", base).replace("QUOTE", quote));
             });
         });
