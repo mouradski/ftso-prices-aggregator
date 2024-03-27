@@ -49,7 +49,7 @@ public abstract class AbstractClientEndpoint {
     public static final Gson gson = new Gson();
 
     @Inject
-    @ConfigProperty(name = "default_message_timeout", defaultValue = "120")
+    @ConfigProperty(name = "default_message_timeout", defaultValue = "20")
     Long defaultTimeoutInSeconds;
 
     protected HttpClient client = HttpClient.newHttpClient();
@@ -115,7 +115,7 @@ public abstract class AbstractClientEndpoint {
 
     @OnMessage
     public void onMessage(String message) throws JsonProcessingException {
-
+        this.lastTickerTime = System.currentTimeMillis();
         try {
             this.decodeMetadata(message);
 
@@ -147,8 +147,7 @@ public abstract class AbstractClientEndpoint {
 
         var shouldReconnectFlag = false;
 
-        if (this.getUri() != null && this.userSession != null && this.userSession.isOpen()
-                && (System.currentTimeMillis() - lastTickerTime) > (getTimeout() * 1000)) {
+        if (this.getUri() != null && (System.currentTimeMillis() - lastTickerTime) > (getTimeout() * 1000)) {
             log.info("No ticker received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
 
             shouldReconnectFlag = true;
@@ -161,7 +160,6 @@ public abstract class AbstractClientEndpoint {
     }
 
     protected void pushTicker(Ticker ticker) {
-        this.lastTickerTime = System.currentTimeMillis();
         this.tickerService.pushTicker(ticker);
     }
 
