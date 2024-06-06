@@ -1,5 +1,6 @@
 package dev.mouradski.ftso.prices.client.toobit;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,6 +8,7 @@ import java.util.List;
 
 @Getter
 @Setter
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TickerData {
 
     private String symbol;
@@ -20,6 +22,7 @@ public class TickerData {
 
     @Getter
     @Setter
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Params {
         private String realtimeInterval;
         private String binary;
@@ -27,6 +30,7 @@ public class TickerData {
 
     @Getter
     @Setter
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class DataEntry {
         private long t;
         private String s;
