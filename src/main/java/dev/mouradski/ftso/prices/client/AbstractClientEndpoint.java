@@ -361,7 +361,7 @@ public abstract class AbstractClientEndpoint {
     }
 
     protected void catchRestError(Throwable throwable) {
-        log.error("Error fetching tickets from {}", getExchange(), throwable);
+        //log.error("Error fetching tickets from {}", getExchange(), throwable);
         this.restCircuitBreaker.incrementAndCheckState();
     }
 
