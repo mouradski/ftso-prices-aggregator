@@ -101,7 +101,7 @@ public abstract class AbstractClientEndpoint {
         if (shutdown) {
             return;
         }
-
+        this.tickerService.pushError(this.getExchange());
         log.info("Closing websocket for {}, Reason : {}", getExchange(), reason.getReasonPhrase());
 
         try {
@@ -218,6 +218,7 @@ public abstract class AbstractClientEndpoint {
 
     @OnError
     public void onError(Session session, Throwable t) {
+        this.tickerService.pushError(this.getExchange());
         log.error("Error from {} : {}", getExchange(), t.getMessage());
     }
 
@@ -306,6 +307,7 @@ public abstract class AbstractClientEndpoint {
                 log.info("Connected to {}", getExchange());
                 return true;
             } catch (Exception e) {
+                this.tickerService.pushError(this.getExchange());
                 var reconnectWaitTimeSeconds = getExponentialBackoffTimeSeconds(++reconnectionAttempts);
                 log.error("Unable to connect to {}, waiting {} seconds to try again", getExchange(),
                         reconnectWaitTimeSeconds);
@@ -361,8 +363,8 @@ public abstract class AbstractClientEndpoint {
     }
 
     protected void catchRestError(Throwable throwable) {
-        //log.error("Error fetching tickets from {}", getExchange(), throwable);
         this.restCircuitBreaker.incrementAndCheckState();
+        this.tickerService.pushError(this.getExchange());
     }
 
     protected boolean isCircuitClosed() {

@@ -16,8 +16,15 @@ public class TickerService {
     @Inject
     Instance<TickerConsumer> tickerConsumer;
 
+    @Inject
+    Instance<ErrorConsumer> errorConsumers;
+
     public void pushTicker(Ticker ticker) {
         tickerServer.broadcast(ticker);
         tickerConsumer.forEach(consumer -> consumer.processTicker(ticker));
+    }
+
+    public void pushError(String exchange) {
+        errorConsumers.forEach(consumer -> consumer.processError(exchange));
     }
 }
