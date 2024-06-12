@@ -6,6 +6,7 @@ import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
+import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 
@@ -55,5 +56,10 @@ public class BlofinClientEndpoint extends AbstractClientEndpoint {
         });
 
         return Optional.of(tickers);
+    }
+
+    @Scheduled(every = "30s")
+    public void ping() {
+        this.sendMessage("ping");
     }
 }
