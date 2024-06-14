@@ -1,19 +1,15 @@
 package dev.mouradski.ftso.prices.client.bybit;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
 import io.quarkus.scheduler.Scheduled;
-import io.smallrye.mutiny.Multi;
-import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 
-import java.net.URI;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.Date;
 
 @ApplicationScoped
@@ -23,36 +19,41 @@ public class BybitClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected String getUri() {
-        return null;
+        return "wss://stream.bybit.com/v5/public/spot";
     }
 
-    @Scheduled(every = "2s")
-    public void getTickers() {
-        this.lastTickerTime = System.currentTimeMillis();
-        if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
-            var request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.bybit.com/v5/market/tickers?category=spot"))
-                    .header("Content-Type", "application/json")
-                    .GET()
-                    .build();
 
-            Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
-                    .onItem().transform(response -> gson.fromJson(response.body(), TickerResponse.class))
-                    .onItem().transformToMulti(tickerResponse -> Multi.createFrom().iterable(tickerResponse.getResult().getList()))
-                    .subscribe().with(ticker -> {
-                        var pair = SymbolHelper.getPair(ticker.getSymbol());
-                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {
-                            pushTicker(Ticker.builder()
-                                    .source(Source.REST)
-                                    .exchange(getExchange())
-                                    .base(pair.getLeft())
-                                    .quote(pair.getRight())
-                                    .lastPrice(ticker.getLastPrice())
-                                    .timestamp(currentTimestamp())
-                                    .build());
-                        }
-                    }, this::catchRestError);
+    @Override
+    protected void subscribeTicker() {
+        var subscribeMsgTemplate = """
+                {
+                    "op": "subscribe","args": [
+                        "tickers.SYMBOL"
+                    ]
+                }
+                """;
+
+        this.getAssets(true).forEach(base -> {
+            this.getAllQuotes(true).forEach(quote -> {
+                this.sendMessage(subscribeMsgTemplate.replace("SYMBOL", base + quote));
+            });
+        });
+        super.subscribeTicker();
+    }
+
+
+    @Override
+    public void onMessage(String message) throws JsonProcessingException {
+        if (!message.contains("tickers.")) {
+            return;
         }
+
+        var tickerPayload = objectMapper.readValue(message, dev.mouradski.ftso.prices.client.bybit.Ticker.class);
+
+        var pair = SymbolHelper.getPair(tickerPayload.getData().getSymbol());
+
+
+        pushTicker(Ticker.builder().base(pair.getLeft()).quote(pair.getRight()).source(Source.WS).exchange(getExchange()).lastPrice(Double.parseDouble(tickerPayload.getData().getLastPrice())).build());
     }
 
     @Override
