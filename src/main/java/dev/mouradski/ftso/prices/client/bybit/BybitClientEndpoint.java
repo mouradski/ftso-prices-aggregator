@@ -53,7 +53,7 @@ public class BybitClientEndpoint extends AbstractClientEndpoint {
         var pair = SymbolHelper.getPair(tickerPayload.getData().getSymbol());
 
 
-        pushTicker(Ticker.builder().base(pair.getLeft()).quote(pair.getRight()).source(Source.WS).exchange(getExchange()).lastPrice(Double.parseDouble(tickerPayload.getData().getLastPrice())).build());
+        pushTicker(Ticker.builder().base(pair.getLeft()).quote(pair.getRight()).source(Source.WS).exchange(getExchange()).lastPrice(Double.parseDouble(tickerPayload.getData().getLastPrice())).timestamp(currentTimestamp()).build());
     }
 
     @Override
