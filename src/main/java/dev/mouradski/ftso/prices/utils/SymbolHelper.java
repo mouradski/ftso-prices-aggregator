@@ -29,7 +29,8 @@ public class SymbolHelper {
             }
         }
 
-        var quote = pair.substring(pair.length() - 4);
+
+        var quote = pair.endsWith("DAI") ? "DAI" : pair.substring(pair.length() - 4);
 
         if (!quote.startsWith("U") && !quote.startsWith("B")) {
             quote = "USD";
