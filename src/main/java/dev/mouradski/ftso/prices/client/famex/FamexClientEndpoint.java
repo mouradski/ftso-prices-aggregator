@@ -9,14 +9,12 @@ import io.quarkus.scheduler.Scheduled;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.websocket.ClientEndpoint;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 @ApplicationScoped
-@ClientEndpoint
 @Startup
 public class FamexClientEndpoint extends AbstractClientEndpoint {
 
