@@ -21,8 +21,10 @@ import java.net.http.HttpClient;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -54,6 +56,8 @@ public abstract class AbstractClientEndpoint {
 
     protected HttpClient client = HttpClient.newHttpClient();
 
+    protected Set<String> symbols;
+
     protected EventCountCircuitBreaker restCircuitBreaker = new EventCountCircuitBreaker(5, 10, TimeUnit.SECONDS);
 
     private Long timeout;
@@ -70,6 +74,19 @@ public abstract class AbstractClientEndpoint {
     private ScheduledExecutorService timeoutExecutor = Executors.newSingleThreadScheduledExecutor();
     private ScheduledFuture<?> timeoutFuture;
     private volatile int reconnectionAttempts = 0;
+
+    protected Set<String> getSymbols(boolean upperCase, String separator) {
+        if (symbols == null) {
+            symbols = new HashSet<>();
+            getAssets(upperCase).forEach(base -> {
+                getAllQuotes(upperCase).forEach(quote -> {
+                    symbols.add(base + separator + quote);
+                });
+            });
+        }
+
+        return symbols;
+    }
 
     protected AbstractClientEndpoint() {
         if (getUri() == null) {
