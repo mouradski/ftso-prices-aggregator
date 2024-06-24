@@ -30,6 +30,7 @@ public class BitgetClientEndpoint extends AbstractClientEndpoint {
     protected void subscribeTicker() {
         subscribeTradeTickers();
     }
+
     private void subscribeTradeTickers() {
         if (subscribed) {
             return;
@@ -38,8 +39,17 @@ public class BitgetClientEndpoint extends AbstractClientEndpoint {
 
         var args = new ArrayList<String>();
 
+        var templateSubArg = """
+                {
+                  "instType": "INST_TYPE",
+                  "channel": "ticker",
+                  "instId": "PAIR"
+                }
+                """;
+
         getAssets(true).forEach(base -> getAllQuotes(true).forEach(quote -> {
-            args.add("{\"instType\": \"SPOT\",\"channel\": \"ticker\",\"instId\": \"PAIR\"}".replace("PAIR", base + quote));
+            args.add(templateSubArg.replace("INST_TYPE", "SPOT").replace("PAIR", base + quote));
+            args.add(templateSubArg.replace("INST_TYPE", quote + "-FUTURES").replace("PAIR", base + quote));
         }));
 
 
@@ -47,12 +57,14 @@ public class BitgetClientEndpoint extends AbstractClientEndpoint {
     }
 
 
-
     @Override
     protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
+
         if (!message.contains("open24h")) {
             return Optional.empty();
         }
+
+        var future = message.contains("-FUTURES");
 
         var tickerMessage = objectMapper.readValue(message, TickerMessage.class);
 
@@ -62,7 +74,7 @@ public class BitgetClientEndpoint extends AbstractClientEndpoint {
 
         for (var ticker : tickerMessage.getData()) {
             var pair = SymbolHelper.getPair(ticker.getInstId());
-            tickers.add(Ticker.builder().source(Source.WS).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(Double.valueOf(ticker.getLastPr())).timestamp(currentTimestamp()).build());
+            tickers.add(Ticker.builder().source(Source.WS).exchange(getExchange() + (future ? "future" : "")).base(pair.getLeft()).quote(pair.getRight()).lastPrice(Double.valueOf(ticker.getLastPr())).timestamp(currentTimestamp()).build());
         }
 
         return Optional.of(tickers);
