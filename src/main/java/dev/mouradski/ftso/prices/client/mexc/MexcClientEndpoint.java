@@ -62,6 +62,36 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
                                     .build());
                         }
                     }, this::catchRestError);
+
+
+            var futureRequest = HttpRequest.newBuilder()
+                    .uri(URI.create("https://contract.mexc.com/api/v1/contract/ticker"))
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
+
+
+            Uni.createFrom().completionStage(() -> client.sendAsync(futureRequest, HttpResponse.BodyHandlers.ofString()))
+                    .onItem().transform(response -> gson.fromJson(response.body(), Contracts.class))
+                    .onItem().transformToMulti(contracts -> Multi.createFrom().items(contracts.getData()))
+                    .subscribe().with(contractData -> {
+                        contractData.forEach(contract -> {
+                            var pair = SymbolHelper.getPair(contract.getSymbol());
+                            if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {
+                                pushTicker(Ticker.builder()
+                                        .source(Source.REST)
+                                        .exchange(getExchange() + "future")
+                                        .base(pair.getLeft())
+                                        .quote(pair.getRight())
+                                        .lastPrice(contract.getLastPrice())
+                                        .timestamp(currentTimestamp())
+                                        .build());
+                            }
+                        });
+
+                    }, this::catchRestError);
         }
+
+
     }
 }

@@ -44,7 +44,7 @@ public class BybitClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     public void onMessage(String message) throws JsonProcessingException {
-        if (!message.contains("tickers.")) {
+        if (!message.contains("tickers.") || !message.contains("lastPrice")) {
             return;
         }
 

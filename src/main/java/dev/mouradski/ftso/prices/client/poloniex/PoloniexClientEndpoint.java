@@ -29,6 +29,8 @@ public class PoloniexClientEndpoint extends AbstractClientEndpoint {
         return "poloniex";
     }
 
+
+
     @Override
     protected void subscribeTicker() {
         var pairs = new ArrayList<>();

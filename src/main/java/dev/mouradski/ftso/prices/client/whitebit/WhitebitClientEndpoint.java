@@ -39,10 +39,16 @@ public class WhitebitClientEndpoint extends AbstractClientEndpoint {
 
         getAssets(true).forEach(base -> getAllQuotes(true).forEach(quote -> {
             var pair = base + "_" + quote;
+            var futurePair = base + "_PERP";
 
             if (supportedSymbols.contains(pair)) {
                 pairs.add("\"" + pair + "\"");
             }
+
+            if (supportedSymbols.contains(futurePair)) {
+                pairs.add("\"" + futurePair + "\"");
+            }
+
         }));
 
         this.sendMessage("{\"id\": ID,\"method\": \"lastprice_subscribe\",\"params\": [PAIRS]}"
@@ -57,11 +63,17 @@ public class WhitebitClientEndpoint extends AbstractClientEndpoint {
             return Optional.empty();
         }
 
+        boolean future = false;
+        if (message.contains("_PERP")) {
+            future = true;
+            message = message.replace("_PERP", "USDT");
+        }
+
         var priceUpdate = objectMapper.readValue(message, PriceUpdate.class);
 
         var pair = SymbolHelper.getPair(priceUpdate.getSymbol());
 
-        return Optional.of(Collections.singletonList(Ticker.builder().source(Source.WS).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight()).lastPrice(priceUpdate.getLastPrice()).timestamp(currentTimestamp()).build()));
+        return Optional.of(Collections.singletonList(Ticker.builder().source(Source.WS).exchange(getExchange() + (future ? "future" : "")).base(pair.getLeft()).quote(pair.getRight()).lastPrice(priceUpdate.getLastPrice()).timestamp(currentTimestamp()).build()));
     }
 
     @Override

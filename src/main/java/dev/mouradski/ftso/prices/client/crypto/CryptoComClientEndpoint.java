@@ -28,12 +28,24 @@ public class CryptoComClientEndpoint extends AbstractClientEndpoint {
     protected void subscribeTicker() {
         getAssets().stream().map(String::toUpperCase)
                 .forEach(base -> getAllQuotes(true).forEach(quote -> {
-                    this.sendMessage("{\"id\": " + incAndGetId()
+                    var msg = "{\"id\": " + incAndGetId()
                             + ",\"method\": \"subscribe\",\"params\": {\"channels\": [\"ticker." + base
-                            + "_" + quote + "\"]},\"nonce\": " + new Date().getTime() + "}");
-                    this.sendMessage("{\"id\": " + incAndGetId()
-                            + ",\"method\": \"subscribe\",\"params\": {\"channels\": [\"ticker." + base
-                            + "_" + quote + "\"]},\"nonce\": " + new Date().getTime() + "}");
+                            + "_" + quote + "\"]},\"nonce\": " + new Date().getTime() + "}";
+
+
+                    var perpMsg = """
+                            {
+                              "id": 1,
+                              "method": "subscribe",
+                              "params": {
+                                "channels": ["ticker.BASEQUOTE-PERP"]
+                              },
+                              "nonce": _ID_
+                            }
+                            """.replace("BASE", base).replace("QUOTE", quote).replace("_ID_", incAndGetIdAsString());
+
+                    this.sendMessage(msg);
+                    this.sendMessage(perpMsg);
                 }));
     }
 
@@ -45,9 +57,11 @@ public class CryptoComClientEndpoint extends AbstractClientEndpoint {
 
         var tickerResponse = objectMapper.readValue(message, dev.mouradski.ftso.prices.client.crypto.Ticker.class);
 
-        var pair = SymbolHelper.getPair(tickerResponse.getResult().getSubscription().replace("ticker.", ""));
+        boolean future = tickerResponse.getResult().getInstrument_name().contains("-PERP");
 
-        return Optional.of(Collections.singletonList(Ticker.builder().source(Source.WS).exchange(getExchange()).base(pair.getLeft())
+        var pair = SymbolHelper.getPair(tickerResponse.getResult().getSubscription().replace("ticker.", "").replace("-PERP", ""));
+
+        return Optional.of(Collections.singletonList(Ticker.builder().source(Source.WS).exchange(getExchange() + (future ? "future" : "")).base(pair.getLeft())
                 .quote(pair.getRight()).lastPrice(tickerResponse.getResult().getData().get(0).getA())
                 .timestamp(currentTimestamp()).build()));
     }
