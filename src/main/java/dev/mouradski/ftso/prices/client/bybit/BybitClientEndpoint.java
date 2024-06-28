@@ -10,7 +10,10 @@ import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 @ApplicationScoped
 @ClientEndpoint
@@ -41,19 +44,17 @@ public class BybitClientEndpoint extends AbstractClientEndpoint {
         super.subscribeTicker();
     }
 
-
     @Override
-    public void onMessage(String message) throws JsonProcessingException {
+    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
         if (!message.contains("tickers.") || !message.contains("lastPrice")) {
-            return;
+            return Optional.empty();
         }
 
         var tickerPayload = objectMapper.readValue(message, dev.mouradski.ftso.prices.client.bybit.Ticker.class);
 
         var pair = SymbolHelper.getPair(tickerPayload.getData().getSymbol());
 
-
-        pushTicker(Ticker.builder().base(pair.getLeft()).quote(pair.getRight()).source(Source.WS).exchange(getExchange()).lastPrice(Double.parseDouble(tickerPayload.getData().getLastPrice())).timestamp(currentTimestamp()).build());
+        return Optional.of(Collections.singletonList(Ticker.builder().base(pair.getLeft()).quote(pair.getRight()).source(Source.WS).exchange(getExchange()).lastPrice(Double.parseDouble(tickerPayload.getData().getLastPrice())).timestamp(currentTimestamp()).build()));
     }
 
     @Override
