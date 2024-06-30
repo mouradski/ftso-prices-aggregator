@@ -35,7 +35,7 @@ public class BitsoTickerUpdater extends AbstractClientEndpoint {
 
         this.lastTickerTime = System.currentTimeMillis();
 
-        Arrays.asList("https://sandbox.bitso.com/api/v3/ticker/").forEach(url -> {
+        Arrays.asList("https://bitso.com/api/v3/ticker").forEach(url -> {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
                     .header("Content-Type", "application/json")

@@ -35,16 +35,17 @@ public class CexioClientEndpoint extends AbstractClientEndpoint {
         this.lastTickerTime = System.currentTimeMillis();
         if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://cex.io/api/tickers/USD/USDT"))
+                    .uri(URI.create("https://trade.cex.io/api/spot/rest-public/get_ticker"))
                     .header("Content-Type", "application/json")
                     .GET()
                     .build();
 
             Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
                     .onItem().transform(response -> gson.fromJson(response.body(), TickerResponse.class))
-                    .onItem().transformToMulti(tickerResponse -> Multi.createFrom().iterable(tickerResponse.getData()))
-                    .subscribe().with(ticker -> {
-                        var pair = SymbolHelper.getPair(ticker.getPair());
+                    .onItem().transformToMulti(tickerResponse -> Multi.createFrom().iterable(tickerResponse.getData().entrySet()))
+                    .subscribe().with(entry -> {
+                        var pair = SymbolHelper.getPair(entry.getKey());
+                        var ticker = entry.getValue();
                         if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {
                             pushTicker(Ticker.builder()
                                     .source(Source.REST)
