@@ -46,11 +46,18 @@ public class CoinstoreClientEndpoint extends AbstractClientEndpoint {
     @Override
     public void onMessage(String message) throws JsonProcessingException {
 
+        this.lastTickerTime = System.currentTimeMillis();
+
         if (!message.contains("@ticker")) {
             return;
         }
 
         var tickerData = objectMapper.readValue(message, TickerData.class);
+
+        if (tickerData.getSymbol() == null || tickerData.getClose() == null) {
+            return;
+        }
+        
         var pair = SymbolHelper.getPair(tickerData.getSymbol());
 
         pushTicker(Ticker.builder().exchange(getExchange()).timestamp(currentTimestamp()).base(pair.getLeft()).quote(pair.getRight()).source(Source.WS).lastPrice(Double.parseDouble(tickerData.getClose())).build());
