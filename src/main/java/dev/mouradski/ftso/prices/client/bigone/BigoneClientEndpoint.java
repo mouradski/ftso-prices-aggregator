@@ -60,6 +60,7 @@ public class BigoneClientEndpoint extends AbstractClientEndpoint {
             Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
                     .onItem().transform(response -> gson.fromJson(response.body(), MarketDataResponse.class))
                     .onItem().transformToMulti(marketDataResponse -> Multi.createFrom().item(marketDataResponse))
+                    .onFailure().invoke(this::catchRestError)
                     .subscribe().with(tickerData -> {
                         tickerData.getData().forEach(tickerDetail -> {
                             var pair = SymbolHelper.getPair(tickerDetail.getAsset_pair_name());

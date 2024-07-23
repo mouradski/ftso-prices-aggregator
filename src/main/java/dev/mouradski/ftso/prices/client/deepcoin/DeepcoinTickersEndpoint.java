@@ -36,6 +36,7 @@ public class DeepcoinTickersEndpoint extends AbstractClientEndpoint {
             Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
                     .onItem().transform(response -> gson.fromJson(response.body(), TickersResponse.class))
                     .onItem().transformToMulti(tickersResponse -> Multi.createFrom().iterable(tickersResponse.getData()))
+                    .onFailure().invoke(this::catchRestError)
                     .subscribe().with(ticker -> {
                         var pair = SymbolHelper.getPair(ticker.getInstId().replace("-SWAP", ""));
                         if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {

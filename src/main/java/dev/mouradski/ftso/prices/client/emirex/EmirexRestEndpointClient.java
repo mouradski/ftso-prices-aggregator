@@ -73,6 +73,7 @@ public class EmirexRestEndpointClient extends AbstractClientEndpoint {
 
                         Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
                                 .onItem().transform(response -> gson.fromJson(response.body(), TickerResponse.class))
+                                .onFailure().invoke(this::catchRestError)
                                 .subscribe().with(tickerResponse -> {
                                     if (tickerResponse != null) {
                                         var pair = SymbolHelper.getPair(tickerResponse.getData().getPair());

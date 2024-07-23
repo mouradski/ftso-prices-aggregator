@@ -38,6 +38,7 @@ public class CoinexClientEndpoint extends AbstractClientEndpoint {
             Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
                     .onItem().transform(response -> gson.fromJson(response.body(), TickerResponse.class))
                     .onItem().transformToMulti(tickerResponse -> Multi.createFrom().iterable(tickerResponse.getData().getTicker().entrySet()))
+                    .onFailure().invoke(this::catchRestError)
                     .subscribe().with(tickerEntry -> {
                         var pair = SymbolHelper.getPair(tickerEntry.getKey());
                         if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {

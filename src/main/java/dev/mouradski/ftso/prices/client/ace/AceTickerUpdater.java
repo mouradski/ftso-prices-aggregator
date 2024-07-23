@@ -46,6 +46,7 @@ public class AceTickerUpdater extends AbstractClientEndpoint {
                     .build();
 
             Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
+                    .onFailure().invoke(this::catchRestError)
                     .onItem().transform(response -> {
                         try {
                             return (Map<String, MarketData>) objectMapper.readValue(response.body(), objectMapper.getTypeFactory().constructMapType(Map.class, String.class, MarketData.class));

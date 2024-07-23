@@ -43,6 +43,7 @@ public class BitsoTickerUpdater extends AbstractClientEndpoint {
                     .build();
 
             Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
+                    .onFailure().invoke(this::catchRestError)
                     .onItem().transform(response -> {
                         try {
                             return objectMapper.readValue(response.body(), Market.class);

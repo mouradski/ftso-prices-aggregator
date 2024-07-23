@@ -43,6 +43,7 @@ public class CexioClientEndpoint extends AbstractClientEndpoint {
             Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
                     .onItem().transform(response -> gson.fromJson(response.body(), TickerResponse.class))
                     .onItem().transformToMulti(tickerResponse -> Multi.createFrom().iterable(tickerResponse.getData().entrySet()))
+                    .onFailure().invoke(this::catchRestError)
                     .subscribe().with(entry -> {
                         var pair = SymbolHelper.getPair(entry.getKey());
                         var ticker = entry.getValue();

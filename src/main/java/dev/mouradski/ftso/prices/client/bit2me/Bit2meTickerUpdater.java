@@ -44,7 +44,7 @@ public class Bit2meTickerUpdater extends AbstractClientEndpoint {
                             client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                                     .thenApply(HttpResponse::body)
                                     .thenApply(this::mapRate)
-                    )
+                    ).onFailure().invoke(this::catchRestError)
                     .subscribe().with(item -> processCurrencyRates(item), this::catchRestError);
         }
     }

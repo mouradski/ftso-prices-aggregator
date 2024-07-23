@@ -48,6 +48,7 @@ public class NamiClientEndpoint extends AbstractClientEndpoint {
                             throw new RuntimeException(e);
                         }
                     })
+                    .onFailure().invoke(this::catchRestError)
                     .onItem().transformToMulti(tickerResponse -> Multi.createFrom().iterable(tickerResponse.getData()))
                     .subscribe().with(ticker -> {
 

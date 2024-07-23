@@ -63,6 +63,7 @@ public class PionexClientEndpoint extends AbstractClientEndpoint {
             Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
                     .onItem().transform(response -> gson.fromJson(response.body(), TickerData.class))
                     .onItem().transformToMulti(tickerData -> Multi.createFrom().iterable(tickerData.getData().getTickers()))
+                    .onFailure().invoke(this::catchRestError)
                     .subscribe().with(ticker -> {
                         var pair = SymbolHelper.getPair(ticker.getSymbol());
                         if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {

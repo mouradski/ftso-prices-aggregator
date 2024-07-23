@@ -49,6 +49,7 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
             Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
                     .onItem().transform(response -> gson.fromJson(response.body(), PriceTicker[].class))
                     .onItem().transformToMulti(tickers -> Multi.createFrom().items(tickers))
+                    .onFailure().invoke(this::catchRestError)
                     .subscribe().with(ticker -> {
                         var pair = SymbolHelper.getPair(ticker.getSymbol());
                         if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {
@@ -74,6 +75,7 @@ public class MexcClientEndpoint extends AbstractClientEndpoint {
             Uni.createFrom().completionStage(() -> client.sendAsync(futureRequest, HttpResponse.BodyHandlers.ofString()))
                     .onItem().transform(response -> gson.fromJson(response.body(), Contracts.class))
                     .onItem().transformToMulti(contracts -> Multi.createFrom().items(contracts.getData()))
+                    .onFailure().invoke(this::catchRestError)
                     .subscribe().with(contractData -> {
                         contractData.forEach(contract -> {
                             var pair = SymbolHelper.getPair(contract.getSymbol());

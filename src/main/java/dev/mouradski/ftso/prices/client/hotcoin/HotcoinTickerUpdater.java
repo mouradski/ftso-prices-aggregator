@@ -42,6 +42,7 @@ public class HotcoinTickerUpdater extends AbstractClientEndpoint {
             Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
                     .onItem().transform(response -> gson.fromJson(response.body(), Tickers.class))
                     .onItem().transformToMulti(tickersResponse -> Multi.createFrom().items(tickersResponse.getTicker()))
+                    .onFailure().invoke(this::catchRestError)
                     .subscribe().with(data -> {
                         var pair = SymbolHelper.getPair(data.getSymbol());
                         if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {

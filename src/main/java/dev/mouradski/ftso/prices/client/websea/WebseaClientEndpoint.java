@@ -50,6 +50,7 @@ public class WebseaClientEndpoint extends AbstractClientEndpoint {
                             throw new RuntimeException(e);
                         }
                     })
+                    .onFailure().invoke(this::catchRestError)
                     .onItem().transformToMulti(tickers -> Multi.createFrom().iterable(Arrays.stream(tickers.getResult()).toList()))
                     .subscribe().with(ticker -> {
                         var pair = SymbolHelper.getPair(ticker.getSymbol());

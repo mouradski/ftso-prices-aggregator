@@ -39,6 +39,7 @@ public class BydfiRestEndpointClient extends AbstractClientEndpoint {
 
             Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
                     .onItem().transform(response -> gson.fromJson(response.body(), TickersResponse.class))
+                    .onFailure().invoke(this::catchRestError)
                     .onItem().transformToMulti(tickersResponse -> Multi.createFrom().iterable(tickersResponse.getData() == null ? new HashSet<>() : tickersResponse.getData().entrySet()))
                     .subscribe().with(tickerEntry -> {
                         var pair = SymbolHelper.getPair(tickerEntry.getKey());

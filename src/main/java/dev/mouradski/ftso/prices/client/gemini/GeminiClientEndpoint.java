@@ -81,6 +81,7 @@ public class GeminiClientEndpoint extends AbstractClientEndpoint {
 
                         Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
                                 .onItem().transform(response -> gson.fromJson(response.body(), GeminiTicker.class))
+                                .onFailure().invoke(this::catchRestError)
                                 .subscribe().with(tickerResponse -> {
                                     if (tickerResponse.getSymbol() != null) {
                                         var pair = SymbolHelper.getPair(tickerResponse.getSymbol());

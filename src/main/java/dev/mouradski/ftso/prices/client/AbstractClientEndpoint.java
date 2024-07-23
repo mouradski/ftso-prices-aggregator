@@ -380,7 +380,6 @@ public abstract class AbstractClientEndpoint {
     }
 
     protected void catchRestError(Throwable throwable) {
-        throwable.printStackTrace();
         this.restCircuitBreaker.incrementAndCheckState();
         this.tickerService.pushError(this.getExchange());
     }

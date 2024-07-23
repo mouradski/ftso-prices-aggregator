@@ -42,6 +42,7 @@ public class CoinsbitClientEndpoint extends AbstractClientEndpoint {
                     .onItem().transform(response -> gson.fromJson(response.body(), ApiResponse.class))
                     .onItem().transformToUni(tickerResponse -> Uni.createFrom().item(tickerResponse))
                     .onItem().transformToMulti(tickerResponse -> Multi.createFrom().iterable(tickerResponse.getResult().entrySet()))
+                    .onFailure().invoke(this::catchRestError)
                     .subscribe().with(entry -> {
                         var key = entry.getKey();
                         var value = entry.getValue();

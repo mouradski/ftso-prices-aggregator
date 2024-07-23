@@ -41,6 +41,7 @@ public class LatokenTickerUpdater extends AbstractClientEndpoint {
             Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
                     .onItem().transform(response -> gson.fromJson(response.body(), TickerMessage[].class))
                     .onItem().transformToMulti(tickersResponse -> Multi.createFrom().items(tickersResponse))
+                    .onFailure().invoke(this::catchRestError)
                     .subscribe().with(data -> {
 
                         var pair = SymbolHelper.getPair(data.getSymbol());

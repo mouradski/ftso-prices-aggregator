@@ -39,6 +39,7 @@ public class IndoexClientEndpoint extends AbstractClientEndpoint {
                             throw new RuntimeException(e);
                         }
                     })
+                    .onFailure().invoke(this::catchRestError)
                     .onItem().transformToMulti(tickers -> Multi.createFrom().items(tickers.getMarketdetails()))
                     .subscribe().with(tickers -> {
                         tickers.forEach(ticker -> {

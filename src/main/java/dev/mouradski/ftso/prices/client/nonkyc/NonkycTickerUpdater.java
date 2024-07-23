@@ -42,6 +42,7 @@ public class NonkycTickerUpdater extends AbstractClientEndpoint {
                             throw new RuntimeException(e);
                         }
                     })
+                    .onFailure().invoke(this::catchRestError)
                     .onItem().transformToMulti(tickersResponse -> Multi.createFrom().iterable(Arrays.stream(tickersResponse).toList()))
                     .subscribe().with(ticker -> {
                         if (getAssets(true).contains(ticker.getBase()) && getAllQuotes(true).contains(ticker.getQuote())) {

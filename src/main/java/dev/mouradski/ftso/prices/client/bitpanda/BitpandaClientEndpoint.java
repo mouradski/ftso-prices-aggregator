@@ -47,6 +47,7 @@ public class BitpandaClientEndpoint extends AbstractClientEndpoint {
 
             Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
                     .onItem().transform(response -> Collections.singletonList(response.body()))
+                    .onFailure().invoke(this::catchRestError)
                     .subscribe().with(entry -> {
                         try {
                             var currencyMap = objectMapper.readValue(entry.get(0), new TypeReference<Map<String, Map<String, String>>>() {});

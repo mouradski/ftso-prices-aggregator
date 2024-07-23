@@ -30,6 +30,7 @@ public class CoinwTickersEndpoint extends AbstractClientEndpoint {
             Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
                     .onItem().transform(response -> gson.fromJson(response.body(), TickersResponse.class))
                     .onItem().transformToMulti(tickersResponse -> Multi.createFrom().iterable(tickersResponse.getData().entrySet()))
+                    .onFailure().invoke(this::catchRestError)
                     .subscribe().with(entry -> {
                         var pair = SymbolHelper.getPair(entry.getKey());
                         if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {

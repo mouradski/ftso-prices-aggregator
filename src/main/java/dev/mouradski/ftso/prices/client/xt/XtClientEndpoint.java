@@ -50,6 +50,7 @@ public class XtClientEndpoint extends AbstractClientEndpoint {
             Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
                     .onItem().transform(response -> gson.fromJson(response.body(), TickerResponse.class))
                     .onItem().transformToMulti(tickerResponse -> Multi.createFrom().iterable(tickerResponse.getResult()))
+                    .onFailure().invoke(this::catchRestError)
                     .subscribe().with(ticker -> {
                         var pair = SymbolHelper.getPair(ticker.getS());
                         if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {
