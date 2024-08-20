@@ -300,7 +300,7 @@ public abstract class AbstractClientEndpoint {
                 return true;
             } catch (Exception e) {
                 this.tickerService.pushError(this.getExchange());
-                var reconnectWaitTimeSeconds = getExponentialBackoffTimeSeconds(++reconnectionAttempts);
+                var reconnectWaitTimeSeconds = 20;
                 log.error("Unable to connect to {}, waiting {} seconds to try again", getExchange(),
                         reconnectWaitTimeSeconds);
 
@@ -372,21 +372,4 @@ public abstract class AbstractClientEndpoint {
         this.exchanges = exchanges;
     }
 
-    /*
-     * t = f(x) = round(1.3^x)
-     * gives values 1,1,2,2,3,4,5,6,8,11,14,18,23,30,39,51
-     * for the first 16 attempts
-     * Return a max of 60 seconds
-     */
-    private int getExponentialBackoffTimeSeconds(int attempt) {
-        if (attempt < 0) {
-            attempt = 1;
-        }
-
-        var base = 1.3d;
-
-        int result = Math.round((float) Math.pow(base, attempt));
-
-        return Math.min(result, 60);
-    }
 }
