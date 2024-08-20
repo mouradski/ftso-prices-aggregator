@@ -9,6 +9,9 @@ import lombok.Setter;
 @Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
 class Data {
+
+    @JsonProperty("symbol")
+    private String symbol;
     @JsonProperty("instId")
     private String instId;
     @JsonProperty("lastPr")

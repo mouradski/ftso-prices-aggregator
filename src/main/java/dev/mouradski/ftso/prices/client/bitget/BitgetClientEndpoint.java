@@ -1,19 +1,19 @@
 package dev.mouradski.ftso.prices.client.bitget;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
 import io.quarkus.scheduler.Scheduled;
-import jakarta.enterprise.context.ApplicationScoped;
+import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
 import jakarta.inject.Singleton;
 import jakarta.websocket.ClientEndpoint;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.net.URI;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 @Singleton
 @ClientEndpoint
@@ -24,70 +24,44 @@ public class BitgetClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected String getUri() {
-        return "wss://ws.bitget.com/v2/ws/public";
+        return null;
     }
 
-    @Override
-    protected void subscribeTicker() {
-        subscribeTradeTickers();
-    }
+    @Scheduled(every = "1s")
+    public void fetchTickers() {
+        this.messageReceived();
 
-    private void subscribeTradeTickers() {
-        if (subscribed) {
-            return;
-        }
-        subscribed = true;
+        if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
+            var request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.bitget.com/api/v2/spot/market/tickers"))
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
 
-        var args = new ArrayList<String>();
-
-        var templateSubArg = """
-                {
-                  "instType": "INST_TYPE",
-                  "channel": "ticker",
-                  "instId": "PAIR"
-                }
-                """;
-
-        getAssets(true).forEach(base -> getAllQuotes(true).forEach(quote -> {
-            args.add(templateSubArg.replace("INST_TYPE", "SPOT").replace("PAIR", base + quote));
-            args.add(templateSubArg.replace("INST_TYPE", quote + "-FUTURES").replace("PAIR", base + quote));
-        }));
-
-
-        this.sendMessage("{\"op\": \"subscribe\",\"args\": [ARGS]}".replace("ARGS", String.join(",", args)));
-    }
-
-
-    @Override
-    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
-
-        if (!message.contains("open24h")) {
-            return Optional.empty();
+            Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
+                    .onItem().transform(response -> gson.fromJson(response.body(), TickerMessage.class))
+                    .onItem().transformToMulti(tickersResponse -> Multi.createFrom().items(tickersResponse.getData()))
+                    .subscribe().with(data -> {
+                        data.forEach(ticker -> {
+                            var pair = SymbolHelper.getPair(ticker.getSymbol());
+                            if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {
+                                pushTicker(Ticker.builder()
+                                        .source(Source.REST)
+                                        .exchange(getExchange())
+                                        .base(pair.getLeft())
+                                        .quote(pair.getRight())
+                                        .lastPrice(Double.parseDouble(ticker.getLastPr()))
+                                        .timestamp(currentTimestamp())
+                                        .build());
+                            }
+                        });
+                    },this::catchRestError);
         }
 
-        var future = message.contains("-FUTURES");
-
-        var tickerMessage = objectMapper.readValue(message, TickerMessage.class);
-
-        var tickers = new ArrayList<Ticker>();
-
-
-
-        for (var ticker : tickerMessage.getData()) {
-            var pair = SymbolHelper.getPair(ticker.getInstId());
-            tickers.add(Ticker.builder().source(Source.WS).exchange(getExchange() + (future ? "future" : "")).base(pair.getLeft()).quote(pair.getRight()).lastPrice(Double.valueOf(ticker.getLastPr())).timestamp(currentTimestamp()).build());
-        }
-
-        return Optional.of(tickers);
     }
 
     @Override
     protected String getExchange() {
         return "bitget";
-    }
-
-    @Scheduled(every = "30s")
-    public void ping() {
-        this.sendMessage("ping");
     }
 }
