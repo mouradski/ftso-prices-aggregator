@@ -135,7 +135,6 @@ public abstract class AbstractClientEndpoint {
             return;
         }
 
-        System.out.println("Checking message received timeout");
         var shouldReconnectFlag = false;
 
         if (this.getUri() != null && !this.messageReceived) {
