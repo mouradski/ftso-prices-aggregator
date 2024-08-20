@@ -2,6 +2,7 @@ package dev.mouradski.ftso.prices.client.bitmart;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
+import dev.mouradski.ftso.prices.client.cointr.TickersResponse;
 import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
@@ -10,11 +11,16 @@ import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.Unpooled;
 import io.quarkus.runtime.Startup;
 import io.quarkus.scheduler.Scheduled;
+import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 import jakarta.websocket.OnMessage;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.URI;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -90,6 +96,39 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
         });
 
         return Optional.of(tickers);
+    }
+
+    @Scheduled(every = "1s")
+    public void fetchTickers() {
+        this.messageReceived();
+
+        if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
+            var request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api-cloud.bitmart.com/spot/quotation/v3/tickers"))
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
+
+            Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
+                    .onItem().transform(response -> gson.fromJson(response.body(), RestSpotTickers.class))
+                    .onItem().transformToMulti(tickersResponse -> Multi.createFrom().items(tickersResponse.getData()))
+                    .subscribe().with(data -> {
+                        data.forEach(ticker -> {
+                            var pair = SymbolHelper.getPair(ticker.get(0));
+                            if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {
+                                pushTicker(Ticker.builder()
+                                        .source(Source.REST)
+                                        .exchange(getExchange())
+                                        .base(pair.getLeft())
+                                        .quote(pair.getRight())
+                                        .lastPrice(Double.parseDouble(ticker.get(1)))
+                                        .timestamp(currentTimestamp())
+                                        .build());
+                            }
+                        });
+                    },this::catchRestError);
+        }
+
     }
 
     @Scheduled(every = "15s")
