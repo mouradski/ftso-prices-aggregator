@@ -8,13 +8,14 @@ import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
 import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Singleton;
 import jakarta.websocket.ClientEndpoint;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@ApplicationScoped
+@Singleton
 @ClientEndpoint
 @Startup
 public class BitgetClientEndpoint extends AbstractClientEndpoint {

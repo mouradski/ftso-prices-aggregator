@@ -33,7 +33,7 @@ public class BitsoTickerUpdater extends AbstractClientEndpoint {
             return;
         }
 
-        this.lastTickerTime = System.currentTimeMillis();
+        this.messageReceived();
 
         Arrays.asList("https://bitso.com/api/v3/ticker").forEach(url -> {
             var request = HttpRequest.newBuilder()

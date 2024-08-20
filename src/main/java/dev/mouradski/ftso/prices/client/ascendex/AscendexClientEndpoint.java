@@ -30,7 +30,9 @@ public class AscendexClientEndpoint extends AbstractClientEndpoint {
     @Override
     protected void subscribeTicker() {
         getAssets(true).stream().forEach(base -> getAllStablecoinQuotesExceptBusd(true).forEach(quote -> this.sendMessage(
-                "{ \"op\": \"sub\", \"id\": \"ID\", \"ch\": \"summary:BASE/QUOTE\" }"
+                """
+                  { "op": "sub", "id": "ID", "ch": "summary:BASE/QUOTE" }
+                """
                         .replace("ID", incAndGetIdAsString())
                         .replace("BASE", base)
                         .replace("QUOTE", quote))));

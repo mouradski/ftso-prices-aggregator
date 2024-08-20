@@ -35,7 +35,7 @@ public class BitpandaClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(every = "1s")
     public void getTickers() {
-        this.lastTickerTime = System.currentTimeMillis();
+        this.messageReceived();
 
         if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()

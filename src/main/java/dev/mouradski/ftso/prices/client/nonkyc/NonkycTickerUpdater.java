@@ -25,7 +25,7 @@ public class NonkycTickerUpdater extends AbstractClientEndpoint {
             return;
         }
 
-        this.lastTickerTime = System.currentTimeMillis();
+        this.messageReceived();
 
         Arrays.asList("https://api.nonkyc.io/api/v2/tickers").forEach(url -> {
             var request = HttpRequest.newBuilder()

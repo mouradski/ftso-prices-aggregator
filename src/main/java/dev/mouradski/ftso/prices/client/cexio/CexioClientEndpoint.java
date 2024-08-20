@@ -32,7 +32,7 @@ public class CexioClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(every = "2s")
     public void getTickers() {
-        this.lastTickerTime = System.currentTimeMillis();
+        this.messageReceived();
         if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://trade.cex.io/api/spot/rest-public/get_ticker"))

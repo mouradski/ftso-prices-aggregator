@@ -24,7 +24,7 @@ public class DeepcoinTickersEndpoint extends AbstractClientEndpoint {
             return;
         }
 
-        this.lastTickerTime = System.currentTimeMillis();
+        this.messageReceived();
 
         Arrays.asList("https://api.deepcoin.com/deepcoin/market/tickers?instType=SPOT").forEach(url -> {
             var request = HttpRequest.newBuilder()

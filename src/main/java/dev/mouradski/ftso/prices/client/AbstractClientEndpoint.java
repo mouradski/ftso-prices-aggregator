@@ -21,10 +21,7 @@ import java.net.http.HttpClient;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -62,18 +59,18 @@ public abstract class AbstractClientEndpoint {
 
     private Long timeout;
 
-    private boolean shutdown = false;
-
     protected final ObjectMapper objectMapper = new ObjectMapper();
 
     protected Session userSession = null;
     protected AtomicInteger counter = new AtomicInteger();
-
-    protected long lastTickerTime = System.currentTimeMillis();
+    private boolean started = false;
 
     private ScheduledExecutorService timeoutExecutor = Executors.newSingleThreadScheduledExecutor();
+
     private ScheduledFuture<?> timeoutFuture;
     private volatile int reconnectionAttempts = 0;
+
+    private boolean messageReceived = true;
 
     protected Set<String> getSymbols(boolean upperCase, String separator) {
         if (symbols == null) {
@@ -92,32 +89,17 @@ public abstract class AbstractClientEndpoint {
         if (getUri() == null) {
             prepareConnection();
         }
-        Thread shutdownHook = new Thread(() -> {
-            if (this.enabled) {
-                log.info("Shutting down {}", getExchange());
-                this.shutdown = true;
-            }
-        });
-        Runtime.getRuntime().addShutdownHook(shutdownHook);
-    }
-
-    public void setTimeout(long timeout) {
-        this.timeout = timeout;
     }
 
     @OnOpen
     public void onOpen(Session userSession) {
         userSession.setMaxTextMessageBufferSize(1024 * 1024 * 10);
         this.userSession = userSession;
-        scheduleTimeoutFutureExecution();
         subscribe();
     }
 
     @OnClose
     public void onClose(Session userSession, CloseReason reason) {
-        if (shutdown) {
-            return;
-        }
         this.tickerService.pushError(this.getExchange());
         log.info("Closing websocket for {}, Reason : {}", getExchange(), reason.getReasonPhrase());
 
@@ -132,13 +114,14 @@ public abstract class AbstractClientEndpoint {
 
     @OnMessage
     public void onMessage(String message) throws JsonProcessingException {
-        this.lastTickerTime = System.currentTimeMillis();
         try {
             this.decodeMetadata(message);
 
             if (!this.pong(message)) {
-                scheduleTimeoutFutureExecution();
-                this.mapTicker(message).ifPresent(tickerList -> tickerList.forEach(this::pushTicker));
+                this.mapTicker(message).ifPresent(tickerList -> {
+                    this.messageReceived();
+                    tickerList.forEach(this::pushTicker);
+                });
             }
 
         } catch (Exception e) {
@@ -147,27 +130,19 @@ public abstract class AbstractClientEndpoint {
 
     }
 
-    private void scheduleTimeoutFutureExecution() {
-        if (timeoutFuture == null) {
+    public void checkMessageReceivedTimeout() {
+        if (this.getUri() == null) {
             return;
         }
-        timeoutFuture.cancel(false);
 
-        if (timeoutFuture.isCancelled() || timeoutFuture.isDone()) {
-            timeoutFuture = timeoutExecutor.scheduleAtFixedRate(this::checkMessageReceivedTimeout, getTimeout(),
-                    getTimeout(),
-                    TimeUnit.SECONDS);
-        }
-    }
-
-    private void checkMessageReceivedTimeout() {
-
+        System.out.println("Checking message received timeout");
         var shouldReconnectFlag = false;
 
-        if (this.getUri() != null && (System.currentTimeMillis() - lastTickerTime) > (getTimeout() * 1000)) {
+        if (this.getUri() != null && !this.messageReceived) {
             log.info("No ticker received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
-
             shouldReconnectFlag = true;
+        } else {
+            this.messageReceived = false;
         }
         if (shouldReconnectFlag)
             onClose(userSession,
@@ -282,29 +257,30 @@ public abstract class AbstractClientEndpoint {
             this.enabled = true;
 
             if (this.getUri() != null) {
-                timeoutFuture = timeoutExecutor.scheduleAtFixedRate(this::checkMessageReceivedTimeout, getTimeout(),
-                        getTimeout(),
-                        TimeUnit.SECONDS);
-
                 this.connect();
             }
         }
     }
 
-    public void shutdown() throws IOException {
-        shutdown = true;
-        this.userSession.close();
-    }
-
     public synchronized boolean connect() {
-        if (shutdown) {
-            return false;
-        }
-
-
         if (getUri() == null) {
             return true;
         }
+
+        if (!started) {
+            Timer timer = new Timer();
+            TimerTask repeatedTask = new TimerTask() {
+                public void run() {
+                    checkMessageReceivedTimeout();
+                }
+            };
+
+
+            timer.scheduleAtFixedRate(repeatedTask, 10000, getTimeout() * 1000);
+
+            this.started = true;
+        }
+
 
         if (this.userSession == null || !this.userSession.isOpen()) {
 
@@ -377,6 +353,10 @@ public abstract class AbstractClientEndpoint {
 
     protected Long currentTimestamp() {
         return Instant.now().toEpochMilli();
+    }
+
+    protected void messageReceived() {
+        this.messageReceived = true;
     }
 
     protected void catchRestError(Throwable throwable) {

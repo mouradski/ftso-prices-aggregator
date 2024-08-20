@@ -46,7 +46,7 @@ public class CoinstoreClientEndpoint extends AbstractClientEndpoint {
     @Override
     public void onMessage(String message) throws JsonProcessingException {
 
-        this.lastTickerTime = System.currentTimeMillis();
+        this.messageReceived();
 
         if (!message.contains("@ticker")) {
             return;
