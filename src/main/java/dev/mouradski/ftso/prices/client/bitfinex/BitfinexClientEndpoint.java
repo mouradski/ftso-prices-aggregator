@@ -1,21 +1,16 @@
 package dev.mouradski.ftso.prices.client.bitfinex;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
 import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
-import io.quarkus.scheduler.Scheduled;
-import io.smallrye.mutiny.Multi;
-import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
+import org.apache.commons.lang3.tuple.Pair;
+import org.json.JSONArray;
 
-import java.net.URI;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.*;
 
 @ApplicationScoped
@@ -23,9 +18,53 @@ import java.util.*;
 @Startup
 public class BitfinexClientEndpoint extends AbstractClientEndpoint {
 
+    private Map<Double, Pair<String, String>> channelIds = new HashMap<>();
+
     @Override
     protected String getUri() {
-        return null;
+        return "wss://api-pub.bitfinex.com/ws/2";
+    }
+
+    @Override
+    protected void subscribeTicker() {
+        getAssets().stream().map(String::toUpperCase)
+                .forEach(base -> getAllQuotes(true).forEach(quote -> {
+                    var symbol = "t" + base + ("USDT".equals(quote) ? "UST" : ("USDC".equals(quote) ? "UDC" : quote));
+                    var symbol2 = "t" + base + ("USDT".equals(quote) ? "UST" : ("USDC".equals(quote) ? "UDC" : quote));
+                    this
+                            .sendMessage(
+                                    "{\"event\":\"subscribe\", \"channel\":\"ticker\",\"symbol\":\"" + symbol + "\"}");
+                    this
+                            .sendMessage(
+                                    "{\"event\":\"subscribe\", \"channel\":\"ticker\",\"symbol\":\"" + symbol2 + "\"}");
+                }));
+    }
+
+    @Override
+    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
+
+        if (message.contains("hb")) {
+            return Optional.empty();
+        }
+
+        var jsonArray = new JSONArray(message);
+
+        var channelId = jsonArray.getDouble(0);
+
+        var pair = channelIds.get(channelId);
+
+        if (pair == null) {
+            return Optional.empty();
+        }
+
+        var quote = pair.getRight();
+
+        var tickerData = jsonArray.getJSONArray(1);
+
+        double lastPrice = tickerData.getDouble(6);
+
+        return Optional.of(Collections.singletonList(Ticker.builder().source(Source.WS).exchange(getExchange()).base(pair.getLeft())
+                .quote(quote).lastPrice(lastPrice).timestamp(currentTimestamp()).build()));
     }
 
     @Override
@@ -33,47 +72,15 @@ public class BitfinexClientEndpoint extends AbstractClientEndpoint {
         return "bitfinex";
     }
 
-    @Scheduled(every = "1s")
-    public void fetchTickers() {
-        this.messageReceived();
-
-        if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
-            var request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api-pub.bitfinex.com/v2/tickers?symbols=ALL"))
-                    .header("Content-Type", "application/json")
-                    .GET()
-                    .build();
-
-            Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
-                    .onItem().transform(response -> {
-                        try {
-                            return objectMapper.readValue(response.body(), new TypeReference<List<Object[]>>() {});
-                        } catch (JsonProcessingException e) {
-                            throw new RuntimeException(e);
-                        }
-                    })
-                    .onItem().transformToMulti(tickersResponse -> Multi.createFrom().items(tickersResponse))
-                    .subscribe().with(data -> {
-                        data.forEach(ticker -> {
-                            var pair = SymbolHelper.getPair(ticker[0].toString().replace("t", "").replace("UST", "USDT"));
-
-                            if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {
-
-                                pushTicker(Ticker.builder()
-                                        .source(Source.REST)
-                                        .exchange(getExchange())
-                                        .base(pair.getLeft())
-                                        .quote(pair.getRight())
-                                        .lastPrice(Double.parseDouble(ticker[7].toString()))
-                                        .timestamp(currentTimestamp())
-                                        .build());
-
-
-                            }
-                        });
-
-                    },this::catchRestError);
+    @Override
+    protected void decodeMetadata(String message) {
+        if (message.contains("subscribed")) {
+            var symbolId = message.split("\"pair\":\"")[1].split("\"")[0].replace("t", "").replace("UST", "USDT")
+                    .replace("UDC", "USDC")
+                    .replace(":", "");
+            var channelId = Double.valueOf(message.split("\"chanId\":")[1].split(",")[0]);
+            var pair = SymbolHelper.getPair(symbolId);
+            this.channelIds.put(channelId, pair);
         }
-
     }
 }
