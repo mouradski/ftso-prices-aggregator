@@ -25,7 +25,7 @@ public class PhemexEndpointClient extends AbstractClientEndpoint {
 
     @Override
     protected String getExchange() {
-        return "phamex";
+        return "phemex";
     }
 
 
