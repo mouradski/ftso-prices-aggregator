@@ -9,13 +9,9 @@ import lombok.Setter;
 @Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TickerData {
-    @JsonProperty("base_currency")
-    private String base;
+    private String pair;
 
-    @JsonProperty("target_currency")
-    private String quote;
-
-    @JsonProperty("last_price")
-    private String lastPrice;
+    @JsonProperty("last")
+    private String last;
 
 }

@@ -10,7 +10,6 @@ import io.quarkus.scheduler.Scheduled;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.websocket.ClientEndpoint;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -26,7 +25,7 @@ public class IndoexClientEndpoint extends AbstractClientEndpoint {
 
         if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.indoex.io/coingecko/tickers"))
+                    .uri(URI.create("https://api.indoex.io/getMarketDetails/"))
                     .header("Content-Type", "application/json")
                     .GET()
                     .build();
@@ -43,13 +42,14 @@ public class IndoexClientEndpoint extends AbstractClientEndpoint {
                     .onItem().transformToMulti(tickers -> Multi.createFrom().items(tickers.getMarketdetails()))
                     .subscribe().with(tickers -> {
                         tickers.forEach(ticker -> {
-                            if (getAssets(true).contains(ticker.getBase()) && getAllQuotes(true).contains(ticker.getQuote())) {
+                            var pair = SymbolHelper.getPair(ticker.getPair());
+                            if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {
                                 pushTicker(Ticker.builder()
                                         .source(Source.REST)
                                         .exchange(getExchange())
-                                        .base(ticker.getBase())
-                                        .quote(ticker.getQuote())
-                                        .lastPrice(Double.parseDouble(ticker.getLastPrice()))
+                                        .base(pair.getLeft())
+                                        .quote(pair.getRight())
+                                        .lastPrice(Double.parseDouble(ticker.getLast()))
                                         .timestamp(currentTimestamp())
                                         .build());
                             }
