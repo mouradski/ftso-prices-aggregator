@@ -6,12 +6,16 @@ import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
 import io.quarkus.runtime.Startup;
+import io.quarkus.scheduler.Scheduled;
+import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.ClientEndpoint;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.net.URI;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Arrays;
 
 @ApplicationScoped
 @ClientEndpoint
@@ -20,30 +24,7 @@ public class BitrueClientEndpoint extends AbstractClientEndpoint {
 
     @Override
     protected String getUri() {
-        return "wss://ws.bitrue.com/kline-api/ws";
-    }
-
-    @Override
-    protected void subscribeTicker() {
-        getAssets().stream().forEach(base -> getAllStablecoinQuotesExceptBusd(false).forEach(quote -> this.sendMessage(
-                "{\"event\":\"sub\",\"params\":{\"cb_id\":\"CB_ID\",\"channel\":\"market_CB_ID_ticker\"}}"
-                        .replaceAll("CB_ID", base + quote))));
-    }
-
-    @Override
-    protected Optional<List<Ticker>> mapTicker(String message) throws JsonProcessingException {
-        if (!message.contains("close")) {
-            return Optional.empty();
-        }
-
-        var tickerResponse = objectMapper.readValue(message, TickerResponse.class);
-
-        var pair = SymbolHelper
-                .getPair(tickerResponse.getChannel().replace("market_", "").replace("_ticker", ""));
-
-        return Optional.of(Collections
-                .singletonList(Ticker.builder().source(Source.WS).exchange(getExchange()).base(pair.getLeft()).quote(pair.getRight())
-                        .lastPrice(tickerResponse.getTick().getClose()).timestamp(currentTimestamp()).build()));
+        return null;
     }
 
     @Override
@@ -51,19 +32,41 @@ public class BitrueClientEndpoint extends AbstractClientEndpoint {
         return "bitrue";
     }
 
-    @Override
-    protected long getTimeout() {
-        return 30;
-    }
+    @Scheduled(every = "1s")
+    public void getTickers() {
+        this.messageReceived();
 
-    @Override
-    protected boolean pong(String message) {
+        if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
+            var request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://www.bitrue.com/api/v1/ticker/24hr"))
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
 
-        if (message.contains("ping")) {
-            this.sendMessage(message.replaceAll("ping", "pong"));
-            return true;
+            Uni.createFrom().completionStage(() -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
+                    .onFailure().invoke(this::catchRestError)
+                    .onItem().transform(response -> {
+                        try {
+                            return objectMapper.readValue(response.body(), TickerData[].class);
+                        } catch (JsonProcessingException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .onItem().transformToMulti(tickers -> Multi.createFrom().iterable(Arrays.stream(tickers).toList()))
+                    .subscribe().with(ticker -> {
+                        var pair = SymbolHelper.getPair(ticker.getSymbol());
+
+                        if (getAssets(true).contains(pair.getLeft()) && getAllQuotes(true).contains(pair.getRight())) {
+                            pushTicker(Ticker.builder()
+                                    .source(Source.REST)
+                                    .exchange(getExchange())
+                                    .base(pair.getLeft())
+                                    .quote(pair.getRight())
+                                    .lastPrice(ticker.getLastPrice())
+                                    .timestamp(currentTimestamp())
+                                    .build());
+                        }
+                    }, this::catchRestError);
         }
-
-        return false;
     }
 }
