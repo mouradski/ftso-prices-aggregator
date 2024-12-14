@@ -87,7 +87,11 @@ public abstract class AbstractClientEndpoint {
 
     protected AbstractClientEndpoint() {
         if (getUri() == null) {
-            prepareConnection();
+            try {
+                prepareConnection();
+            } catch (Exception e) {
+                log.error("Error initializing client for {}", getExchange(), e);
+            }
         }
     }
 
