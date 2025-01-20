@@ -2,7 +2,7 @@
 
 A digital asset price aggregator, the app centralizes real-time prices retrieval from over 80 exchanges using Websocket APIs and distributes them via websocket in a single, simple format.
 
-Collect the prices of the following assets in real time: aave,ada,algo,arb,atom,avax,bch,bnb,bonk,btc,dai,doge,dot,ena,etc,eth,ethfi,fet,fil,flr,ftm,hnt,icp,jup,leo,link,ltc,near,not,ondo,pepe,pol,pyth,qnt,render,rune,sgb,shib,sol,sui,tao,ton,trx,uni,usdc,usdt,wif,xdc,xlm,xrp,matic
+Collect the prices of the following assets in real time: aave,ada,algo,arb,atom,avax,bch,bnb,bonk,btc,dai,doge,dot,ena,etc,eth,ethfi,fet,fil,flr,ftm,hnt,icp,jup,leo,link,ltc,near,not,ondo,pepe,pol,pyth,qnt,render,rune,sgb,shib,sol,sui,tao,ton,trx,uni,usdc,usdt,wif,xdc,xlm,xrp,matic,trump
 
 
 You can add more assets by editing .env file.
