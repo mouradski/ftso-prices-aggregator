@@ -27,7 +27,7 @@ docker-compose up
 
 ## Connect to WS
 
-ws://localhost:8985/ticker
+ws://localhost:8090/ticker
 
 
 
