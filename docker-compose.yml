@@ -6,12 +6,4 @@ services:
     build: .
     env_file: .env
     ports:
-      - "8986:8986"
-    deploy:
-      resources:
-        limits:
-          cpus: "0.50"
-          memory: "256M"
-        reservations:
-          cpus: "0.25"
-          memory: "128M"
+      - "8090:8090"
