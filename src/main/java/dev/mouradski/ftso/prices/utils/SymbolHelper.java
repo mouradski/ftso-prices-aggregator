@@ -29,6 +29,10 @@ public class SymbolHelper {
             }
         }
 
+        if (pair.endsWith("FDUSD")) {
+            return pair.replace("FDUSD", "");
+        }
+
 
         var quote = pair.endsWith("DAI") ? "DAI" : pair.substring(pair.length() - 4);
 
