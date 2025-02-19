@@ -28,7 +28,9 @@ class SymbolHelperTest {
                 Arguments.of("usdcusdt", Pair.of("USDC", "USDT")),
                 Arguments.of("usdtbusd", Pair.of("USDT", "BUSD")),
                 Arguments.of("adafdusd", Pair.of("ADA", "FDUSD")),
-                Arguments.of("ada/fdusd", Pair.of("ADA", "FDUSD"))
+                Arguments.of("ada/fdusd", Pair.of("ADA", "FDUSD")),
+                Arguments.of("adausde", Pair.of("ADA", "USDE")),
+                Arguments.of("ada/usde", Pair.of("ADA", "USDE"))
         );
     }
 }

@@ -19,6 +19,7 @@ public class SymbolHelper {
         return remotePair.replace("-", "").replace("_", "").replace("/", "").replace(":", "").toUpperCase();
     }
 
+    
     private static String getBaseCurrency(String pair) {
 
         var baseCurrencies = new String[] {"USDT", "USDC", "BUSD"};
@@ -31,6 +32,10 @@ public class SymbolHelper {
 
         if (pair.endsWith("FDUSD")) {
             return pair.replace("FDUSD", "");
+        }
+
+        if (pair.endsWith("USDE")) {
+            return pair.replace("USDE", "");
         }
 
 

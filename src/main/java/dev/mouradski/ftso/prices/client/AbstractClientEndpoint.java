@@ -331,8 +331,8 @@ public abstract class AbstractClientEndpoint {
     }
 
     protected List<String> getAllQuotes(boolean upperCase) {
-        return upperCase ? Constants.USD_USDT_USDC_DAI.stream().map(String::toUpperCase).toList()
-                : Constants.USD_USDT_USDC_DAI;
+        return upperCase ? Constants.ALL_QUOTES.stream().map(String::toUpperCase).toList()
+                : Constants.ALL_QUOTES;
     }
 
 
