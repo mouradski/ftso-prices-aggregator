@@ -32,7 +32,6 @@ public class BluebitClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(every = "1s")
     public void getTickers() {
-        this.messageReceived();
 
         if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()

@@ -34,8 +34,6 @@ public class AceTickerUpdater extends AbstractClientEndpoint {
             return;
         }
 
-        this.messageReceived();
-
         List.of("https://ace.io/polarisex/oapi/v2/list/tradePrice").forEach(url -> {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create(url))

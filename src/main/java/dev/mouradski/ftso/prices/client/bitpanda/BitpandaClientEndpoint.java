@@ -9,7 +9,6 @@ import io.quarkus.runtime.Startup;
 import io.quarkus.scheduler.Scheduled;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.websocket.ClientEndpoint;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
@@ -35,8 +34,6 @@ public class BitpandaClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(every = "1s")
     public void getTickers() {
-        this.messageReceived();
-
         if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.bitpanda.com/v1/ticker"))

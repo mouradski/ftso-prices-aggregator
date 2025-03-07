@@ -42,8 +42,6 @@ public class BtseClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(every = "2s")
     public void getTickers() {
-        this.messageReceived();
-
         if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.btse.com/spot/api/v3.2/market_summary"))

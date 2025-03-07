@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.service.TickerService;
 import dev.mouradski.ftso.prices.utils.Constants;
+import io.quarkus.scheduler.Scheduled;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.websocket.*;
@@ -21,10 +22,9 @@ import java.net.http.HttpClient;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPInputStream;
@@ -65,12 +65,8 @@ public abstract class AbstractClientEndpoint {
     protected AtomicInteger counter = new AtomicInteger();
     private boolean started = false;
 
-    private ScheduledExecutorService timeoutExecutor = Executors.newSingleThreadScheduledExecutor();
 
-    private ScheduledFuture<?> timeoutFuture;
-    private volatile int reconnectionAttempts = 0;
-
-    private boolean messageReceived = true;
+    private long LastMessageTimestamp = OffsetDateTime.now().toEpochSecond();
 
     protected Set<String> getSymbols(boolean upperCase, String separator) {
         if (symbols == null) {
@@ -123,7 +119,6 @@ public abstract class AbstractClientEndpoint {
 
             if (!this.pong(message)) {
                 this.mapTicker(message).ifPresent(tickerList -> {
-                    this.messageReceived();
                     tickerList.forEach(this::pushTicker);
                 });
             }
@@ -134,27 +129,27 @@ public abstract class AbstractClientEndpoint {
 
     }
 
+    @Scheduled(every = "5s")
     public void checkMessageReceivedTimeout() {
         if (this.getUri() == null) {
             return;
         }
 
-        var shouldReconnectFlag = false;
-
-        if (this.getUri() != null && !this.messageReceived) {
-            log.info("No ticker received from {} for {} seconds. Reconnecting...", getExchange(), getTimeout());
-            shouldReconnectFlag = true;
-        } else {
-            this.messageReceived = false;
+        if ((currentTimestamp() - this.LastMessageTimestamp) > getTimeout() * 1000) {
+            log.error("No data received in a while from {}, reconnecting", getExchange());
+            var closeReason = new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "No data received in a while");
+            try {
+                this.userSession.close(closeReason);
+            } catch (IOException e) {
+                log.error("Error closing websocket for {}", getExchange(), e);
+                onClose(userSession, closeReason);
+            }
         }
-        if (shouldReconnectFlag)
-            onClose(userSession,
-                    new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "No data received in a while"));
-
 
     }
 
     protected void pushTicker(Ticker ticker) {
+        this.LastMessageTimestamp = currentTimestamp();
         this.tickerService.pushTicker(ticker);
     }
 
@@ -299,14 +294,12 @@ public abstract class AbstractClientEndpoint {
 
                 container.connectToServer(this, new URI(uriProperty.orElse(getUri())));
 
-                this.reconnectionAttempts = 0;
                 log.info("Connected to {}", getExchange());
                 return true;
             } catch (Exception e) {
                 this.tickerService.pushError(this.getExchange());
                 var reconnectWaitTimeSeconds = 20;
-                log.error("Unable to connect to {}, waiting {} seconds to try again", getExchange(),
-                        reconnectWaitTimeSeconds);
+                log.error("Unable to connect to {}, waiting {} seconds to try again", getExchange(), reconnectWaitTimeSeconds);
 
                 var executor = Executors.newSingleThreadScheduledExecutor();
                 executor.schedule(this::connect, reconnectWaitTimeSeconds, TimeUnit.SECONDS);
@@ -331,19 +324,16 @@ public abstract class AbstractClientEndpoint {
     }
 
     protected List<String> getAllQuotes(boolean upperCase) {
-        return upperCase ? Constants.ALL_QUOTES.stream().map(String::toUpperCase).toList()
-                : Constants.ALL_QUOTES;
+        return upperCase ? Constants.ALL_QUOTES.stream().map(String::toUpperCase).toList() : Constants.ALL_QUOTES;
     }
 
 
     protected List<String> getAllStablecoinQuotes(boolean upperCase) {
-        return upperCase ? Constants.USDT_USDC_DAI.stream().map(String::toUpperCase).toList()
-                : Constants.USDT_USDC_DAI;
+        return upperCase ? Constants.USDT_USDC_DAI.stream().map(String::toUpperCase).toList() : Constants.USDT_USDC_DAI;
     }
 
     protected List<String> getAllStablecoinQuotesExceptBusd(boolean upperCase) {
-        return upperCase ? Constants.USDT_USDC_DAI.stream().map(String::toUpperCase).toList()
-                : Constants.USDT_USDC_DAI;
+        return upperCase ? Constants.USDT_USDC_DAI.stream().map(String::toUpperCase).toList() : Constants.USDT_USDC_DAI;
     }
 
     protected Integer incAndGetId() {
@@ -356,10 +346,6 @@ public abstract class AbstractClientEndpoint {
 
     protected Long currentTimestamp() {
         return Instant.now().toEpochMilli();
-    }
-
-    protected void messageReceived() {
-        this.messageReceived = true;
     }
 
     protected void catchRestError(Throwable throwable) {

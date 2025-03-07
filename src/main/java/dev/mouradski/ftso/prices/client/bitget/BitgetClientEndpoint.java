@@ -20,8 +20,6 @@ import java.net.http.HttpResponse;
 @Startup
 public class BitgetClientEndpoint extends AbstractClientEndpoint {
 
-    private boolean subscribed;
-
     @Override
     protected String getUri() {
         return null;
@@ -29,8 +27,6 @@ public class BitgetClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(every = "1s")
     public void fetchTickers() {
-        this.messageReceived();
-
         if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.bitget.com/api/v2/spot/market/tickers"))

@@ -33,8 +33,6 @@ public class BitsoTickerUpdater extends AbstractClientEndpoint {
             return;
         }
 
-        this.messageReceived();
-
         Arrays.asList("https://bitso.com/api/v3/ticker").forEach(url -> {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create(url))

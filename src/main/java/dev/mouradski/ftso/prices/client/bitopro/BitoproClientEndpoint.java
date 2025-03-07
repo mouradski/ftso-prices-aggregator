@@ -2,7 +2,6 @@ package dev.mouradski.ftso.prices.client.bitopro;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
-import dev.mouradski.ftso.prices.client.bitvavo.TickerData;
 import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
@@ -16,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Arrays;
 
 @ApplicationScoped
 @Slf4j
@@ -34,7 +32,6 @@ public class BitoproClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(every = "2s")
     public void getTickers() {
-        this.messageReceived();
         if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.bitopro.com/v3/tickers"))

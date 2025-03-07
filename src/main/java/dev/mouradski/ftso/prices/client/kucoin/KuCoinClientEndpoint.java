@@ -28,8 +28,6 @@ public class KuCoinClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(every = "1s")
     public void getTickers() {
-        this.messageReceived();
-
         if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.kucoin.com/api/v1/market/allTickers"))

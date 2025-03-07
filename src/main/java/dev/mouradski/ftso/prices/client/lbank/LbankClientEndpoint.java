@@ -2,7 +2,6 @@ package dev.mouradski.ftso.prices.client.lbank;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
-import dev.mouradski.ftso.prices.client.citex.RestApiTicker;
 import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
@@ -71,8 +70,6 @@ public class LbankClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(every = "1s")
     public void getFutures() {
-        this.messageReceived();
-
         if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://lbkperp.lbank.com/cfd/openApi/v1/pub/marketData?productGroup=SwapU"))

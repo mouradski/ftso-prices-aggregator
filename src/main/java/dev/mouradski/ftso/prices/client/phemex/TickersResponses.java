@@ -2,7 +2,8 @@ package dev.mouradski.ftso.prices.client.phemex;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 

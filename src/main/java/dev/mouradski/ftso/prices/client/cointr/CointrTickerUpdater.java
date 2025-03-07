@@ -30,8 +30,6 @@ public class CointrTickerUpdater extends AbstractClientEndpoint {
 
     @Scheduled(every = "1s")
     public void fetchTickers() {
-        this.messageReceived();
-
         if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.cointr.pro/v1/spot/market/tickers"))

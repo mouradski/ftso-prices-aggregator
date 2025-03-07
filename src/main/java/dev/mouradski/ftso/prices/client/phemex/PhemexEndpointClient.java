@@ -31,7 +31,6 @@ public class PhemexEndpointClient extends AbstractClientEndpoint {
 
     @Scheduled(every = "1s")
     public void getTickers() {
-        this.messageReceived();
         if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.phemex.com/md/spot/ticker/24hr/all"))

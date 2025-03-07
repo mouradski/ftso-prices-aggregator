@@ -30,8 +30,6 @@ public class HotcoinTickerUpdater extends AbstractClientEndpoint {
 
     @Scheduled(every = "1s")
     public void getTickers() {
-        this.messageReceived();
-
         if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.hotcoinfin.com/v1/market/ticker"))

@@ -39,7 +39,6 @@ public class XtClientEndpoint extends AbstractClientEndpoint {
         var url = future ? "https://fapi.xt.com/future/market/v1/public/q/tickers" :
                 "https://sapi.xt.com/v4/public/ticker";
 
-        this.messageReceived();
         if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create(url))

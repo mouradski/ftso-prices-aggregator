@@ -27,7 +27,6 @@ public class CoinexClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(every = "2s")
     public void getTickers() {
-        this.messageReceived();
         if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.coinex.com/v1/market/ticker/all"))

@@ -28,8 +28,6 @@ public class BydfiRestEndpointClient extends AbstractClientEndpoint {
 
     @Scheduled(every = "3s")
     public void getTickers() {
-        this.messageReceived();
-
         if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://www.bydfi.com/b2b/rank/ticker"))

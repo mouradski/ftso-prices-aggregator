@@ -27,8 +27,6 @@ public class CitexClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(every = "1s")
     public void getTickers() {
-        this.messageReceived();
-
         if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://www.citex.io/prod-api/market/tiker/list?businessType=spot"))

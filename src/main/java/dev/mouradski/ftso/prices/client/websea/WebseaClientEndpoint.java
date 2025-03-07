@@ -2,7 +2,6 @@ package dev.mouradski.ftso.prices.client.websea;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
-import dev.mouradski.ftso.prices.client.batonex.TickerData;
 import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
@@ -33,8 +32,6 @@ public class WebseaClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(every = "1s")
     public void getTickers() {
-        this.messageReceived();
-
         if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://oapi.websea.com/openApi/market/24kline"))

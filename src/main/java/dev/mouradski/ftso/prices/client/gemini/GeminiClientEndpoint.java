@@ -62,8 +62,6 @@ public class GeminiClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(every = "3s")
     public void getTickers() {
-        this.messageReceived();
-
         if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
 
             getAssets(true).forEach(base -> {

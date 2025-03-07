@@ -2,7 +2,6 @@ package dev.mouradski.ftso.prices.client.bitmart;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
-import dev.mouradski.ftso.prices.client.cointr.TickersResponse;
 import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
@@ -100,8 +99,6 @@ public class BitmartClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(every = "1s")
     public void fetchTickers() {
-        this.messageReceived();
-
         if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api-cloud.bitmart.com/spot/quotation/v3/tickers"))

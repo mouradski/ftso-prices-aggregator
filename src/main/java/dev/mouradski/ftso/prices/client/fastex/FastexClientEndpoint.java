@@ -2,7 +2,6 @@ package dev.mouradski.ftso.prices.client.fastex;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.mouradski.ftso.prices.client.AbstractClientEndpoint;
-import dev.mouradski.ftso.prices.client.digifinex.TickerApiResponse;
 import dev.mouradski.ftso.prices.model.Source;
 import dev.mouradski.ftso.prices.model.Ticker;
 import dev.mouradski.ftso.prices.utils.SymbolHelper;
@@ -30,8 +29,6 @@ public class FastexClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(every = "2s")
     public void getTickers() {
-        this.messageReceived();
-        this.messageReceived();
 
         if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()

@@ -35,8 +35,6 @@ public class CoinbaseClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(every = "1s")
     public void getTickers() {
-        this.messageReceived();
-
         if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.coinbase.com/api/v3/brokerage/market/products?product_type=SPOT"))

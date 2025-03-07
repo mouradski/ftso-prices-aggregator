@@ -4,10 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PriceUpdate {
-    //{"method": "price.update", "params": ["BTC_USDT", "52347.17"], "id": null}
-    private String[] params;
+public class Tickers {
+    private List<Ticker> ticker;
 }

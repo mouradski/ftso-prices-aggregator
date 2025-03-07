@@ -37,7 +37,6 @@ public class AzbitClientEndpoint extends AbstractClientEndpoint {
 
     @Scheduled(every = "3s")
     public void getTickers() {
-        this.messageReceived();
         if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("https://data.azbit.com/api/tickers"))
