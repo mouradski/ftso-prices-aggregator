@@ -118,9 +118,7 @@ public abstract class AbstractClientEndpoint {
             this.decodeMetadata(message);
 
             if (!this.pong(message)) {
-                this.mapTicker(message).ifPresent(tickerList -> {
-                    tickerList.forEach(this::pushTicker);
-                });
+                this.mapTicker(message).ifPresent(tickerList -> tickerList.forEach(this::pushTicker));
             }
 
         } catch (Exception e) {
