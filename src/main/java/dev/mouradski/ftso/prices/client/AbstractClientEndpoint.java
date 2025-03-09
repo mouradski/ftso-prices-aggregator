@@ -66,7 +66,7 @@ public abstract class AbstractClientEndpoint {
     private boolean started = false;
 
 
-    private long LastMessageTimestamp = OffsetDateTime.now().toEpochSecond();
+    private long lastMessageTimestamp = OffsetDateTime.now().toEpochSecond();
 
     protected Set<String> getSymbols(boolean upperCase, String separator) {
         if (symbols == null) {
@@ -135,7 +135,7 @@ public abstract class AbstractClientEndpoint {
             return;
         }
 
-        if ((currentTimestamp() - this.LastMessageTimestamp) > getTimeout() * 1000) {
+        if ((currentTimestamp() - this.lastMessageTimestamp) > getTimeout() * 1000) {
             log.error("No data received in a while from {}, reconnecting", getExchange());
             var closeReason = new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "No data received in a while");
             try {
@@ -149,7 +149,7 @@ public abstract class AbstractClientEndpoint {
     }
 
     protected void pushTicker(Ticker ticker) {
-        this.LastMessageTimestamp = currentTimestamp();
+        this.lastMessageTimestamp = currentTimestamp();
         this.tickerService.pushTicker(ticker);
     }
 
@@ -349,7 +349,11 @@ public abstract class AbstractClientEndpoint {
     }
 
     protected void catchRestError(Throwable throwable) {
-        this.restCircuitBreaker.incrementAndCheckState();
+
+        if (!this.restCircuitBreaker.incrementAndCheckState()) {
+            var executor = Executors.newSingleThreadScheduledExecutor();
+            executor.schedule(this.restCircuitBreaker::close, 10, TimeUnit.SECONDS);
+        }
         this.tickerService.pushError(this.getExchange());
     }
 

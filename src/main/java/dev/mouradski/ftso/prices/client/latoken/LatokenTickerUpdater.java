@@ -27,7 +27,7 @@ public class LatokenTickerUpdater extends AbstractClientEndpoint {
         return "latoken";
     }
 
-    @Scheduled(every = "3s")
+    @Scheduled(every = "2s")
     public void getTickers() {
         if (exchanges.contains(getExchange()) && this.isCircuitClosed()) {
             var request = HttpRequest.newBuilder()
