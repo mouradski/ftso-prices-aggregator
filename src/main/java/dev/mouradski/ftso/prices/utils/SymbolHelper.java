@@ -10,7 +10,7 @@ public class SymbolHelper {
     public static Pair<String, String> getPair(String remotePair) {
         String pair = cleanRemotePair(remotePair);
         String baseCurrency = getBaseCurrency(pair);
-        String quoteCurrency = pair.replace(baseCurrency, "");
+        String quoteCurrency = pair.replaceFirst("^" + baseCurrency, "");
 
         return Pair.of(baseCurrency, quoteCurrency);
     }

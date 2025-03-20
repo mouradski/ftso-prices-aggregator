@@ -30,7 +30,11 @@ class SymbolHelperTest {
                 Arguments.of("adafdusd", Pair.of("ADA", "FDUSD")),
                 Arguments.of("ada/fdusd", Pair.of("ADA", "FDUSD")),
                 Arguments.of("adausde", Pair.of("ADA", "USDE")),
-                Arguments.of("ada/usde", Pair.of("ADA", "USDE"))
+                Arguments.of("ada/usde", Pair.of("ADA", "USDE")),
+                Arguments.of("susdt", Pair.of("S", "USDT")),
+                Arguments.of("s/usdt", Pair.of("S", "USDT")),
+                Arguments.of("susdd", Pair.of("S", "USDD")),
+                Arguments.of("sfdusd", Pair.of("S", "FDUSD"))
         );
     }
 }
